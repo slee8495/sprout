@@ -21,15 +21,25 @@ A private, lifelong journal for our son Roun (이로운), shared between mom and
 - Auto-generated yearly photobook/PDF export
 - Chatbot Q&A over the journal ("When did Roun first eat solid food?"), answerable by voice
 
-## Planned stack
+## Stack
 
-Modeled after the `sl_sports` project's chatbot pattern (Vercel AI SDK + Claude tool-calling over Postgres via Drizzle, rather than vector RAG — journal entries are structured enough that direct DB-query tools should work well).
+Modeled after the `sl_sports` project's chatbot pattern (Vercel AI SDK + Claude tool-calling over Postgres via Drizzle, rather than vector RAG — journal entries are structured enough that direct DB-query tools work well).
 
 - **Next.js + Vercel** — web app / PWA to start; can be wrapped or ported to React Native later without rebuilding the backend
-- **Postgres + Drizzle** — journal entries, milestones, family/user data, modeled around a `family_id` so multi-family support can be added later without a rewrite
-- **Cloudflare R2** — photo storage (no egress fees); images resized/converted (WebP/AVIF) on upload, originals kept in cold storage if needed
+- **Postgres (Vercel Postgres / Neon) + Drizzle** — journal entries, milestones, family/user data, modeled around a `family_id` so multi-family support can be added later without a rewrite
+- **Auth.js + Google OAuth** — sign-in restricted to an allowlist of the two family emails, no password management
+- **Vercel Blob** — photo storage, no separate account needed
 - **Vercel AI SDK + Claude** — chatbot with tools that query the DB directly; voice input via Web Speech API (or Whisper) transcribed then sent through the same pipeline
+
+## Getting started
+
+```bash
+npm install
+npm run dev
+```
+
+Open [http://localhost:3000](http://localhost:3000).
 
 ## Status
 
-Brainstorming stage — repo created to start capturing decisions. No code yet.
+Scaffolding stage.
