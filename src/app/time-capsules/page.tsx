@@ -15,7 +15,7 @@ export default async function TimeCapsulesPage() {
   return (
     <div className="mx-auto flex w-full max-w-2xl flex-1 flex-col gap-6 p-4 pb-24">
       <header className="pt-4">
-        <h1 className="text-xl font-semibold text-emerald-800 dark:text-emerald-400">📬 Time Capsules</h1>
+        <h1 className="font-heading text-2xl font-bold text-emerald-700 dark:text-emerald-300">📬 Time Capsules</h1>
         <p className="text-sm text-zinc-500">Write a message today that opens on a future date.</p>
       </header>
       <CapsuleForm />
@@ -29,10 +29,10 @@ export default async function TimeCapsulesPage() {
           return (
             <article
               key={capsule.id}
-              className={`flex flex-col gap-2 rounded-2xl border p-4 ${
+              className={`flex flex-col gap-2 rounded-3xl border p-4 shadow-md ${
                 isLocked
-                  ? "border-zinc-200 bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-900"
-                  : "border-emerald-200 dark:border-emerald-900"
+                  ? "border-emerald-100/50 bg-emerald-50/40 shadow-transparent dark:border-emerald-900/30 dark:bg-zinc-900"
+                  : "border-emerald-200/70 bg-white shadow-emerald-900/5 dark:border-emerald-800/50 dark:bg-zinc-900 dark:shadow-black/40"
               }`}
             >
               <div className="flex items-center justify-between text-xs text-zinc-500">
@@ -47,7 +47,7 @@ export default async function TimeCapsulesPage() {
                 </p>
               ) : (
                 <>
-                  {capsule.title && <h2 className="font-semibold">{capsule.title}</h2>}
+                  {capsule.title && <h2 className="font-heading font-bold">{capsule.title}</h2>}
                   <p className="whitespace-pre-wrap text-sm text-zinc-700 dark:text-zinc-300">
                     {capsule.body}
                   </p>

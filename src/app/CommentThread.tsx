@@ -21,10 +21,10 @@ export function CommentThread({ entry }: { entry: JournalEntryWithPhotos }) {
   }
 
   return (
-    <div className="flex flex-col gap-2 border-t border-zinc-100 pt-2 dark:border-zinc-900">
+    <div className="flex flex-col gap-2 border-t border-dashed border-emerald-100 pt-2 dark:border-emerald-900/40">
       {entry.comments.map((comment) => (
         <div key={comment.id} className="text-xs">
-          <span className="font-medium text-zinc-600 dark:text-zinc-400">
+          <span className="font-heading font-semibold text-rose-500 dark:text-rose-300">
             {comment.author?.name ?? "Someone"}:
           </span>{" "}
           <span className="text-zinc-500">{comment.body}</span>
@@ -34,13 +34,13 @@ export function CommentThread({ entry }: { entry: JournalEntryWithPhotos }) {
         <input
           value={body}
           onChange={(e) => setBody(e.target.value)}
-          placeholder="Add a comment…"
-          className="min-w-0 flex-1 rounded-lg border border-zinc-200 bg-transparent px-2 py-1 text-xs outline-none focus:border-emerald-400 dark:border-zinc-700"
+          placeholder="Add a comment… 💬"
+          className="min-w-0 flex-1 rounded-full border border-emerald-100 bg-transparent px-3 py-1 text-xs outline-none focus:border-emerald-400 dark:border-emerald-900/40"
         />
         <button
           type="submit"
           disabled={isPending || !body.trim()}
-          className="text-xs text-emerald-700 disabled:opacity-40 dark:text-emerald-400"
+          className="font-heading text-xs font-semibold text-rose-500 disabled:opacity-40 dark:text-rose-300"
         >
           Post
         </button>

@@ -55,33 +55,33 @@ export function EntryCard({ entry }: { entry: JournalEntryWithPhotos }) {
 
   if (isEditing) {
     return (
-      <article className="flex flex-col gap-3 rounded-2xl border border-emerald-300 p-4 dark:border-emerald-800">
+      <article className="flex flex-col gap-3 rounded-3xl border border-emerald-300/70 bg-white p-4 shadow-md shadow-emerald-900/5 dark:border-emerald-800/60 dark:bg-zinc-900 dark:shadow-black/40">
         <div className="flex gap-3">
           <input
             type="date"
             value={entryDate}
             onChange={(e) => setEntryDate(e.target.value)}
-            className="rounded-lg border border-zinc-300 px-3 py-2 text-sm dark:border-zinc-700 dark:bg-zinc-900"
+            className="rounded-2xl border border-emerald-100 bg-white px-3 py-2 text-sm dark:border-emerald-900/40 dark:bg-zinc-900"
           />
           <input
             type="text"
             placeholder="Title (optional)"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            className="min-w-0 flex-1 rounded-lg border border-zinc-300 px-3 py-2 text-sm dark:border-zinc-700 dark:bg-zinc-900"
+            className="min-w-0 flex-1 rounded-2xl border border-emerald-100 bg-white px-3 py-2 text-sm dark:border-emerald-900/40 dark:bg-zinc-900"
           />
         </div>
         <textarea
           value={body}
           onChange={(e) => setBody(e.target.value)}
           rows={4}
-          className="rounded-lg border border-zinc-300 px-3 py-2 text-sm dark:border-zinc-700 dark:bg-zinc-900"
+          className="rounded-2xl border border-emerald-100 bg-white px-3 py-2 text-sm dark:border-emerald-900/40 dark:bg-zinc-900"
         />
         <div className="flex flex-wrap gap-3">
           <select
             value={milestoneType}
             onChange={(e) => setMilestoneType(e.target.value)}
-            className="rounded-lg border border-zinc-300 px-3 py-2 text-sm dark:border-zinc-700 dark:bg-zinc-900"
+            className="rounded-2xl border border-emerald-100 bg-white px-3 py-2 text-sm dark:border-emerald-900/40 dark:bg-zinc-900"
           >
             <option value="">No milestone</option>
             {MILESTONE_OPTIONS.map((m) => (
@@ -96,23 +96,23 @@ export function EntryCard({ entry }: { entry: JournalEntryWithPhotos }) {
               placeholder="Milestone name"
               value={milestoneLabel}
               onChange={(e) => setMilestoneLabel(e.target.value)}
-              className="min-w-0 flex-1 rounded-lg border border-zinc-300 px-3 py-2 text-sm dark:border-zinc-700 dark:bg-zinc-900"
+              className="min-w-0 flex-1 rounded-2xl border border-emerald-100 bg-white px-3 py-2 text-sm dark:border-emerald-900/40 dark:bg-zinc-900"
             />
           )}
         </div>
-        {error && <p className="text-sm text-red-600">{error}</p>}
+        {error && <p className="text-sm text-rose-600">{error}</p>}
         <div className="flex gap-2">
           <button
             onClick={handleSave}
             disabled={isPending}
-            className="rounded-lg bg-emerald-700 px-4 py-2 text-sm font-medium text-white disabled:opacity-50"
+            className="rounded-full bg-emerald-600 px-5 py-2 font-heading text-sm font-semibold text-white shadow-sm shadow-emerald-900/20 transition-transform hover:scale-105 hover:bg-emerald-700 active:scale-95 disabled:opacity-50 disabled:hover:scale-100"
           >
             {isPending ? "Saving…" : "Save"}
           </button>
           <button
             onClick={() => setIsEditing(false)}
             disabled={isPending}
-            className="rounded-lg border border-zinc-300 px-4 py-2 text-sm dark:border-zinc-700"
+            className="rounded-full border border-emerald-100 px-5 py-2 font-heading text-sm font-semibold text-emerald-800 transition-transform hover:scale-105 active:scale-95 dark:border-emerald-900/40 dark:text-emerald-200"
           >
             Cancel
           </button>
@@ -122,12 +122,14 @@ export function EntryCard({ entry }: { entry: JournalEntryWithPhotos }) {
   }
 
   return (
-    <article className="flex flex-col gap-2 rounded-2xl border border-zinc-200 p-4 dark:border-zinc-800">
+    <article className="flex flex-col gap-2 rounded-3xl border border-emerald-100/60 bg-white p-4 shadow-md shadow-emerald-900/5 dark:border-emerald-900/40 dark:bg-zinc-900 dark:shadow-black/40">
       <div className="flex items-center justify-between">
-        <span className="text-xs font-medium text-zinc-500">{formatEntryDate(entry.entryDate)}</span>
+        <span className="text-xs font-medium text-emerald-900/50 dark:text-emerald-100/50">
+          {formatEntryDate(entry.entryDate)}
+        </span>
         <div className="flex items-center gap-2">
           {entry.milestoneType && (
-            <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-medium text-emerald-800 dark:bg-emerald-900 dark:text-emerald-300">
+            <span className="rounded-full bg-amber-200 px-2.5 py-0.5 font-heading text-xs font-semibold text-amber-900 dark:bg-amber-900/60 dark:text-amber-200">
               🏅{" "}
               {entry.milestoneType === "other"
                 ? entry.milestoneLabel || "Milestone"
@@ -143,13 +145,13 @@ export function EntryCard({ entry }: { entry: JournalEntryWithPhotos }) {
           <button
             onClick={handleDelete}
             disabled={isPending}
-            className="text-xs text-red-400 hover:text-red-600 disabled:opacity-50"
+            className="text-xs text-rose-400 hover:text-rose-600 disabled:opacity-50"
           >
             Delete
           </button>
         </div>
       </div>
-      {entry.title && <h2 className="font-semibold">{entry.title}</h2>}
+      {entry.title && <h2 className="font-heading font-bold text-emerald-950 dark:text-emerald-50">{entry.title}</h2>}
       <p className="whitespace-pre-wrap text-sm text-zinc-700 dark:text-zinc-300">{entry.body}</p>
       {entry.voiceMemoUrl && <audio controls src={entry.voiceMemoUrl} className="h-10 w-full" />}
       {entry.photos.length > 0 && (
@@ -161,7 +163,7 @@ export function EntryCard({ entry }: { entry: JournalEntryWithPhotos }) {
               alt={photo.caption ?? ""}
               width={120}
               height={120}
-              className="h-28 w-28 rounded-lg object-cover"
+              className="h-28 w-28 rounded-2xl object-cover"
             />
           ))}
         </div>

@@ -49,16 +49,16 @@ export function Calendar({
   }
 
   return (
-    <div className="rounded-2xl border border-zinc-200 p-4 dark:border-zinc-800">
+    <div className="rounded-3xl border border-emerald-100/60 bg-white p-4 shadow-md shadow-emerald-900/5 dark:border-emerald-900/40 dark:bg-zinc-900 dark:shadow-black/40">
       <div className="mb-3 flex items-center justify-between">
         <button
           onClick={() => changeMonth(-1)}
           aria-label="Previous month"
-          className="rounded-lg px-2 py-1 text-sm text-zinc-500 hover:bg-zinc-100 dark:hover:bg-zinc-900"
+          className="rounded-full px-2 py-1 text-sm text-emerald-700 transition-transform hover:scale-110 hover:bg-emerald-50 dark:text-emerald-300 dark:hover:bg-emerald-900/30"
         >
           ‹
         </button>
-        <span className="text-sm font-medium">
+        <span className="font-heading text-sm font-semibold">
           {new Date(viewYear, viewMonth, 1).toLocaleDateString(undefined, {
             year: "numeric",
             month: "long",
@@ -67,13 +67,13 @@ export function Calendar({
         <button
           onClick={() => changeMonth(1)}
           aria-label="Next month"
-          className="rounded-lg px-2 py-1 text-sm text-zinc-500 hover:bg-zinc-100 dark:hover:bg-zinc-900"
+          className="rounded-full px-2 py-1 text-sm text-emerald-700 transition-transform hover:scale-110 hover:bg-emerald-50 dark:text-emerald-300 dark:hover:bg-emerald-900/30"
         >
           ›
         </button>
       </div>
 
-      <div className="grid grid-cols-7 gap-1 text-center text-xs text-zinc-400">
+      <div className="grid grid-cols-7 gap-1 text-center text-xs text-emerald-900/40 dark:text-emerald-100/40">
         {WEEKDAYS.map((w, i) => (
           <div key={i} className="py-1">
             {w}
@@ -88,17 +88,17 @@ export function Calendar({
             <button
               key={i}
               onClick={() => onSelectDate(isSelected ? null : cell.iso)}
-              className={`relative rounded-lg py-1.5 text-sm ${
+              className={`relative rounded-full py-1.5 text-sm transition-transform hover:scale-110 ${
                 isSelected
-                  ? "bg-emerald-700 text-white"
+                  ? "bg-emerald-600 text-white shadow-sm shadow-emerald-900/20"
                   : isToday
-                    ? "bg-emerald-100 text-emerald-900 dark:bg-emerald-900 dark:text-emerald-200"
-                    : "hover:bg-zinc-100 dark:hover:bg-zinc-900"
+                    ? "bg-amber-200 text-amber-900 dark:bg-amber-900/60 dark:text-amber-200"
+                    : "hover:bg-emerald-50 dark:hover:bg-emerald-900/30"
               }`}
             >
               {cell.day}
               {hasEntry && !isSelected && (
-                <span className="absolute bottom-0.5 left-1/2 h-1 w-1 -translate-x-1/2 rounded-full bg-emerald-600" />
+                <span className="absolute bottom-0.5 left-1/2 h-1 w-1 -translate-x-1/2 rounded-full bg-emerald-500" />
               )}
             </button>
           );
@@ -108,7 +108,7 @@ export function Calendar({
       {selectedDate && (
         <button
           onClick={() => onSelectDate(null)}
-          className="mt-3 text-xs text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300"
+          className="mt-3 text-xs text-emerald-700/70 hover:text-emerald-900 dark:text-emerald-300/70 dark:hover:text-emerald-200"
         >
           Clear date filter
         </button>

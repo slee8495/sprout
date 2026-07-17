@@ -23,14 +23,14 @@ export function MilestoneGrid({
             <button
               key={m.value}
               onClick={() => entry && setExpanded(expanded === key ? null : key)}
-              className={`flex flex-col items-center gap-1 rounded-2xl border p-4 text-center ${
+              className={`flex flex-col items-center gap-1 rounded-3xl border p-4 text-center shadow-md transition-transform hover:scale-105 ${
                 entry
-                  ? "border-emerald-300 bg-emerald-50 dark:border-emerald-800 dark:bg-emerald-950/40"
-                  : "border-zinc-200 bg-zinc-50 opacity-50 dark:border-zinc-800 dark:bg-zinc-900"
+                  ? "border-amber-300 bg-amber-100 shadow-amber-900/10 dark:border-amber-800 dark:bg-amber-950/40"
+                  : "border-emerald-100/60 bg-emerald-50/40 opacity-50 shadow-transparent dark:border-emerald-900/30 dark:bg-zinc-900"
               }`}
             >
               <span className="text-2xl">🏅</span>
-              <span className="text-sm font-medium">{m.label}</span>
+              <span className="font-heading text-sm font-semibold">{m.label}</span>
               <span className="text-xs text-zinc-500">
                 {entry ? formatEntryDate(entry.entryDate) : "Not yet"}
               </span>
@@ -49,7 +49,7 @@ export function MilestoneGrid({
 
       {otherEntries.length > 0 && (
         <div className="flex flex-col gap-3">
-          <h2 className="text-sm font-semibold text-zinc-500">Other milestones</h2>
+          <h2 className="font-heading text-sm font-bold text-zinc-500">Other milestones</h2>
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
             {otherEntries.map((entry) => {
               const key = `other-${entry.id}`;
@@ -57,10 +57,10 @@ export function MilestoneGrid({
                 <button
                   key={entry.id}
                   onClick={() => setExpanded(expanded === key ? null : key)}
-                  className="flex flex-col items-center gap-1 rounded-2xl border border-emerald-300 bg-emerald-50 p-4 text-center dark:border-emerald-800 dark:bg-emerald-950/40"
+                  className="flex flex-col items-center gap-1 rounded-3xl border border-amber-300 bg-amber-100 p-4 text-center shadow-md shadow-amber-900/10 transition-transform hover:scale-105 dark:border-amber-800 dark:bg-amber-950/40"
                 >
                   <span className="text-2xl">🏅</span>
-                  <span className="text-sm font-medium">{entry.milestoneLabel || "Milestone"}</span>
+                  <span className="font-heading text-sm font-semibold">{entry.milestoneLabel || "Milestone"}</span>
                   <span className="text-xs text-zinc-500">{formatEntryDate(entry.entryDate)}</span>
                 </button>
               );
@@ -81,14 +81,14 @@ export function MilestoneGrid({
 
 function EntryDetail({ entry, onClose }: { entry: JournalEntryWithPhotos; onClose: () => void }) {
   return (
-    <div className="rounded-2xl border border-zinc-200 p-4 dark:border-zinc-800">
+    <div className="rounded-3xl border border-emerald-100/60 bg-white p-4 shadow-md shadow-emerald-900/5 dark:border-emerald-900/40 dark:bg-zinc-900 dark:shadow-black/40">
       <div className="mb-2 flex items-center justify-between">
         <span className="text-xs font-medium text-zinc-500">{formatEntryDate(entry.entryDate)}</span>
         <button onClick={onClose} className="text-xs text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300">
           ✕
         </button>
       </div>
-      {entry.title && <h3 className="mb-1 font-semibold">{entry.title}</h3>}
+      {entry.title && <h3 className="mb-1 font-heading font-bold">{entry.title}</h3>}
       <p className="whitespace-pre-wrap text-sm text-zinc-700 dark:text-zinc-300">{entry.body}</p>
     </div>
   );

@@ -121,21 +121,21 @@ export function EntryForm({ initialDate }: { initialDate?: string }) {
     <form
       ref={formRef}
       onSubmit={handleSubmit}
-      className="flex flex-col gap-3 rounded-2xl border border-emerald-200 p-4 dark:border-emerald-900"
+      className="flex flex-col gap-3 rounded-3xl border border-emerald-200/70 bg-white p-4 shadow-md shadow-emerald-900/5 dark:border-emerald-800/50 dark:bg-zinc-900 dark:shadow-black/40"
     >
       <div className="flex gap-3">
         <input
           type="date"
           value={entryDate}
           onChange={(e) => setEntryDate(e.target.value)}
-          className="rounded-lg border border-zinc-300 px-3 py-2 text-sm dark:border-zinc-700 dark:bg-zinc-900"
+          className="rounded-2xl border border-emerald-100 bg-white px-3 py-2 text-sm dark:border-emerald-900/40 dark:bg-zinc-900"
         />
         <input
           type="text"
           placeholder="Title (optional)"
           value={title}
           onChange={(e) => setTitle(e.target.value)}
-          className="min-w-0 flex-1 rounded-lg border border-zinc-300 px-3 py-2 text-sm dark:border-zinc-700 dark:bg-zinc-900"
+          className="min-w-0 flex-1 rounded-2xl border border-emerald-100 bg-white px-3 py-2 text-sm dark:border-emerald-900/40 dark:bg-zinc-900"
         />
       </div>
 
@@ -144,14 +144,14 @@ export function EntryForm({ initialDate }: { initialDate?: string }) {
         value={body}
         onChange={(e) => setBody(e.target.value)}
         rows={4}
-        className="rounded-lg border border-zinc-300 px-3 py-2 text-sm dark:border-zinc-700 dark:bg-zinc-900"
+        className="rounded-2xl border border-emerald-100 bg-white px-3 py-2 text-sm dark:border-emerald-900/40 dark:bg-zinc-900"
       />
 
       <div className="flex flex-wrap gap-3">
         <select
           value={milestoneType}
           onChange={(e) => setMilestoneType(e.target.value)}
-          className="rounded-lg border border-zinc-300 px-3 py-2 text-sm dark:border-zinc-700 dark:bg-zinc-900"
+          className="rounded-2xl border border-emerald-100 bg-white px-3 py-2 text-sm dark:border-emerald-900/40 dark:bg-zinc-900"
         >
           <option value="">No milestone</option>
           {MILESTONE_OPTIONS.map((m) => (
@@ -166,7 +166,7 @@ export function EntryForm({ initialDate }: { initialDate?: string }) {
             placeholder="Milestone name"
             value={milestoneLabel}
             onChange={(e) => setMilestoneLabel(e.target.value)}
-            className="min-w-0 flex-1 rounded-lg border border-zinc-300 px-3 py-2 text-sm dark:border-zinc-700 dark:bg-zinc-900"
+            className="min-w-0 flex-1 rounded-2xl border border-emerald-100 bg-white px-3 py-2 text-sm dark:border-emerald-900/40 dark:bg-zinc-900"
           />
         )}
       </div>
@@ -183,10 +183,10 @@ export function EntryForm({ initialDate }: { initialDate?: string }) {
         <button
           type="button"
           onClick={() => (recording ? stopRecording() : startRecording())}
-          className={`rounded-lg px-3 py-1.5 text-sm ${
+          className={`rounded-full px-3 py-1.5 font-heading text-sm font-semibold transition-transform hover:scale-105 active:scale-95 ${
             recording
-              ? "bg-red-600 text-white"
-              : "border border-zinc-200 text-zinc-600 dark:border-zinc-700 dark:text-zinc-300"
+              ? "bg-rose-500 text-white shadow-sm shadow-rose-900/20"
+              : "border border-emerald-100 text-emerald-800 dark:border-emerald-900/40 dark:text-emerald-200"
           }`}
         >
           {recording ? "⏹ Stop recording" : "🎤 Voice memo"}
@@ -205,12 +205,12 @@ export function EntryForm({ initialDate }: { initialDate?: string }) {
         )}
       </div>
 
-      {error && <p className="text-sm text-red-600">{error}</p>}
+      {error && <p className="text-sm text-rose-600">{error}</p>}
 
       <button
         type="submit"
         disabled={isPending}
-        className="self-start rounded-lg bg-emerald-700 px-4 py-2 text-sm font-medium text-white disabled:opacity-50"
+        className="self-start rounded-full bg-emerald-600 px-6 py-2 font-heading text-sm font-semibold text-white shadow-sm shadow-emerald-900/20 transition-transform hover:scale-105 hover:bg-emerald-700 active:scale-95 disabled:opacity-50 disabled:hover:scale-100"
       >
         {isPending ? "Saving…" : "Save entry"}
       </button>

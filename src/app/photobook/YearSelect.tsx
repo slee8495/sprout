@@ -9,7 +9,7 @@ export function YearSelect({ year, years }: { year: string; years: string[] }) {
     <select
       value={year}
       onChange={(e) => router.push(`/photobook?year=${e.target.value}`)}
-      className="rounded-lg border border-zinc-300 px-3 py-2 text-sm dark:border-zinc-700 dark:bg-zinc-900"
+      className="rounded-2xl border border-emerald-100 bg-white px-3 py-2 text-sm dark:border-emerald-900/40 dark:bg-zinc-900"
     >
       {years.map((y) => (
         <option key={y} value={y}>

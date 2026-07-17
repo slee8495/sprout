@@ -94,11 +94,13 @@ export function ChatWidget() {
     <>
       {open && (
         <div
-          className="fixed bottom-20 right-4 z-20 flex h-[70vh] max-h-[560px] w-[calc(100vw-2rem)] max-w-sm flex-col overflow-hidden rounded-2xl border border-emerald-200 bg-white shadow-xl dark:border-emerald-900 dark:bg-zinc-950 print:hidden"
+          className="fixed bottom-20 right-4 z-20 flex h-[70vh] max-h-[560px] w-[calc(100vw-2rem)] max-w-sm flex-col overflow-hidden rounded-3xl border border-emerald-200 bg-white shadow-xl shadow-emerald-900/10 dark:border-emerald-900 dark:bg-zinc-950 print:hidden"
           style={{ marginBottom: "env(safe-area-inset-bottom)" }}
         >
-          <div className="flex items-center justify-between border-b border-emerald-200 px-4 py-3 dark:border-emerald-900">
-            <span className="text-sm font-semibold">🌱 Ask about Roun</span>
+          <div className="flex items-center justify-between border-b border-emerald-100 px-4 py-3 dark:border-emerald-900">
+            <span className="font-heading text-sm font-bold text-emerald-800 dark:text-emerald-200">
+              🌱 Ask about Roun
+            </span>
             <div className="flex items-center gap-3">
               <button
                 onClick={() => setAutoSpeak((v) => !v)}
@@ -125,9 +127,9 @@ export function ChatWidget() {
               {messages.map((message) => (
                 <div key={message.id} className={message.role === "user" ? "text-right" : "text-left"}>
                   <div
-                    className={`inline-block max-w-[85%] rounded-xl px-3 py-2 text-sm ${
+                    className={`inline-block max-w-[85%] rounded-2xl px-3 py-2 text-sm ${
                       message.role === "user"
-                        ? "bg-emerald-700 text-white"
+                        ? "bg-emerald-600 text-white"
                         : "bg-emerald-50 text-zinc-900 dark:bg-zinc-900 dark:text-zinc-100"
                     }`}
                   >
@@ -163,14 +165,14 @@ export function ChatWidget() {
               sendMessage({ text: input });
               setInput("");
             }}
-            className="flex gap-2 border-t border-emerald-200 p-3 dark:border-emerald-900"
+            className="flex gap-2 border-t border-emerald-100 p-3 dark:border-emerald-900"
           >
             <input
               value={input}
               onChange={(e) => setInput(e.target.value)}
               disabled={status !== "ready"}
               placeholder={recording ? "Listening…" : transcribing ? "Transcribing…" : "Ask a question…"}
-              className="min-w-0 flex-1 rounded-lg border border-zinc-200 bg-transparent px-3 py-1.5 text-sm outline-none focus:border-emerald-400 dark:border-zinc-700"
+              className="min-w-0 flex-1 rounded-full border border-emerald-100 bg-transparent px-3 py-1.5 text-sm outline-none focus:border-emerald-400 dark:border-emerald-900/40"
             />
             <button
               type="button"
@@ -179,10 +181,10 @@ export function ChatWidget() {
               aria-pressed={recording}
               aria-label={recording ? "Stop recording" : "Ask by voice"}
               title={recording ? "Stop recording" : "Ask by voice"}
-              className={`rounded-lg px-3 py-1.5 text-sm disabled:opacity-40 ${
+              className={`rounded-full px-3 py-1.5 text-sm transition-transform hover:scale-105 active:scale-95 disabled:opacity-40 ${
                 recording
-                  ? "bg-red-600 text-white"
-                  : "border border-zinc-200 text-zinc-600 dark:border-zinc-700 dark:text-zinc-300"
+                  ? "bg-rose-500 text-white"
+                  : "border border-emerald-100 text-emerald-800 dark:border-emerald-900/40 dark:text-emerald-200"
               }`}
             >
               {recording ? "⏹" : "🎤"}
@@ -190,7 +192,7 @@ export function ChatWidget() {
             <button
               type="submit"
               disabled={status !== "ready"}
-              className="rounded-lg bg-emerald-700 px-3 py-1.5 text-sm font-medium text-white disabled:opacity-40"
+              className="rounded-full bg-emerald-600 px-4 py-1.5 font-heading text-sm font-semibold text-white transition-transform hover:scale-105 active:scale-95 disabled:opacity-40 disabled:hover:scale-100"
             >
               Send
             </button>
@@ -200,7 +202,7 @@ export function ChatWidget() {
 
       <button
         onClick={() => setOpen((o) => !o)}
-        className="fixed bottom-4 right-4 z-20 flex h-12 w-12 items-center justify-center rounded-full bg-emerald-700 text-xl text-white shadow-lg print:hidden"
+        className="fixed bottom-4 right-4 z-20 flex h-14 w-14 items-center justify-center rounded-full bg-emerald-600 text-2xl text-white shadow-lg shadow-emerald-900/25 transition-transform hover:scale-110 active:scale-95 print:hidden"
         style={{ marginBottom: "env(safe-area-inset-bottom)" }}
         aria-label="Chat"
       >

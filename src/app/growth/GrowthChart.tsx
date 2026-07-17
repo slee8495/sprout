@@ -16,7 +16,7 @@ export function GrowthChart({
 }) {
   if (points.length === 0) {
     return (
-      <div className="rounded-2xl border border-zinc-200 p-4 text-sm text-zinc-500 dark:border-zinc-800">
+      <div className="rounded-3xl border border-emerald-100/60 bg-white p-4 text-sm text-zinc-500 shadow-md shadow-emerald-900/5 dark:border-emerald-900/40 dark:bg-zinc-900 dark:shadow-black/40">
         {label}: no measurements yet.
       </div>
     );
@@ -45,14 +45,14 @@ export function GrowthChart({
   const last = points[points.length - 1];
 
   return (
-    <div className="viz-root rounded-2xl border border-zinc-200 p-4 dark:border-zinc-800">
+    <div className="viz-root rounded-3xl border border-emerald-100/60 bg-white p-4 shadow-md shadow-emerald-900/5 dark:border-emerald-900/40 dark:bg-zinc-900 dark:shadow-black/40">
       <style>{`
-        .viz-root { --gridline: #e1e0d9; --ink-muted: #898781; --series-1: #059669; --surface: #ffffff; }
+        .viz-root { --gridline: #f3ead9; --ink-muted: #a08b6b; --series-1: #2fb883; --surface: #ffffff; }
         @media (prefers-color-scheme: dark) {
-          .viz-root { --gridline: #2c2c2a; --ink-muted: #898781; --series-1: #34d399; --surface: #09090b; }
+          .viz-root { --gridline: #2c332c; --ink-muted: #a29c8e; --series-1: #4fd69c; --surface: #18181b; }
         }
       `}</style>
-      <p className="mb-2 text-sm font-medium text-zinc-700 dark:text-zinc-300">{label}</p>
+      <p className="mb-2 font-heading text-sm font-semibold text-emerald-800 dark:text-emerald-200">{label}</p>
       <svg viewBox={`0 0 ${WIDTH} ${HEIGHT}`} className="w-full">
         {[0, 0.5, 1].map((frac) => (
           <line
@@ -75,7 +75,7 @@ export function GrowthChart({
         <path d={linePath} fill="none" stroke="var(--series-1)" strokeWidth={2} strokeLinejoin="round" strokeLinecap="round" />
 
         {points.map((p) => (
-          <circle key={p.date} cx={x(p.date)} cy={y(p.value)} r={4} fill="var(--series-1)" stroke="var(--surface)" strokeWidth={2}>
+          <circle key={p.date} cx={x(p.date)} cy={y(p.value)} r={5} fill="var(--series-1)" stroke="var(--surface)" strokeWidth={2}>
             <title>
               {new Date(p.date).toLocaleDateString()}: {p.value} {unit}
             </title>

@@ -45,7 +45,7 @@ export function CapsuleForm() {
     <form
       ref={formRef}
       onSubmit={handleSubmit}
-      className="flex flex-col gap-3 rounded-2xl border border-emerald-200 p-4 dark:border-emerald-900"
+      className="flex flex-col gap-3 rounded-3xl border border-emerald-200/70 bg-white p-4 shadow-md shadow-emerald-900/5 dark:border-emerald-800/50 dark:bg-zinc-900 dark:shadow-black/40"
     >
       <label className="flex flex-col gap-1 text-xs text-zinc-500">
         Unlocks on
@@ -54,7 +54,7 @@ export function CapsuleForm() {
           value={unlockDate}
           min={tomorrowISO()}
           onChange={(e) => setUnlockDate(e.target.value)}
-          className="w-40 rounded-lg border border-zinc-300 px-3 py-2 text-sm dark:border-zinc-700 dark:bg-zinc-900"
+          className="w-40 rounded-2xl border border-emerald-100 bg-white px-3 py-2 text-sm dark:border-emerald-900/40 dark:bg-zinc-900"
         />
       </label>
       <input
@@ -62,20 +62,20 @@ export function CapsuleForm() {
         placeholder="Title (optional)"
         value={title}
         onChange={(e) => setTitle(e.target.value)}
-        className="rounded-lg border border-zinc-300 px-3 py-2 text-sm dark:border-zinc-700 dark:bg-zinc-900"
+        className="rounded-2xl border border-emerald-100 bg-white px-3 py-2 text-sm dark:border-emerald-900/40 dark:bg-zinc-900"
       />
       <textarea
         placeholder="Write a message to open in the future…"
         value={body}
         onChange={(e) => setBody(e.target.value)}
         rows={4}
-        className="rounded-lg border border-zinc-300 px-3 py-2 text-sm dark:border-zinc-700 dark:bg-zinc-900"
+        className="rounded-2xl border border-emerald-100 bg-white px-3 py-2 text-sm dark:border-emerald-900/40 dark:bg-zinc-900"
       />
-      {error && <p className="text-sm text-red-600">{error}</p>}
+      {error && <p className="text-sm text-rose-600">{error}</p>}
       <button
         type="submit"
         disabled={isPending}
-        className="self-start rounded-lg bg-emerald-700 px-4 py-2 text-sm font-medium text-white disabled:opacity-50"
+        className="self-start rounded-full bg-emerald-600 px-6 py-2 font-heading text-sm font-semibold text-white shadow-sm shadow-emerald-900/20 transition-transform hover:scale-105 hover:bg-emerald-700 active:scale-95 disabled:opacity-50 disabled:hover:scale-100"
       >
         {isPending ? "Sealing…" : "Seal message"}
       </button>
