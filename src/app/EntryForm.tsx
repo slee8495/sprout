@@ -110,8 +110,9 @@ export function EntryForm({ initialDate }: { initialDate?: string }) {
         setVoiceMemo(null);
         formRef.current?.reset();
         router.refresh();
-      } catch {
-        setError("Couldn't save that entry — try again.");
+      } catch (err) {
+        const message = err instanceof Error ? err.message : String(err);
+        setError(`Couldn't save that entry — ${message}`);
       }
     });
   }
