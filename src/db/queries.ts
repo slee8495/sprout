@@ -43,6 +43,14 @@ export function listJournalEntries(familyId: number) {
 
 export type JournalEntryWithPhotos = Awaited<ReturnType<typeof listJournalEntries>>[number];
 
+export async function listEntryDates(familyId: number): Promise<string[]> {
+  const rows = await db
+    .select({ entryDate: journalEntries.entryDate })
+    .from(journalEntries)
+    .where(eq(journalEntries.familyId, familyId));
+  return rows.map((r) => r.entryDate);
+}
+
 export async function createComment(input: {
   entryId: number;
   familyId: number;

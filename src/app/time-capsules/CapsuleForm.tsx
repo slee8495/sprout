@@ -47,7 +47,7 @@ export function CapsuleForm() {
       onSubmit={handleSubmit}
       className="flex flex-col gap-3 rounded-3xl border border-emerald-200/70 bg-white p-4 shadow-md shadow-emerald-900/5 dark:border-emerald-800/50 dark:bg-zinc-900 dark:shadow-black/40"
     >
-      <label className="flex flex-col gap-1 text-xs text-zinc-500">
+      <label className="flex flex-col gap-1 text-xs text-zinc-600 dark:text-zinc-400">
         Unlocks on
         <input
           type="date"

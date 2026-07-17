@@ -58,7 +58,7 @@ export function GrowthForm({ measurements }: { measurements: GrowthMeasurement[]
         onSubmit={handleSubmit}
         className="flex flex-wrap items-end gap-3 rounded-3xl border border-emerald-200/70 bg-white p-4 shadow-md shadow-emerald-900/5 dark:border-emerald-800/50 dark:bg-zinc-900 dark:shadow-black/40"
       >
-        <label className="flex flex-col gap-1 text-xs text-zinc-500">
+        <label className="flex flex-col gap-1 text-xs text-zinc-600 dark:text-zinc-400">
           Date
           <input
             type="date"
@@ -67,7 +67,7 @@ export function GrowthForm({ measurements }: { measurements: GrowthMeasurement[]
             className="rounded-2xl border border-emerald-100 bg-white px-3 py-2 text-sm dark:border-emerald-900/40 dark:bg-zinc-900"
           />
         </label>
-        <label className="flex flex-col gap-1 text-xs text-zinc-500">
+        <label className="flex flex-col gap-1 text-xs text-zinc-600 dark:text-zinc-400">
           Height (cm)
           <input
             type="number"
@@ -77,7 +77,7 @@ export function GrowthForm({ measurements }: { measurements: GrowthMeasurement[]
             className="w-24 rounded-2xl border border-emerald-100 bg-white px-3 py-2 text-sm dark:border-emerald-900/40 dark:bg-zinc-900"
           />
         </label>
-        <label className="flex flex-col gap-1 text-xs text-zinc-500">
+        <label className="flex flex-col gap-1 text-xs text-zinc-600 dark:text-zinc-400">
           Weight (kg)
           <input
             type="number"
@@ -100,7 +100,7 @@ export function GrowthForm({ measurements }: { measurements: GrowthMeasurement[]
       {measurements.length > 0 && (
         <div className="overflow-x-auto rounded-3xl border border-emerald-100/60 shadow-md shadow-emerald-900/5 dark:border-emerald-900/40 dark:shadow-black/40">
           <table className="w-full text-left text-sm">
-            <thead className="text-xs text-zinc-500">
+            <thead className="text-xs text-zinc-600 dark:text-zinc-400">
               <tr>
                 <th className="px-3 py-2">Date</th>
                 <th className="px-3 py-2">Height (cm)</th>

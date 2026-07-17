@@ -27,7 +27,7 @@ export function CommentThread({ entry }: { entry: JournalEntryWithPhotos }) {
           <span className="font-heading font-semibold text-rose-500 dark:text-rose-300">
             {comment.author?.name ?? "Someone"}:
           </span>{" "}
-          <span className="text-zinc-500">{comment.body}</span>
+          <span className="text-zinc-600 dark:text-zinc-400">{comment.body}</span>
         </div>
       ))}
       <form onSubmit={handleSubmit} className="flex gap-2">

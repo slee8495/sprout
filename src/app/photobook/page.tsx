@@ -36,7 +36,7 @@ export default async function PhotobookPage({
         <h2 className="font-heading text-2xl font-bold text-emerald-800 dark:text-emerald-200">
           Roun&apos;s Year — {year}
         </h2>
-        <p className="text-sm text-zinc-500">{yearEntries.length} journal entries</p>
+        <p className="text-sm text-zinc-600 dark:text-zinc-400">{yearEntries.length} journal entries</p>
       </section>
 
       <div className="flex flex-col gap-8">
@@ -45,7 +45,7 @@ export default async function PhotobookPage({
             key={entry.id}
             className="flex flex-col gap-2 border-b border-emerald-100 pb-8 last:border-0 dark:border-emerald-900/40 print:break-inside-avoid print:border-b-0 print:pb-4"
           >
-            <div className="flex items-center gap-2 text-xs text-zinc-500">
+            <div className="flex items-center gap-2 text-xs text-zinc-600 dark:text-zinc-400">
               <span>{formatEntryDate(entry.entryDate)}</span>
               {entry.milestoneType && (
                 <span className="rounded-full bg-amber-200 px-2 py-0.5 font-heading font-semibold text-amber-900 dark:bg-amber-900/60 dark:text-amber-200">
@@ -57,7 +57,7 @@ export default async function PhotobookPage({
               )}
             </div>
             {entry.title && <h3 className="font-heading text-lg font-bold">{entry.title}</h3>}
-            <p className="whitespace-pre-wrap text-sm text-zinc-700 dark:text-zinc-300">{entry.body}</p>
+            <p className="whitespace-pre-wrap text-sm text-zinc-800 dark:text-zinc-200">{entry.body}</p>
             {entry.photos.length > 0 && (
               <div className="flex flex-wrap gap-2">
                 {entry.photos.map((photo) => (
@@ -75,7 +75,7 @@ export default async function PhotobookPage({
           </article>
         ))}
         {yearEntries.length === 0 && (
-          <p className="text-center text-sm text-zinc-500">No entries for {year}.</p>
+          <p className="text-center text-sm text-zinc-600 dark:text-zinc-400">No entries for {year}.</p>
         )}
       </div>
     </div>

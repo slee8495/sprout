@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 
 const LINKS = [
   { href: "/", label: "Journal" },
+  { href: "/feed", label: "Feed" },
   { href: "/milestones", label: "Milestones" },
   { href: "/growth", label: "Growth" },
   { href: "/time-capsules", label: "Time Capsules" },
@@ -27,7 +28,7 @@ export function NavBar() {
             className={`whitespace-nowrap rounded-full px-3 py-1.5 font-heading text-sm font-semibold transition-transform hover:scale-105 active:scale-95 ${
               active
                 ? "bg-emerald-600 text-white shadow-sm shadow-emerald-900/20"
-                : "text-emerald-900/70 hover:bg-emerald-100/60 dark:text-emerald-100/70 dark:hover:bg-emerald-900/30"
+                : "text-emerald-900 hover:bg-emerald-100/60 dark:text-emerald-100 dark:hover:bg-emerald-900/30"
             }`}
           >
             {link.label}

@@ -197,7 +197,7 @@ export function EntryForm({ initialDate }: { initialDate?: string }) {
             <button
               type="button"
               onClick={() => setVoiceMemo(null)}
-              className="text-xs text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300"
+              className="text-xs text-zinc-500 dark:text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300"
             >
               Remove
             </button>

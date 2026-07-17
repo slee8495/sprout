@@ -16,7 +16,7 @@ export function GrowthChart({
 }) {
   if (points.length === 0) {
     return (
-      <div className="rounded-3xl border border-emerald-100/60 bg-white p-4 text-sm text-zinc-500 shadow-md shadow-emerald-900/5 dark:border-emerald-900/40 dark:bg-zinc-900 dark:shadow-black/40">
+      <div className="rounded-3xl border border-emerald-100/60 bg-white p-4 text-sm text-zinc-600 dark:text-zinc-400 shadow-md shadow-emerald-900/5 dark:border-emerald-900/40 dark:bg-zinc-900 dark:shadow-black/40">
         {label}: no measurements yet.
       </div>
     );

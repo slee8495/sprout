@@ -11,7 +11,7 @@ export function OnThisDay({ entries }: { entries: JournalEntryWithPhotos[] }) {
             {formatEntryDate(entry.entryDate)}
           </span>{" "}
           {entry.title && <span className="font-medium">{entry.title} — </span>}
-          <span className="text-zinc-700 dark:text-zinc-300">{entry.body}</span>
+          <span className="text-zinc-800 dark:text-zinc-200">{entry.body}</span>
         </div>
       ))}
     </div>

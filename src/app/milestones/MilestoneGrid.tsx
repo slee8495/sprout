@@ -31,7 +31,7 @@ export function MilestoneGrid({
             >
               <span className="text-2xl">🏅</span>
               <span className="font-heading text-sm font-semibold">{m.label}</span>
-              <span className="text-xs text-zinc-500">
+              <span className="text-xs text-zinc-600 dark:text-zinc-400">
                 {entry ? formatEntryDate(entry.entryDate) : "Not yet"}
               </span>
             </button>
@@ -49,7 +49,7 @@ export function MilestoneGrid({
 
       {otherEntries.length > 0 && (
         <div className="flex flex-col gap-3">
-          <h2 className="font-heading text-sm font-bold text-zinc-500">Other milestones</h2>
+          <h2 className="font-heading text-sm font-bold text-zinc-600 dark:text-zinc-400">Other milestones</h2>
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
             {otherEntries.map((entry) => {
               const key = `other-${entry.id}`;
@@ -61,7 +61,7 @@ export function MilestoneGrid({
                 >
                   <span className="text-2xl">🏅</span>
                   <span className="font-heading text-sm font-semibold">{entry.milestoneLabel || "Milestone"}</span>
-                  <span className="text-xs text-zinc-500">{formatEntryDate(entry.entryDate)}</span>
+                  <span className="text-xs text-zinc-600 dark:text-zinc-400">{formatEntryDate(entry.entryDate)}</span>
                 </button>
               );
             })}
@@ -83,13 +83,13 @@ function EntryDetail({ entry, onClose }: { entry: JournalEntryWithPhotos; onClos
   return (
     <div className="rounded-3xl border border-emerald-100/60 bg-white p-4 shadow-md shadow-emerald-900/5 dark:border-emerald-900/40 dark:bg-zinc-900 dark:shadow-black/40">
       <div className="mb-2 flex items-center justify-between">
-        <span className="text-xs font-medium text-zinc-500">{formatEntryDate(entry.entryDate)}</span>
-        <button onClick={onClose} className="text-xs text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300">
+        <span className="text-xs font-medium text-zinc-600 dark:text-zinc-400">{formatEntryDate(entry.entryDate)}</span>
+        <button onClick={onClose} className="text-xs text-zinc-500 dark:text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300">
           ✕
         </button>
       </div>
       {entry.title && <h3 className="mb-1 font-heading font-bold">{entry.title}</h3>}
-      <p className="whitespace-pre-wrap text-sm text-zinc-700 dark:text-zinc-300">{entry.body}</p>
+      <p className="whitespace-pre-wrap text-sm text-zinc-800 dark:text-zinc-200">{entry.body}</p>
     </div>
   );
 }

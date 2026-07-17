@@ -111,7 +111,7 @@ export function ChatWidget() {
               >
                 {autoSpeak ? "🔊" : "🔇"}
               </button>
-              <button onClick={() => setOpen(false)} className="text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300">
+              <button onClick={() => setOpen(false)} className="text-zinc-500 dark:text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300">
                 ✕
               </button>
             </div>
@@ -119,7 +119,7 @@ export function ChatWidget() {
 
           <div className="flex-1 overflow-y-auto px-4 py-3">
             {messages.length === 0 && (
-              <p className="text-sm text-zinc-500">
+              <p className="text-sm text-zinc-600 dark:text-zinc-400">
                 Ask things like &quot;when did Roun first eat solid food?&quot; or &quot;처음 걸은 날이 언제야?&quot;
               </p>
             )}
@@ -147,14 +147,14 @@ export function ChatWidget() {
                       disabled={loadingSpeakId === message.id}
                       aria-label="Read this reply aloud"
                       title="Read aloud"
-                      className="ml-1 align-middle text-xs text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300 disabled:opacity-50"
+                      className="ml-1 align-middle text-xs text-zinc-500 dark:text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300 disabled:opacity-50"
                     >
                       {loadingSpeakId === message.id ? "…" : "🔊"}
                     </button>
                   )}
                 </div>
               ))}
-              {status === "submitted" && <div className="text-sm text-zinc-400">Thinking…</div>}
+              {status === "submitted" && <div className="text-sm text-zinc-500 dark:text-zinc-400">Thinking…</div>}
             </div>
           </div>
 

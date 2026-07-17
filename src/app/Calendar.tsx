@@ -73,7 +73,7 @@ export function Calendar({
         </button>
       </div>
 
-      <div className="grid grid-cols-7 gap-1 text-center text-xs text-emerald-900/40 dark:text-emerald-100/40">
+      <div className="grid grid-cols-7 gap-1 text-center text-xs font-semibold text-emerald-800/70 dark:text-emerald-200/70">
         {WEEKDAYS.map((w, i) => (
           <div key={i} className="py-1">
             {w}
@@ -110,7 +110,7 @@ export function Calendar({
           onClick={() => onSelectDate(null)}
           className="mt-3 text-xs text-emerald-700/70 hover:text-emerald-900 dark:text-emerald-300/70 dark:hover:text-emerald-200"
         >
-          Clear date filter
+          Clear selected date
         </button>
       )}
     </div>

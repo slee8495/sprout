@@ -124,7 +124,7 @@ export function EntryCard({ entry }: { entry: JournalEntryWithPhotos }) {
   return (
     <article className="flex flex-col gap-2 rounded-3xl border border-emerald-100/60 bg-white p-4 shadow-md shadow-emerald-900/5 dark:border-emerald-900/40 dark:bg-zinc-900 dark:shadow-black/40">
       <div className="flex items-center justify-between">
-        <span className="text-xs font-medium text-emerald-900/50 dark:text-emerald-100/50">
+        <span className="text-xs font-semibold text-emerald-800 dark:text-emerald-200">
           {formatEntryDate(entry.entryDate)}
         </span>
         <div className="flex items-center gap-2">
@@ -138,7 +138,7 @@ export function EntryCard({ entry }: { entry: JournalEntryWithPhotos }) {
           )}
           <button
             onClick={() => setIsEditing(true)}
-            className="text-xs text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300"
+            className="text-xs text-zinc-500 dark:text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300"
           >
             Edit
           </button>
@@ -152,18 +152,27 @@ export function EntryCard({ entry }: { entry: JournalEntryWithPhotos }) {
         </div>
       </div>
       {entry.title && <h2 className="font-heading font-bold text-emerald-950 dark:text-emerald-50">{entry.title}</h2>}
-      <p className="whitespace-pre-wrap text-sm text-zinc-700 dark:text-zinc-300">{entry.body}</p>
+      <p className="whitespace-pre-wrap text-sm text-zinc-800 dark:text-zinc-200">{entry.body}</p>
       {entry.voiceMemoUrl && <audio controls src={entry.voiceMemoUrl} className="h-10 w-full" />}
-      {entry.photos.length > 0 && (
+      {entry.photos.length === 1 && (
+        <Image
+          src={entry.photos[0].url}
+          alt={entry.photos[0].caption ?? ""}
+          width={500}
+          height={500}
+          className="aspect-square w-full rounded-2xl object-cover"
+        />
+      )}
+      {entry.photos.length > 1 && (
         <div className="flex flex-wrap gap-2">
           {entry.photos.map((photo) => (
             <Image
               key={photo.id}
               src={photo.url}
               alt={photo.caption ?? ""}
-              width={120}
-              height={120}
-              className="h-28 w-28 rounded-2xl object-cover"
+              width={160}
+              height={160}
+              className="h-40 w-40 rounded-2xl object-cover"
             />
           ))}
         </div>

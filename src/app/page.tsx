@@ -1,5 +1,5 @@
 import { auth } from "@/auth";
-import { getOnThisDayEntries, listJournalEntries } from "@/db/queries";
+import { getOnThisDayEntries, listEntryDates } from "@/db/queries";
 import { JournalHome } from "./JournalHome";
 
 export default async function Home() {
@@ -7,8 +7,8 @@ export default async function Home() {
   const familyId = session!.user!.familyId;
 
   const today = new Date();
-  const [entries, onThisDayEntries] = await Promise.all([
-    listJournalEntries(familyId),
+  const [entryDates, onThisDayEntries] = await Promise.all([
+    listEntryDates(familyId),
     getOnThisDayEntries(familyId, today.getMonth() + 1, today.getDate()),
   ]);
 
@@ -19,7 +19,7 @@ export default async function Home() {
           🌱 Roun&apos;s Journal
         </h1>
       </header>
-      <JournalHome entries={entries} onThisDayEntries={onThisDayEntries} />
+      <JournalHome entryDates={entryDates} onThisDayEntries={onThisDayEntries} />
     </div>
   );
 }
