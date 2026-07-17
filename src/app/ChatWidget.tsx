@@ -94,7 +94,7 @@ export function ChatWidget() {
     <>
       {open && (
         <div
-          className="fixed bottom-20 right-4 z-20 flex h-[70vh] max-h-[560px] w-[calc(100vw-2rem)] max-w-sm flex-col overflow-hidden rounded-2xl border border-emerald-200 bg-white shadow-xl dark:border-emerald-900 dark:bg-zinc-950"
+          className="fixed bottom-20 right-4 z-20 flex h-[70vh] max-h-[560px] w-[calc(100vw-2rem)] max-w-sm flex-col overflow-hidden rounded-2xl border border-emerald-200 bg-white shadow-xl dark:border-emerald-900 dark:bg-zinc-950 print:hidden"
           style={{ marginBottom: "env(safe-area-inset-bottom)" }}
         >
           <div className="flex items-center justify-between border-b border-emerald-200 px-4 py-3 dark:border-emerald-900">
@@ -200,7 +200,7 @@ export function ChatWidget() {
 
       <button
         onClick={() => setOpen((o) => !o)}
-        className="fixed bottom-4 right-4 z-20 flex h-12 w-12 items-center justify-center rounded-full bg-emerald-700 text-xl text-white shadow-lg"
+        className="fixed bottom-4 right-4 z-20 flex h-12 w-12 items-center justify-center rounded-full bg-emerald-700 text-xl text-white shadow-lg print:hidden"
         style={{ marginBottom: "env(safe-area-inset-bottom)" }}
         aria-label="Chat"
       >

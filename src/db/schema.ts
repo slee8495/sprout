@@ -1,3 +1,4 @@
+import { relations } from "drizzle-orm";
 import {
   pgTable,
   serial,
@@ -6,6 +7,7 @@ import {
   date,
   timestamp,
   integer,
+  numeric,
   pgEnum,
 } from "drizzle-orm/pg-core";
 
@@ -44,6 +46,7 @@ export const journalEntries = pgTable("journal_entries", {
   body: text("body").notNull(),
   milestoneType: milestoneEnum("milestone_type"),
   milestoneLabel: varchar("milestone_label", { length: 128 }),
+  voiceMemoUrl: text("voice_memo_url"),
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
 });
@@ -63,3 +66,41 @@ export const comments = pgTable("comments", {
   body: text("body").notNull(),
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
 });
+
+export const growthMeasurements = pgTable("growth_measurements", {
+  id: serial("id").primaryKey(),
+  familyId: integer("family_id").notNull().references(() => families.id),
+  measuredAt: date("measured_at").notNull(),
+  heightCm: numeric("height_cm", { precision: 5, scale: 1 }),
+  weightKg: numeric("weight_kg", { precision: 5, scale: 2 }),
+  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+});
+
+export const timeCapsules = pgTable("time_capsules", {
+  id: serial("id").primaryKey(),
+  familyId: integer("family_id").notNull().references(() => families.id),
+  authorId: integer("author_id").notNull().references(() => users.id),
+  unlockDate: date("unlock_date").notNull(),
+  title: varchar("title", { length: 256 }),
+  body: text("body").notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+});
+
+export const journalEntriesRelations = relations(journalEntries, ({ many, one }) => ({
+  photos: many(photos),
+  comments: many(comments),
+  author: one(users, { fields: [journalEntries.authorId], references: [users.id] }),
+}));
+
+export const photosRelations = relations(photos, ({ one }) => ({
+  entry: one(journalEntries, { fields: [photos.entryId], references: [journalEntries.id] }),
+}));
+
+export const commentsRelations = relations(comments, ({ one }) => ({
+  entry: one(journalEntries, { fields: [comments.entryId], references: [journalEntries.id] }),
+  author: one(users, { fields: [comments.authorId], references: [users.id] }),
+}));
+
+export const timeCapsulesRelations = relations(timeCapsules, ({ one }) => ({
+  author: one(users, { fields: [timeCapsules.authorId], references: [users.id] }),
+}));

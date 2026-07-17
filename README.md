@@ -27,7 +27,7 @@ Modeled after the `sl_sports` project's chatbot pattern (Vercel AI SDK + Claude 
 
 - **Next.js + Vercel** — web app / PWA to start; can be wrapped or ported to React Native later without rebuilding the backend
 - **Postgres (Vercel Postgres / Neon) + Drizzle** — journal entries, milestones, family/user data, modeled around a `family_id` so multi-family support can be added later without a rewrite
-- **Auth.js + Google OAuth** — sign-in restricted to an allowlist of the two family emails, no password management
+- **Auth.js + shared passphrase** — sign-in by picking a parent name (Dad/Mom) and entering a shared family passphrase, no OAuth or password management
 - **Vercel Blob** — photo storage, no separate account needed
 - **Vercel AI SDK + Claude** — chatbot with tools that query the DB directly; voice input via Web Speech API (or Whisper) transcribed then sent through the same pipeline
 
@@ -42,4 +42,4 @@ Open [http://localhost:3000](http://localhost:3000).
 
 ## Status
 
-Scaffolding stage.
+Core app is built out: shared-passphrase login, calendar-driven journal with photo/voice-memo attachments and comments, milestone badges, growth tracking with charts, "on this day" flashback, time-capsule messages, a yearly photobook print/export view, the Claude-powered Q&A chatbot, and PWA installability. Not yet: real content (still an empty journal), a text search UI on the journal itself, and chatbot awareness of growth/time-capsule data.
