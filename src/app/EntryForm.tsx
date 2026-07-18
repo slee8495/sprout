@@ -5,10 +5,12 @@ import { useRouter } from "next/navigation";
 import { createEntry } from "./actions";
 import { uploadJournalPhoto } from "@/lib/uploadPhoto";
 import { uploadVoiceMemo } from "@/lib/uploadVoiceMemo";
-import type { milestoneEnum } from "@/db/schema";
-import { MILESTONE_OPTIONS } from "@/lib/milestones";
+import type { audienceEnum, milestoneCategoryEnum } from "@/db/schema";
+import { MILESTONE_CATEGORIES } from "@/lib/milestones";
+import { todayInFamilyTimezone } from "@/lib/date";
 
-type MilestoneType = (typeof milestoneEnum.enumValues)[number];
+type Audience = (typeof audienceEnum.enumValues)[number];
+type MilestoneCategory = (typeof milestoneCategoryEnum.enumValues)[number];
 
 const RECORDING_MIME_TYPES = ["audio/webm", "audio/mp4", "audio/ogg"];
 
@@ -17,22 +19,19 @@ function pickRecordingMimeType(): string | undefined {
   return RECORDING_MIME_TYPES.find((type) => MediaRecorder.isTypeSupported(type));
 }
 
-function todayISO() {
-  return new Date().toISOString().slice(0, 10);
-}
-
 export function EntryForm({ initialDate }: { initialDate?: string }) {
   const router = useRouter();
   const formRef = useRef<HTMLFormElement>(null);
-  const [entryDate, setEntryDate] = useState(initialDate ?? todayISO());
+  const [entryDate, setEntryDate] = useState(initialDate ?? todayInFamilyTimezone().iso);
   const [prevInitialDate, setPrevInitialDate] = useState(initialDate);
   if (initialDate !== prevInitialDate) {
     setPrevInitialDate(initialDate);
     if (initialDate) setEntryDate(initialDate);
   }
+  const [audience, setAudience] = useState<Audience>("roun");
   const [title, setTitle] = useState("");
   const [body, setBody] = useState("");
-  const [milestoneType, setMilestoneType] = useState("");
+  const [milestoneCategory, setMilestoneCategory] = useState("");
   const [milestoneLabel, setMilestoneLabel] = useState("");
   const [files, setFiles] = useState<File[]>([]);
   const [voiceMemo, setVoiceMemo] = useState<Blob | null>(null);
@@ -93,18 +92,19 @@ export function EntryForm({ initialDate }: { initialDate?: string }) {
         const uploadedVoiceMemoUrl = voiceMemo ? (await uploadVoiceMemo(voiceMemo)).url : undefined;
 
         await createEntry({
+          audience,
           entryDate,
           title: title.trim() || undefined,
           body: body.trim(),
-          milestoneType: milestoneType ? (milestoneType as MilestoneType) : undefined,
-          milestoneLabel: milestoneType === "other" ? milestoneLabel.trim() || undefined : undefined,
+          milestoneCategory: milestoneCategory ? (milestoneCategory as MilestoneCategory) : undefined,
+          milestoneLabel: milestoneCategory ? milestoneLabel.trim() || undefined : undefined,
           photoUrls,
           voiceMemoUrl: uploadedVoiceMemoUrl,
         });
 
         setTitle("");
         setBody("");
-        setMilestoneType("");
+        setMilestoneCategory("");
         setMilestoneLabel("");
         setFiles([]);
         setVoiceMemo(null);
@@ -123,6 +123,31 @@ export function EntryForm({ initialDate }: { initialDate?: string }) {
       onSubmit={handleSubmit}
       className="flex flex-col gap-3 rounded-3xl border border-emerald-200/70 bg-white p-4 shadow-md shadow-emerald-900/5 dark:border-emerald-800/50 dark:bg-zinc-900 dark:shadow-black/40"
     >
+      <div className="flex gap-2">
+        <button
+          type="button"
+          onClick={() => setAudience("roun")}
+          className={`rounded-full px-3 py-1.5 font-heading text-sm font-semibold transition-transform hover:scale-105 active:scale-95 ${
+            audience === "roun"
+              ? "bg-emerald-600 text-white shadow-sm shadow-emerald-900/20"
+              : "border border-emerald-100 text-emerald-800 dark:border-emerald-900/40 dark:text-emerald-200"
+          }`}
+        >
+          🌱 로운
+        </button>
+        <button
+          type="button"
+          onClick={() => setAudience("parents")}
+          className={`rounded-full px-3 py-1.5 font-heading text-sm font-semibold transition-transform hover:scale-105 active:scale-95 ${
+            audience === "parents"
+              ? "bg-rose-500 text-white shadow-sm shadow-rose-900/20"
+              : "border border-emerald-100 text-emerald-800 dark:border-emerald-900/40 dark:text-emerald-200"
+          }`}
+        >
+          💌 엄마아빠
+        </button>
+      </div>
+
       <div className="flex gap-3">
         <input
           type="date"
@@ -147,29 +172,31 @@ export function EntryForm({ initialDate }: { initialDate?: string }) {
         className="rounded-2xl border border-emerald-100 bg-white px-3 py-2 text-sm dark:border-emerald-900/40 dark:bg-zinc-900"
       />
 
-      <div className="flex flex-wrap gap-3">
-        <select
-          value={milestoneType}
-          onChange={(e) => setMilestoneType(e.target.value)}
-          className="rounded-2xl border border-emerald-100 bg-white px-3 py-2 text-sm dark:border-emerald-900/40 dark:bg-zinc-900"
-        >
-          <option value="">No milestone</option>
-          {MILESTONE_OPTIONS.map((m) => (
-            <option key={m.value} value={m.value}>
-              {m.label}
-            </option>
-          ))}
-        </select>
-        {milestoneType === "other" && (
-          <input
-            type="text"
-            placeholder="Milestone name"
-            value={milestoneLabel}
-            onChange={(e) => setMilestoneLabel(e.target.value)}
-            className="min-w-0 flex-1 rounded-2xl border border-emerald-100 bg-white px-3 py-2 text-sm dark:border-emerald-900/40 dark:bg-zinc-900"
-          />
-        )}
-      </div>
+      {audience === "roun" && (
+        <div className="flex flex-wrap gap-3">
+          <select
+            value={milestoneCategory}
+            onChange={(e) => setMilestoneCategory(e.target.value)}
+            className="rounded-2xl border border-emerald-100 bg-white px-3 py-2 text-sm dark:border-emerald-900/40 dark:bg-zinc-900"
+          >
+            <option value="">No milestone</option>
+            {MILESTONE_CATEGORIES.map((c) => (
+              <option key={c.value} value={c.value}>
+                {c.emoji} {c.label}
+              </option>
+            ))}
+          </select>
+          {milestoneCategory && (
+            <input
+              type="text"
+              placeholder="e.g. First broccoli"
+              value={milestoneLabel}
+              onChange={(e) => setMilestoneLabel(e.target.value)}
+              className="min-w-0 flex-1 rounded-2xl border border-emerald-100 bg-white px-3 py-2 text-sm dark:border-emerald-900/40 dark:bg-zinc-900"
+            />
+          )}
+        </div>
+      )}
 
       <input
         type="file"

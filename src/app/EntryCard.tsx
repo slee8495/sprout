@@ -4,12 +4,14 @@ import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import type { JournalEntryWithPhotos } from "@/db/queries";
-import { MILESTONE_LABELS, MILESTONE_OPTIONS, formatEntryDate } from "@/lib/milestones";
+import { MILESTONE_CATEGORIES, formatEntryDate } from "@/lib/milestones";
+import { authorBadgeClasses } from "@/lib/author";
+import { formatDayOfLife, formatEntryTime } from "@/lib/date";
 import { deleteEntry, updateEntry } from "./actions";
 import { CommentThread } from "./CommentThread";
-import type { milestoneEnum } from "@/db/schema";
+import type { milestoneCategoryEnum } from "@/db/schema";
 
-type MilestoneType = (typeof milestoneEnum.enumValues)[number];
+type MilestoneCategory = (typeof milestoneCategoryEnum.enumValues)[number];
 
 export function EntryCard({ entry }: { entry: JournalEntryWithPhotos }) {
   const router = useRouter();
@@ -17,7 +19,7 @@ export function EntryCard({ entry }: { entry: JournalEntryWithPhotos }) {
   const [entryDate, setEntryDate] = useState(entry.entryDate);
   const [title, setTitle] = useState(entry.title ?? "");
   const [body, setBody] = useState(entry.body);
-  const [milestoneType, setMilestoneType] = useState(entry.milestoneType ?? "");
+  const [milestoneCategory, setMilestoneCategory] = useState(entry.milestoneCategory ?? "");
   const [milestoneLabel, setMilestoneLabel] = useState(entry.milestoneLabel ?? "");
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
@@ -34,8 +36,8 @@ export function EntryCard({ entry }: { entry: JournalEntryWithPhotos }) {
           entryDate,
           title: title.trim() || undefined,
           body: body.trim(),
-          milestoneType: milestoneType ? (milestoneType as MilestoneType) : undefined,
-          milestoneLabel: milestoneType === "other" ? milestoneLabel.trim() || undefined : undefined,
+          milestoneCategory: milestoneCategory ? (milestoneCategory as MilestoneCategory) : undefined,
+          milestoneLabel: milestoneCategory ? milestoneLabel.trim() || undefined : undefined,
         });
         setIsEditing(false);
         router.refresh();
@@ -79,21 +81,21 @@ export function EntryCard({ entry }: { entry: JournalEntryWithPhotos }) {
         />
         <div className="flex flex-wrap gap-3">
           <select
-            value={milestoneType}
-            onChange={(e) => setMilestoneType(e.target.value)}
+            value={milestoneCategory}
+            onChange={(e) => setMilestoneCategory(e.target.value)}
             className="rounded-2xl border border-emerald-100 bg-white px-3 py-2 text-sm dark:border-emerald-900/40 dark:bg-zinc-900"
           >
             <option value="">No milestone</option>
-            {MILESTONE_OPTIONS.map((m) => (
-              <option key={m.value} value={m.value}>
-                {m.label}
+            {MILESTONE_CATEGORIES.map((c) => (
+              <option key={c.value} value={c.value}>
+                {c.emoji} {c.label}
               </option>
             ))}
           </select>
-          {milestoneType === "other" && (
+          {milestoneCategory && (
             <input
               type="text"
-              placeholder="Milestone name"
+              placeholder="e.g. First broccoli"
               value={milestoneLabel}
               onChange={(e) => setMilestoneLabel(e.target.value)}
               className="min-w-0 flex-1 rounded-2xl border border-emerald-100 bg-white px-3 py-2 text-sm dark:border-emerald-900/40 dark:bg-zinc-900"
@@ -124,16 +126,26 @@ export function EntryCard({ entry }: { entry: JournalEntryWithPhotos }) {
   return (
     <article className="flex flex-col gap-2 rounded-3xl border border-emerald-100/60 bg-white p-4 shadow-md shadow-emerald-900/5 dark:border-emerald-900/40 dark:bg-zinc-900 dark:shadow-black/40">
       <div className="flex items-center justify-between">
-        <span className="text-xs font-semibold text-emerald-800 dark:text-emerald-200">
-          {formatEntryDate(entry.entryDate)}
-        </span>
+        <div className="flex flex-wrap items-center gap-2">
+          {entry.author?.name && (
+            <span
+              className={`rounded-full px-2.5 py-0.5 font-heading text-xs font-semibold ${authorBadgeClasses(entry.author.name)}`}
+            >
+              {entry.author.name}
+            </span>
+          )}
+          <span className="text-xs font-semibold text-emerald-800 dark:text-emerald-200">
+            {formatEntryDate(entry.entryDate)} · {formatEntryTime(entry.createdAt)}
+          </span>
+          <span className="rounded-full bg-emerald-50 px-2 py-0.5 text-xs font-semibold text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300">
+            {formatDayOfLife(entry.entryDate)}
+          </span>
+        </div>
         <div className="flex items-center gap-2">
-          {entry.milestoneType && (
+          {entry.milestoneCategory && (
             <span className="rounded-full bg-amber-200 px-2.5 py-0.5 font-heading text-xs font-semibold text-amber-900 dark:bg-amber-900/60 dark:text-amber-200">
-              🏅{" "}
-              {entry.milestoneType === "other"
-                ? entry.milestoneLabel || "Milestone"
-                : MILESTONE_LABELS[entry.milestoneType]}
+              {MILESTONE_CATEGORIES.find((c) => c.value === entry.milestoneCategory)?.emoji ?? "🏅"}{" "}
+              {entry.milestoneLabel || "Milestone"}
             </span>
           )}
           <button

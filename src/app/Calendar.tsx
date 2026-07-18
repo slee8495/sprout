@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { todayInFamilyTimezone } from "@/lib/date";
 
 const WEEKDAYS = ["S", "M", "T", "W", "T", "F", "S"];
 
@@ -19,11 +20,10 @@ export function Calendar({
   selectedDate: string | null;
   onSelectDate: (date: string | null) => void;
 }) {
-  const today = new Date();
-  const [viewYear, setViewYear] = useState(today.getFullYear());
-  const [viewMonth, setViewMonth] = useState(today.getMonth());
-
-  const todayISO = toISODate(today.getFullYear(), today.getMonth(), today.getDate());
+  const todayISO = todayInFamilyTimezone().iso;
+  const [todayYear, todayMonth] = todayISO.split("-").map(Number);
+  const [viewYear, setViewYear] = useState(todayYear);
+  const [viewMonth, setViewMonth] = useState(todayMonth - 1);
 
   const cells = useMemo(() => {
     const firstWeekday = new Date(viewYear, viewMonth, 1).getDay();

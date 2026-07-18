@@ -1,16 +1,18 @@
-export const MILESTONE_OPTIONS: { value: string; label: string }[] = [
-  { value: "first_smile", label: "First smile" },
-  { value: "first_laugh", label: "First laugh" },
-  { value: "first_solid_food", label: "First solid food" },
-  { value: "first_tooth", label: "First tooth" },
-  { value: "first_word", label: "First word" },
-  { value: "first_steps", label: "First steps" },
-  { value: "first_haircut", label: "First haircut" },
-  { value: "other", label: "Other milestone" },
+export const MILESTONE_CATEGORIES: { value: string; label: string; emoji: string }[] = [
+  { value: "food", label: "Food", emoji: "🍽️" },
+  { value: "social", label: "Social", emoji: "🫂" },
+  { value: "physical", label: "Physical", emoji: "🏃" },
+  { value: "language", label: "Language", emoji: "🗣️" },
+  { value: "health", label: "Health", emoji: "🩺" },
+  { value: "other", label: "Other", emoji: "🏅" },
 ];
 
-export const MILESTONE_LABELS: Record<string, string> = Object.fromEntries(
-  MILESTONE_OPTIONS.map((m) => [m.value, m.label]),
+export const MILESTONE_CATEGORY_LABELS: Record<string, string> = Object.fromEntries(
+  MILESTONE_CATEGORIES.map((c) => [c.value, c.label]),
+);
+
+export const MILESTONE_CATEGORY_EMOJI: Record<string, string> = Object.fromEntries(
+  MILESTONE_CATEGORIES.map((c) => [c.value, c.emoji]),
 );
 
 export function formatEntryDate(dateStr: string) {

@@ -2,7 +2,7 @@ import { tool } from "ai";
 import { z } from "zod";
 import { and, eq, gte, lte, or, ilike } from "drizzle-orm";
 import { db } from "@/db";
-import { journalEntries, milestoneEnum } from "@/db/schema";
+import { journalEntries, milestoneCategoryEnum } from "@/db/schema";
 
 export const searchJournalEntries = tool({
   description:
@@ -34,16 +34,16 @@ export const searchJournalEntries = tool({
 
 export const getMilestoneEntries = tool({
   description:
-    "Get all journal entries tagged with a specific milestone type (e.g. first_solid_food, first_steps). " +
-    "Use this for 'when did Roun first ___' style questions.",
+    "Get all journal entries tagged with a specific milestone category (food, social, physical, language, " +
+    "health, other). Use this for 'when did Roun first ___' style questions.",
   inputSchema: z.object({
-    milestoneType: z.enum(milestoneEnum.enumValues),
+    milestoneCategory: z.enum(milestoneCategoryEnum.enumValues),
   }),
-  execute: async ({ milestoneType }) => {
+  execute: async ({ milestoneCategory }) => {
     return db
       .select()
       .from(journalEntries)
-      .where(eq(journalEntries.milestoneType, milestoneType))
+      .where(eq(journalEntries.milestoneCategory, milestoneCategory))
       .orderBy(journalEntries.entryDate);
   },
 });

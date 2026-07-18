@@ -1,5 +1,7 @@
 import type { JournalEntryWithPhotos } from "@/db/queries";
 import { formatEntryDate } from "@/lib/milestones";
+import { authorBadgeClasses } from "@/lib/author";
+import { formatDayOfLife } from "@/lib/date";
 
 export function OnThisDay({ entries }: { entries: JournalEntryWithPhotos[] }) {
   return (
@@ -8,8 +10,15 @@ export function OnThisDay({ entries }: { entries: JournalEntryWithPhotos[] }) {
       {entries.map((entry) => (
         <div key={entry.id} className="text-sm">
           <span className="font-medium text-amber-700 dark:text-amber-400">
-            {formatEntryDate(entry.entryDate)}
+            {formatEntryDate(entry.entryDate)} ({formatDayOfLife(entry.entryDate)})
           </span>{" "}
+          {entry.author?.name && (
+            <span
+              className={`mr-1 rounded-full px-2 py-0.5 font-heading text-xs font-semibold ${authorBadgeClasses(entry.author.name)}`}
+            >
+              {entry.author.name}
+            </span>
+          )}
           {entry.title && <span className="font-medium">{entry.title} — </span>}
           <span className="text-zinc-800 dark:text-zinc-200">{entry.body}</span>
         </div>

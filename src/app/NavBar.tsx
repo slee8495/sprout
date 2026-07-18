@@ -7,9 +7,6 @@ const LINKS = [
   { href: "/", label: "Journal" },
   { href: "/feed", label: "Feed" },
   { href: "/milestones", label: "Milestones" },
-  { href: "/growth", label: "Growth" },
-  { href: "/time-capsules", label: "Time Capsules" },
-  { href: "/photobook", label: "Photobook" },
 ];
 
 export function NavBar() {

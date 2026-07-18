@@ -1,15 +1,6 @@
 import { and, desc, eq, isNotNull, sql } from "drizzle-orm";
 import { db } from "./index";
-import {
-  comments,
-  families,
-  growthMeasurements,
-  journalEntries,
-  milestoneEnum,
-  photos,
-  timeCapsules,
-  users,
-} from "./schema";
+import { audienceEnum, comments, families, journalEntries, milestoneCategoryEnum, photos, users } from "./schema";
 
 export async function getOrCreateUser(email: string, name?: string | null, imageUrl?: string | null) {
   const existing = await db.query.users.findFirst({ where: eq(users.email, email) });
@@ -30,11 +21,14 @@ export async function getOrCreateUser(email: string, name?: string | null, image
   return user;
 }
 
-export function listJournalEntries(familyId: number) {
+type Audience = (typeof audienceEnum.enumValues)[number];
+
+export function listJournalEntries(familyId: number, audience?: Audience) {
   return db.query.journalEntries.findMany({
-    where: eq(journalEntries.familyId, familyId),
+    where: and(eq(journalEntries.familyId, familyId), audience ? eq(journalEntries.audience, audience) : undefined),
     orderBy: [desc(journalEntries.entryDate), desc(journalEntries.id)],
     with: {
+      author: true,
       photos: true,
       comments: { with: { author: true }, orderBy: (comments, { asc }) => [asc(comments.createdAt)] },
     },
@@ -43,11 +37,11 @@ export function listJournalEntries(familyId: number) {
 
 export type JournalEntryWithPhotos = Awaited<ReturnType<typeof listJournalEntries>>[number];
 
-export async function listEntryDates(familyId: number): Promise<string[]> {
+export async function listEntryDates(familyId: number, audience?: Audience): Promise<string[]> {
   const rows = await db
     .select({ entryDate: journalEntries.entryDate })
     .from(journalEntries)
-    .where(eq(journalEntries.familyId, familyId));
+    .where(and(eq(journalEntries.familyId, familyId), audience ? eq(journalEntries.audience, audience) : undefined));
   return rows.map((r) => r.entryDate);
 }
 
@@ -73,10 +67,11 @@ export async function createComment(input: {
 export async function createJournalEntry(input: {
   familyId: number;
   authorId: number;
+  audience: Audience;
   entryDate: string;
   title?: string;
   body: string;
-  milestoneType?: (typeof milestoneEnum.enumValues)[number];
+  milestoneCategory?: (typeof milestoneCategoryEnum.enumValues)[number];
   milestoneLabel?: string;
   photoUrls?: string[];
   voiceMemoUrl?: string;
@@ -86,10 +81,11 @@ export async function createJournalEntry(input: {
     .values({
       familyId: input.familyId,
       authorId: input.authorId,
+      audience: input.audience,
       entryDate: input.entryDate,
       title: input.title || null,
       body: input.body,
-      milestoneType: input.milestoneType || null,
+      milestoneCategory: input.milestoneCategory || null,
       milestoneLabel: input.milestoneLabel || null,
       voiceMemoUrl: input.voiceMemoUrl || null,
     })
@@ -109,7 +105,7 @@ export async function updateJournalEntry(
     entryDate: string;
     title?: string;
     body: string;
-    milestoneType?: (typeof milestoneEnum.enumValues)[number];
+    milestoneCategory?: (typeof milestoneCategoryEnum.enumValues)[number];
     milestoneLabel?: string;
   },
 ) {
@@ -119,7 +115,7 @@ export async function updateJournalEntry(
       entryDate: patch.entryDate,
       title: patch.title || null,
       body: patch.body,
-      milestoneType: patch.milestoneType || null,
+      milestoneCategory: patch.milestoneCategory || null,
       milestoneLabel: patch.milestoneLabel || null,
       updatedAt: new Date(),
     })
@@ -137,16 +133,18 @@ export async function deleteJournalEntry(entryId: number, familyId: number) {
     .where(and(eq(journalEntries.id, entryId), eq(journalEntries.familyId, familyId)));
 }
 
-export function getOnThisDayEntries(familyId: number, month: number, day: number) {
+export function getOnThisDayEntries(familyId: number, month: number, day: number, audience?: Audience) {
   return db.query.journalEntries.findMany({
     where: and(
       eq(journalEntries.familyId, familyId),
+      audience ? eq(journalEntries.audience, audience) : undefined,
       sql`extract(month from ${journalEntries.entryDate}) = ${month}`,
       sql`extract(day from ${journalEntries.entryDate}) = ${day}`,
       sql`extract(year from ${journalEntries.entryDate}) < extract(year from current_date)`,
     ),
     orderBy: [desc(journalEntries.entryDate)],
     with: {
+      author: true,
       photos: true,
       comments: { with: { author: true }, orderBy: (comments, { asc }) => [asc(comments.createdAt)] },
     },
@@ -155,74 +153,16 @@ export function getOnThisDayEntries(familyId: number, month: number, day: number
 
 export function listMilestoneEntries(familyId: number) {
   return db.query.journalEntries.findMany({
-    where: and(eq(journalEntries.familyId, familyId), isNotNull(journalEntries.milestoneType)),
-    orderBy: [journalEntries.entryDate],
+    where: and(
+      eq(journalEntries.familyId, familyId),
+      eq(journalEntries.audience, "roun"),
+      isNotNull(journalEntries.milestoneCategory),
+    ),
+    orderBy: [desc(journalEntries.entryDate)],
     with: {
+      author: true,
       photos: true,
       comments: { with: { author: true }, orderBy: (comments, { asc }) => [asc(comments.createdAt)] },
     },
   });
-}
-
-export type GrowthMeasurement = Awaited<ReturnType<typeof listGrowthMeasurements>>[number];
-
-export function listGrowthMeasurements(familyId: number) {
-  return db.query.growthMeasurements.findMany({
-    where: eq(growthMeasurements.familyId, familyId),
-    orderBy: [growthMeasurements.measuredAt],
-  });
-}
-
-export async function createGrowthMeasurement(input: {
-  familyId: number;
-  measuredAt: string;
-  heightCm?: number;
-  weightKg?: number;
-}) {
-  const [measurement] = await db
-    .insert(growthMeasurements)
-    .values({
-      familyId: input.familyId,
-      measuredAt: input.measuredAt,
-      heightCm: input.heightCm != null ? String(input.heightCm) : null,
-      weightKg: input.weightKg != null ? String(input.weightKg) : null,
-    })
-    .returning();
-  return measurement;
-}
-
-export async function deleteGrowthMeasurement(id: number, familyId: number) {
-  await db
-    .delete(growthMeasurements)
-    .where(and(eq(growthMeasurements.id, id), eq(growthMeasurements.familyId, familyId)));
-}
-
-export type TimeCapsule = Awaited<ReturnType<typeof listTimeCapsules>>[number];
-
-export function listTimeCapsules(familyId: number) {
-  return db.query.timeCapsules.findMany({
-    where: eq(timeCapsules.familyId, familyId),
-    orderBy: [timeCapsules.unlockDate],
-    with: { author: true },
-  });
-}
-
-export async function createTimeCapsule(input: {
-  familyId: number;
-  authorId: number;
-  unlockDate: string;
-  title?: string;
-  body: string;
-}) {
-  const [capsule] = await db
-    .insert(timeCapsules)
-    .values({
-      familyId: input.familyId,
-      authorId: input.authorId,
-      unlockDate: input.unlockDate,
-      title: input.title || null,
-      body: input.body,
-    })
-    .returning();
-  return capsule;
 }
