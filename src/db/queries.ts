@@ -107,22 +107,32 @@ export async function updateJournalEntry(
     body: string;
     milestoneCategory?: (typeof milestoneCategoryEnum.enumValues)[number];
     milestoneLabel?: string;
+    photoUrls?: string[];
   },
 ) {
-  const [entry] = await db
-    .update(journalEntries)
-    .set({
-      entryDate: patch.entryDate,
-      title: patch.title || null,
-      body: patch.body,
-      milestoneCategory: patch.milestoneCategory || null,
-      milestoneLabel: patch.milestoneLabel || null,
-      updatedAt: new Date(),
-    })
-    .where(and(eq(journalEntries.id, entryId), eq(journalEntries.familyId, familyId)))
-    .returning();
+  return db.transaction(async (tx) => {
+    const [entry] = await tx
+      .update(journalEntries)
+      .set({
+        entryDate: patch.entryDate,
+        title: patch.title || null,
+        body: patch.body,
+        milestoneCategory: patch.milestoneCategory || null,
+        milestoneLabel: patch.milestoneLabel || null,
+        updatedAt: new Date(),
+      })
+      .where(and(eq(journalEntries.id, entryId), eq(journalEntries.familyId, familyId)))
+      .returning();
 
-  return entry;
+    if (entry && patch.photoUrls !== undefined) {
+      await tx.delete(photos).where(eq(photos.entryId, entryId));
+      if (patch.photoUrls.length) {
+        await tx.insert(photos).values(patch.photoUrls.map((url) => ({ entryId, url })));
+      }
+    }
+
+    return entry;
+  });
 }
 
 export async function deleteJournalEntry(entryId: number, familyId: number) {

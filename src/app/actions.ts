@@ -38,7 +38,7 @@ export async function createEntry(input: z.infer<typeof entrySchema>) {
   revalidatePath("/feed");
 }
 
-const updateEntrySchema = entrySchema.omit({ audience: true, photoUrls: true, voiceMemoUrl: true });
+const updateEntrySchema = entrySchema.omit({ audience: true, voiceMemoUrl: true });
 
 export async function updateEntry(entryId: number, input: z.infer<typeof updateEntrySchema>) {
   const { familyId } = await requireSession();

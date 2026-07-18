@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useEffect, useMemo, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import type { JournalEntryWithPhotos } from "@/db/queries";
@@ -10,6 +10,7 @@ import { formatDayOfLife, formatEntryTime } from "@/lib/date";
 import { deleteEntry, updateEntry } from "./actions";
 import { CommentThread } from "./CommentThread";
 import type { milestoneCategoryEnum } from "@/db/schema";
+import { uploadJournalPhoto } from "@/lib/uploadPhoto";
 
 type MilestoneCategory = (typeof milestoneCategoryEnum.enumValues)[number];
 
@@ -21,8 +22,17 @@ export function EntryCard({ entry }: { entry: JournalEntryWithPhotos }) {
   const [body, setBody] = useState(entry.body);
   const [milestoneCategory, setMilestoneCategory] = useState(entry.milestoneCategory ?? "");
   const [milestoneLabel, setMilestoneLabel] = useState(entry.milestoneLabel ?? "");
+  const [existingPhotos, setExistingPhotos] = useState(entry.photos);
+  const [newFiles, setNewFiles] = useState<File[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
+
+  const newFilePreviews = useMemo(() => newFiles.map((f) => URL.createObjectURL(f)), [newFiles]);
+  useEffect(() => {
+    return () => {
+      newFilePreviews.forEach((url) => URL.revokeObjectURL(url));
+    };
+  }, [newFilePreviews]);
 
   function handleSave() {
     if (!body.trim()) {
@@ -32,14 +42,21 @@ export function EntryCard({ entry }: { entry: JournalEntryWithPhotos }) {
     setError(null);
     startTransition(async () => {
       try {
+        const uploadedUrls = newFiles.length
+          ? (await Promise.all(newFiles.map((f) => uploadJournalPhoto(f)))).map((r) => r.url)
+          : [];
+        const photoUrls = [...existingPhotos.map((p) => p.url), ...uploadedUrls];
+
         await updateEntry(entry.id, {
           entryDate,
           title: title.trim() || undefined,
           body: body.trim(),
           milestoneCategory: milestoneCategory ? (milestoneCategory as MilestoneCategory) : undefined,
           milestoneLabel: milestoneCategory ? milestoneLabel.trim() || undefined : undefined,
+          photoUrls,
         });
         setIsEditing(false);
+        setNewFiles([]);
         router.refresh();
       } catch {
         setError("Couldn't save changes — try again.");
@@ -102,6 +119,50 @@ export function EntryCard({ entry }: { entry: JournalEntryWithPhotos }) {
             />
           )}
         </div>
+        {(existingPhotos.length > 0 || newFiles.length > 0) && (
+          <div className="flex flex-wrap gap-2">
+            {existingPhotos.map((photo) => (
+              <div key={photo.id} className="relative">
+                <Image
+                  src={photo.url}
+                  alt={photo.caption ?? ""}
+                  width={96}
+                  height={96}
+                  className="h-24 w-24 rounded-2xl object-cover"
+                />
+                <button
+                  type="button"
+                  onClick={() => setExistingPhotos((prev) => prev.filter((p) => p.id !== photo.id))}
+                  className="absolute -right-1.5 -top-1.5 flex h-6 w-6 items-center justify-center rounded-full bg-zinc-900/80 text-xs font-bold text-white shadow-sm hover:bg-rose-600"
+                  aria-label="Remove photo"
+                >
+                  ×
+                </button>
+              </div>
+            ))}
+            {newFiles.map((file, i) => (
+              <div key={`${file.name}-${i}`} className="relative">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={newFilePreviews[i]} alt="" className="h-24 w-24 rounded-2xl object-cover" />
+                <button
+                  type="button"
+                  onClick={() => setNewFiles((prev) => prev.filter((_, idx) => idx !== i))}
+                  className="absolute -right-1.5 -top-1.5 flex h-6 w-6 items-center justify-center rounded-full bg-zinc-900/80 text-xs font-bold text-white shadow-sm hover:bg-rose-600"
+                  aria-label="Remove photo"
+                >
+                  ×
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
+        <input
+          type="file"
+          accept="image/*"
+          multiple
+          onChange={(e) => setNewFiles((prev) => [...prev, ...Array.from(e.target.files ?? [])])}
+          className="text-sm"
+        />
         {error && <p className="text-sm text-rose-600">{error}</p>}
         <div className="flex gap-2">
           <button
