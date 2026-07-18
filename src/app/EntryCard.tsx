@@ -9,6 +9,8 @@ import { authorBadgeClasses } from "@/lib/author";
 import { formatDayOfLife, formatEntryTime } from "@/lib/date";
 import { deleteEntry, updateEntry } from "./actions";
 import { CommentThread } from "./CommentThread";
+import { PhotoCollage } from "./PhotoCollage";
+import { PhotoLightbox } from "./PhotoLightbox";
 import type { milestoneCategoryEnum } from "@/db/schema";
 import { uploadJournalPhoto } from "@/lib/uploadPhoto";
 
@@ -26,6 +28,7 @@ export function EntryCard({ entry }: { entry: JournalEntryWithPhotos }) {
   const [newFiles, setNewFiles] = useState<File[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
+  const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
 
   const newFilePreviews = useMemo(() => newFiles.map((f) => URL.createObjectURL(f)), [newFiles]);
   useEffect(() => {
@@ -227,28 +230,9 @@ export function EntryCard({ entry }: { entry: JournalEntryWithPhotos }) {
       {entry.title && <h2 className="font-heading font-bold text-emerald-950 dark:text-emerald-50">{entry.title}</h2>}
       <p className="whitespace-pre-wrap text-sm text-zinc-800 dark:text-zinc-200">{entry.body}</p>
       {entry.voiceMemoUrl && <audio controls src={entry.voiceMemoUrl} className="h-10 w-full" />}
-      {entry.photos.length === 1 && (
-        <Image
-          src={entry.photos[0].url}
-          alt={entry.photos[0].caption ?? ""}
-          width={500}
-          height={500}
-          className="aspect-square w-full rounded-2xl object-cover"
-        />
-      )}
-      {entry.photos.length > 1 && (
-        <div className="flex flex-wrap gap-2">
-          {entry.photos.map((photo) => (
-            <Image
-              key={photo.id}
-              src={photo.url}
-              alt={photo.caption ?? ""}
-              width={160}
-              height={160}
-              className="h-40 w-40 rounded-2xl object-cover"
-            />
-          ))}
-        </div>
+      <PhotoCollage photos={entry.photos} onOpen={setLightboxIndex} />
+      {lightboxIndex !== null && (
+        <PhotoLightbox photos={entry.photos} initialIndex={lightboxIndex} onClose={() => setLightboxIndex(null)} />
       )}
       <CommentThread entry={entry} />
     </article>
