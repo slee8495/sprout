@@ -78,7 +78,7 @@ export function PushNotifications() {
       disabled={pending}
       className="fixed bottom-4 left-1/2 z-20 -translate-x-1/2 rounded-full bg-emerald-600 px-4 py-2 font-heading text-sm font-semibold text-white shadow-lg shadow-emerald-900/30 transition-transform hover:scale-105 active:scale-95 disabled:opacity-50 print:hidden"
     >
-      {pending ? "켜는 중…" : "🔔 새 글 알림 켜기"}
+      {pending ? "Enabling…" : "🔔 Enable notifications"}
     </button>
   );
 }
