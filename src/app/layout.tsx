@@ -1,7 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Fredoka, Nunito } from "next/font/google";
 import "./globals.css";
-import { ChatWidget } from "./ChatWidget";
 import { NavBar } from "./NavBar";
 import { PushNotifications } from "./PushNotifications";
 
@@ -43,7 +42,6 @@ export default function RootLayout({
       <body className="min-h-full flex flex-col">
         <NavBar />
         {children}
-        <ChatWidget />
         <PushNotifications />
       </body>
     </html>
