@@ -3,6 +3,7 @@ import { Fredoka, Nunito } from "next/font/google";
 import "./globals.css";
 import { ChatWidget } from "./ChatWidget";
 import { NavBar } from "./NavBar";
+import { PushNotifications } from "./PushNotifications";
 
 const fredoka = Fredoka({
   variable: "--font-heading",
@@ -43,6 +44,7 @@ export default function RootLayout({
         <NavBar />
         {children}
         <ChatWidget />
+        <PushNotifications />
       </body>
     </html>
   );

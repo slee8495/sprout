@@ -2,9 +2,17 @@
 
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
-import { createComment, createJournalEntry, deleteJournalEntry, updateJournalEntry } from "@/db/queries";
+import {
+  createComment,
+  createJournalEntry,
+  deleteJournalEntry,
+  deletePushSubscription,
+  savePushSubscription,
+  updateJournalEntry,
+} from "@/db/queries";
 import { audienceEnum, milestoneCategoryEnum } from "@/db/schema";
 import { requireSession } from "@/lib/session";
+import { notifyFamily } from "@/lib/push";
 
 const entrySchema = z.object({
   audience: z.enum(audienceEnum.enumValues).default("roun"),
@@ -18,7 +26,7 @@ const entrySchema = z.object({
 });
 
 export async function createEntry(input: z.infer<typeof entrySchema>) {
-  const { userId, familyId } = await requireSession();
+  const { userId, familyId, name } = await requireSession();
   const parsed = entrySchema.parse(input);
 
   await createJournalEntry({
@@ -36,6 +44,13 @@ export async function createEntry(input: z.infer<typeof entrySchema>) {
 
   revalidatePath("/");
   revalidatePath("/feed");
+
+  const preview = (parsed.title || parsed.body).slice(0, 120);
+  await notifyFamily(familyId, userId, {
+    title: `🌱 ${name ?? "New entry"}`,
+    body: preview,
+    url: "/feed",
+  });
 }
 
 const updateEntrySchema = entrySchema.omit({ audience: true, voiceMemoUrl: true });
@@ -62,10 +77,38 @@ const commentSchema = z.object({
 });
 
 export async function addComment(input: z.infer<typeof commentSchema>) {
-  const { userId, familyId } = await requireSession();
+  const { userId, familyId, name } = await requireSession();
   const parsed = commentSchema.parse(input);
 
   await createComment({ entryId: parsed.entryId, familyId, authorId: userId, body: parsed.body });
   revalidatePath("/");
   revalidatePath("/feed");
+
+  await notifyFamily(familyId, userId, {
+    title: `💬 ${name ?? "New comment"}`,
+    body: parsed.body.slice(0, 120),
+    url: "/feed",
+  });
+}
+
+const pushSubscriptionSchema = z.object({
+  endpoint: z.string().url(),
+  keys: z.object({ p256dh: z.string(), auth: z.string() }),
+});
+
+export async function subscribeToPush(input: z.infer<typeof pushSubscriptionSchema>) {
+  const { userId } = await requireSession();
+  const parsed = pushSubscriptionSchema.parse(input);
+
+  await savePushSubscription({
+    userId,
+    endpoint: parsed.endpoint,
+    p256dh: parsed.keys.p256dh,
+    auth: parsed.keys.auth,
+  });
+}
+
+export async function unsubscribeFromPush(endpoint: string) {
+  await requireSession();
+  await deletePushSubscription(endpoint);
 }

@@ -1,6 +1,15 @@
-import { and, desc, eq, isNotNull, sql } from "drizzle-orm";
+import { and, desc, eq, isNotNull, ne, sql } from "drizzle-orm";
 import { db } from "./index";
-import { audienceEnum, comments, families, journalEntries, milestoneCategoryEnum, photos, users } from "./schema";
+import {
+  audienceEnum,
+  comments,
+  families,
+  journalEntries,
+  milestoneCategoryEnum,
+  photos,
+  pushSubscriptions,
+  users,
+} from "./schema";
 
 export async function getOrCreateUser(email: string, name?: string | null, imageUrl?: string | null) {
   const existing = await db.query.users.findFirst({ where: eq(users.email, email) });
@@ -159,6 +168,38 @@ export function getOnThisDayEntries(familyId: number, month: number, day: number
       comments: { with: { author: true }, orderBy: (comments, { asc }) => [asc(comments.createdAt)] },
     },
   });
+}
+
+export async function savePushSubscription(input: {
+  userId: number;
+  endpoint: string;
+  p256dh: string;
+  auth: string;
+}) {
+  await db
+    .insert(pushSubscriptions)
+    .values(input)
+    .onConflictDoUpdate({
+      target: pushSubscriptions.endpoint,
+      set: { userId: input.userId, p256dh: input.p256dh, auth: input.auth },
+    });
+}
+
+export async function deletePushSubscription(endpoint: string) {
+  await db.delete(pushSubscriptions).where(eq(pushSubscriptions.endpoint, endpoint));
+}
+
+export async function listOtherFamilyPushSubscriptions(familyId: number, excludeUserId: number) {
+  return db
+    .select({
+      id: pushSubscriptions.id,
+      endpoint: pushSubscriptions.endpoint,
+      p256dh: pushSubscriptions.p256dh,
+      auth: pushSubscriptions.auth,
+    })
+    .from(pushSubscriptions)
+    .innerJoin(users, eq(users.id, pushSubscriptions.userId))
+    .where(and(eq(users.familyId, familyId), ne(pushSubscriptions.userId, excludeUserId)));
 }
 
 export function listMilestoneEntries(familyId: number) {

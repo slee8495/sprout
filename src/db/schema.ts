@@ -68,6 +68,15 @@ export const comments = pgTable("comments", {
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
 });
 
+export const pushSubscriptions = pgTable("push_subscriptions", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull().references(() => users.id),
+  endpoint: text("endpoint").notNull().unique(),
+  p256dh: text("p256dh").notNull(),
+  auth: text("auth").notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+});
+
 export const journalEntriesRelations = relations(journalEntries, ({ many, one }) => ({
   photos: many(photos),
   comments: many(comments),
@@ -81,4 +90,8 @@ export const photosRelations = relations(photos, ({ one }) => ({
 export const commentsRelations = relations(comments, ({ one }) => ({
   entry: one(journalEntries, { fields: [comments.entryId], references: [journalEntries.id] }),
   author: one(users, { fields: [comments.authorId], references: [users.id] }),
+}));
+
+export const pushSubscriptionsRelations = relations(pushSubscriptions, ({ one }) => ({
+  user: one(users, { fields: [pushSubscriptions.userId], references: [users.id] }),
 }));
