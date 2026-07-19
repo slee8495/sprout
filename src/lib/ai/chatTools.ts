@@ -35,7 +35,7 @@ export const searchJournalEntries = tool({
 export const getMilestoneEntries = tool({
   description:
     "Get all journal entries tagged with a specific milestone category (food, social, physical, language, " +
-    "health, other). Use this for 'when did Roun first ___' style questions.",
+    "health, place, other). Use this for 'when did Roun first ___' style questions.",
   inputSchema: z.object({
     milestoneCategory: z.enum(milestoneCategoryEnum.enumValues),
   }),

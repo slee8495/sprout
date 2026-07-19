@@ -4,6 +4,7 @@ export const MILESTONE_CATEGORIES: { value: string; label: string; emoji: string
   { value: "physical", label: "Physical", emoji: "🏃" },
   { value: "language", label: "Language", emoji: "🗣️" },
   { value: "health", label: "Health", emoji: "🩺" },
+  { value: "place", label: "Place", emoji: "📍" },
   { value: "other", label: "Other", emoji: "🏅" },
 ];
 

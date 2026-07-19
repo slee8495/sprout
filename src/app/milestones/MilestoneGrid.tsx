@@ -73,9 +73,6 @@ function MilestoneDetail({ entry }: { entry: JournalEntryWithPhotos }) {
         </span>
       </div>
       <h3 className="mb-1 font-heading font-bold">{entry.milestoneLabel || "Milestone"}</h3>
-      {entry.milestonePlace && (
-        <p className="mb-1 text-xs font-medium text-zinc-500 dark:text-zinc-400">📍 {entry.milestonePlace}</p>
-      )}
       {entry.title && <p className="mb-1 text-sm font-semibold text-zinc-700 dark:text-zinc-300">{entry.title}</p>}
       <p className="whitespace-pre-wrap text-sm text-zinc-800 dark:text-zinc-200">{entry.body}</p>
     </div>

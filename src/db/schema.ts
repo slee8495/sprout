@@ -16,6 +16,7 @@ export const milestoneCategoryEnum = pgEnum("milestone_category", [
   "physical",
   "language",
   "health",
+  "place",
   "other",
 ]);
 
@@ -46,7 +47,6 @@ export const journalEntries = pgTable("journal_entries", {
   body: text("body").notNull(),
   milestoneCategory: milestoneCategoryEnum("milestone_category"),
   milestoneLabel: varchar("milestone_label", { length: 128 }),
-  milestonePlace: varchar("milestone_place", { length: 128 }),
   voiceMemoUrl: text("voice_memo_url"),
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),

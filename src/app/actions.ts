@@ -13,7 +13,6 @@ const entrySchema = z.object({
   body: z.string().min(1).max(10000),
   milestoneCategory: z.enum(milestoneCategoryEnum.enumValues).optional(),
   milestoneLabel: z.string().max(128).optional(),
-  milestonePlace: z.string().max(128).optional(),
   photoUrls: z.array(z.string().url()).max(10).optional(),
   voiceMemoUrl: z.string().url().optional(),
 });
@@ -31,7 +30,6 @@ export async function createEntry(input: z.infer<typeof entrySchema>) {
     body: parsed.body,
     milestoneCategory: parsed.milestoneCategory,
     milestoneLabel: parsed.milestoneLabel,
-    milestonePlace: parsed.milestonePlace,
     photoUrls: parsed.photoUrls,
     voiceMemoUrl: parsed.voiceMemoUrl,
   });

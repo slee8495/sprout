@@ -73,7 +73,6 @@ export async function createJournalEntry(input: {
   body: string;
   milestoneCategory?: (typeof milestoneCategoryEnum.enumValues)[number];
   milestoneLabel?: string;
-  milestonePlace?: string;
   photoUrls?: string[];
   voiceMemoUrl?: string;
 }) {
@@ -88,7 +87,6 @@ export async function createJournalEntry(input: {
       body: input.body,
       milestoneCategory: input.milestoneCategory || null,
       milestoneLabel: input.milestoneLabel || null,
-      milestonePlace: input.milestonePlace || null,
       voiceMemoUrl: input.voiceMemoUrl || null,
     })
     .returning();
@@ -109,7 +107,6 @@ export async function updateJournalEntry(
     body: string;
     milestoneCategory?: (typeof milestoneCategoryEnum.enumValues)[number];
     milestoneLabel?: string;
-    milestonePlace?: string;
     photoUrls?: string[];
   },
 ) {
@@ -122,7 +119,6 @@ export async function updateJournalEntry(
         body: patch.body,
         milestoneCategory: patch.milestoneCategory || null,
         milestoneLabel: patch.milestoneLabel || null,
-        milestonePlace: patch.milestonePlace || null,
         updatedAt: new Date(),
       })
       .where(and(eq(journalEntries.id, entryId), eq(journalEntries.familyId, familyId)))

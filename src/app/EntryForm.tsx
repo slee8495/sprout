@@ -33,7 +33,6 @@ export function EntryForm({ initialDate }: { initialDate?: string }) {
   const [body, setBody] = useState("");
   const [milestoneCategory, setMilestoneCategory] = useState("");
   const [milestoneLabel, setMilestoneLabel] = useState("");
-  const [milestonePlace, setMilestonePlace] = useState("");
   const [files, setFiles] = useState<File[]>([]);
   const [voiceMemo, setVoiceMemo] = useState<Blob | null>(null);
   const [recording, setRecording] = useState(false);
@@ -99,7 +98,6 @@ export function EntryForm({ initialDate }: { initialDate?: string }) {
           body: body.trim(),
           milestoneCategory: milestoneCategory ? (milestoneCategory as MilestoneCategory) : undefined,
           milestoneLabel: milestoneCategory ? milestoneLabel.trim() || undefined : undefined,
-          milestonePlace: milestoneCategory ? milestonePlace.trim() || undefined : undefined,
           photoUrls,
           voiceMemoUrl: uploadedVoiceMemoUrl,
         });
@@ -108,7 +106,6 @@ export function EntryForm({ initialDate }: { initialDate?: string }) {
         setBody("");
         setMilestoneCategory("");
         setMilestoneLabel("");
-        setMilestonePlace("");
         setFiles([]);
         setVoiceMemo(null);
         formRef.current?.reset();
@@ -195,15 +192,6 @@ export function EntryForm({ initialDate }: { initialDate?: string }) {
               placeholder="e.g. First broccoli"
               value={milestoneLabel}
               onChange={(e) => setMilestoneLabel(e.target.value)}
-              className="min-w-0 flex-1 rounded-2xl border border-emerald-100 bg-white px-3 py-2 text-sm dark:border-emerald-900/40 dark:bg-zinc-900"
-            />
-          )}
-          {milestoneCategory && (
-            <input
-              type="text"
-              placeholder="Place (optional)"
-              value={milestonePlace}
-              onChange={(e) => setMilestonePlace(e.target.value)}
               className="min-w-0 flex-1 rounded-2xl border border-emerald-100 bg-white px-3 py-2 text-sm dark:border-emerald-900/40 dark:bg-zinc-900"
             />
           )}
