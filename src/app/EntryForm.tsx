@@ -7,7 +7,8 @@ import { uploadJournalPhoto } from "@/lib/uploadPhoto";
 import { uploadVoiceMemo } from "@/lib/uploadVoiceMemo";
 import type { audienceEnum, milestoneCategoryEnum } from "@/db/schema";
 import { MILESTONE_CATEGORIES } from "@/lib/milestones";
-import { todayInFamilyTimezone } from "@/lib/date";
+import { todayInTimezone } from "@/lib/date";
+import { useSettings } from "./SettingsProvider";
 
 type Audience = (typeof audienceEnum.enumValues)[number];
 type MilestoneCategory = (typeof milestoneCategoryEnum.enumValues)[number];
@@ -21,8 +22,9 @@ function pickRecordingMimeType(): string | undefined {
 
 export function EntryForm({ initialDate }: { initialDate?: string }) {
   const router = useRouter();
+  const { timezone } = useSettings();
   const formRef = useRef<HTMLFormElement>(null);
-  const [entryDate, setEntryDate] = useState(initialDate ?? todayInFamilyTimezone().iso);
+  const [entryDate, setEntryDate] = useState(initialDate ?? todayInTimezone(timezone).iso);
   const [prevInitialDate, setPrevInitialDate] = useState(initialDate);
   if (initialDate !== prevInitialDate) {
     setPrevInitialDate(initialDate);

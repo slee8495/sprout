@@ -1,5 +1,7 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 :root {
   --background: #fff9f0;
   --foreground: #2b2822;
@@ -12,11 +14,17 @@
   --font-heading: var(--font-heading);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #1f2420;
-    --foreground: #f3efe6;
-  }
+.dark {
+  --background: #1f2420;
+  --foreground: #f3efe6;
+}
+
+html[data-font-size="sm"] {
+  font-size: 87.5%;
+}
+
+html[data-font-size="lg"] {
+  font-size: 112.5%;
 }
 
 body {

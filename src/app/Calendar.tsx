@@ -1,7 +1,8 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { todayInFamilyTimezone } from "@/lib/date";
+import { todayInTimezone } from "@/lib/date";
+import { useSettings } from "./SettingsProvider";
 
 const WEEKDAYS = ["S", "M", "T", "W", "T", "F", "S"];
 
@@ -20,7 +21,8 @@ export function Calendar({
   selectedDate: string | null;
   onSelectDate: (date: string | null) => void;
 }) {
-  const todayISO = todayInFamilyTimezone().iso;
+  const { timezone } = useSettings();
+  const todayISO = todayInTimezone(timezone).iso;
   const [todayYear, todayMonth] = todayISO.split("-").map(Number);
   const [viewYear, setViewYear] = useState(todayYear);
   const [viewMonth, setViewMonth] = useState(todayMonth - 1);

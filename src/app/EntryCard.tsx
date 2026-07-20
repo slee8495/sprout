@@ -13,11 +13,13 @@ import { PhotoCollage } from "./PhotoCollage";
 import { PhotoLightbox } from "./PhotoLightbox";
 import type { milestoneCategoryEnum } from "@/db/schema";
 import { uploadJournalPhoto } from "@/lib/uploadPhoto";
+import { useSettings } from "./SettingsProvider";
 
 type MilestoneCategory = (typeof milestoneCategoryEnum.enumValues)[number];
 
 export function EntryCard({ entry }: { entry: JournalEntryWithPhotos }) {
   const router = useRouter();
+  const { timezone, birthDate, dayCountStart } = useSettings();
   const [isEditing, setIsEditing] = useState(false);
   const [entryDate, setEntryDate] = useState(entry.entryDate);
   const [title, setTitle] = useState(entry.title ?? "");
@@ -199,10 +201,10 @@ export function EntryCard({ entry }: { entry: JournalEntryWithPhotos }) {
             </span>
           )}
           <span className="text-xs font-semibold text-emerald-800 dark:text-emerald-200">
-            {formatEntryDate(entry.entryDate)} · {formatEntryTime(entry.createdAt)}
+            {formatEntryDate(entry.entryDate)} · {formatEntryTime(entry.createdAt, timezone)}
           </span>
           <span className="rounded-full bg-emerald-50 px-2 py-0.5 text-xs font-semibold text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300">
-            {formatDayOfLife(entry.entryDate)}
+            {formatDayOfLife(entry.entryDate, birthDate, dayCountStart)}
           </span>
         </div>
         <div className="flex items-center gap-2">

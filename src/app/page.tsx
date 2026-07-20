@@ -1,13 +1,17 @@
+import { redirect } from "next/navigation";
 import { auth } from "@/auth";
-import { getOnThisDayEntries, listEntryDates, listJournalEntries } from "@/db/queries";
-import { todayInFamilyTimezone } from "@/lib/date";
+import { getFamilySettings, getOnThisDayEntries, listEntryDates, listJournalEntries } from "@/db/queries";
+import { todayInTimezone } from "@/lib/date";
 import { JournalHome } from "./JournalHome";
 
 export default async function Home() {
   const session = await auth();
   const familyId = session!.user!.familyId;
 
-  const today = todayInFamilyTimezone();
+  const settings = await getFamilySettings(familyId);
+  if (!settings.birthDate) redirect("/onboarding");
+
+  const today = todayInTimezone(settings.timezone);
   const [entryDates, onThisDayEntries, entries] = await Promise.all([
     listEntryDates(familyId, "roun"),
     getOnThisDayEntries(familyId, today.month, today.day, "roun"),

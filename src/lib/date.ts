@@ -1,10 +1,10 @@
-export const FAMILY_TIMEZONE = "America/Los_Angeles";
+export type DayCountStart = "zero" | "one";
 
-export const BIRTH_DATE = "2026-04-15";
+export const DEFAULT_TIMEZONE = "America/Los_Angeles";
 
-export function todayInFamilyTimezone(): { iso: string; month: number; day: number } {
+export function todayInTimezone(timezone: string): { iso: string; month: number; day: number } {
   const parts = new Intl.DateTimeFormat("en-US", {
-    timeZone: FAMILY_TIMEZONE,
+    timeZone: timezone,
     year: "numeric",
     month: "2-digit",
     day: "2-digit",
@@ -20,18 +20,19 @@ function utcMidnight(dateStr: string): number {
   return Date.UTC(y, m - 1, d);
 }
 
-export function dayOfLife(entryDate: string): number {
-  return Math.round((utcMidnight(entryDate) - utcMidnight(BIRTH_DATE)) / 86400000);
+export function dayOfLife(entryDate: string, birthDate: string, dayCountStart: DayCountStart): number {
+  const diff = Math.round((utcMidnight(entryDate) - utcMidnight(birthDate)) / 86400000);
+  return dayCountStart === "one" ? diff + 1 : diff;
 }
 
-export function formatDayOfLife(entryDate: string): string {
-  const n = dayOfLife(entryDate);
+export function formatDayOfLife(entryDate: string, birthDate: string, dayCountStart: DayCountStart): string {
+  const n = dayOfLife(entryDate, birthDate, dayCountStart);
   return n >= 0 ? `+${n}` : String(n);
 }
 
-export function formatEntryTime(createdAt: Date | string): string {
+export function formatEntryTime(createdAt: Date | string, timezone: string): string {
   return new Date(createdAt).toLocaleTimeString("en-US", {
-    timeZone: FAMILY_TIMEZONE,
+    timeZone: timezone,
     hour: "numeric",
     minute: "2-digit",
   });

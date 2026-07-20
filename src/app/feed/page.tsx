@@ -1,10 +1,14 @@
+import { redirect } from "next/navigation";
 import { auth } from "@/auth";
-import { listJournalEntries } from "@/db/queries";
+import { getFamilySettings, listJournalEntries } from "@/db/queries";
 import { FeedTabs } from "./FeedTabs";
 
 export default async function FeedPage() {
   const session = await auth();
   const familyId = session!.user!.familyId;
+
+  const settings = await getFamilySettings(familyId);
+  if (!settings.birthDate) redirect("/onboarding");
 
   const [rounEntries, parentEntries] = await Promise.all([
     listJournalEntries(familyId, "roun"),

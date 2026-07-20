@@ -3,6 +3,7 @@ import { db } from "./index";
 import {
   audienceEnum,
   comments,
+  dayCountStartEnum,
   families,
   journalEntries,
   milestoneCategoryEnum,
@@ -168,6 +169,22 @@ export function getOnThisDayEntries(familyId: number, month: number, day: number
       comments: { with: { author: true }, orderBy: (comments, { asc }) => [asc(comments.createdAt)] },
     },
   });
+}
+
+export async function getFamilySettings(familyId: number) {
+  const family = await db.query.families.findFirst({
+    where: eq(families.id, familyId),
+    columns: { timezone: true, birthDate: true, dayCountStart: true },
+  });
+  if (!family) throw new Error("Family not found");
+  return family;
+}
+
+export async function updateFamilySettings(
+  familyId: number,
+  patch: { timezone: string; birthDate: string; dayCountStart: (typeof dayCountStartEnum.enumValues)[number] },
+) {
+  await db.update(families).set(patch).where(eq(families.id, familyId));
 }
 
 export async function savePushSubscription(input: {

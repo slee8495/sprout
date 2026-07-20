@@ -1,10 +1,16 @@
+import { redirect } from "next/navigation";
 import { auth } from "@/auth";
-import { listMilestoneEntries } from "@/db/queries";
+import { getFamilySettings, listMilestoneEntries } from "@/db/queries";
 import { MilestoneGrid } from "./MilestoneGrid";
 
 export default async function MilestonesPage() {
   const session = await auth();
-  const entries = await listMilestoneEntries(session!.user!.familyId);
+  const familyId = session!.user!.familyId;
+
+  const settings = await getFamilySettings(familyId);
+  if (!settings.birthDate) redirect("/onboarding");
+
+  const entries = await listMilestoneEntries(familyId);
 
   return (
     <div className="mx-auto flex w-full max-w-2xl flex-1 flex-col gap-6 p-4 pb-24">

@@ -22,9 +22,14 @@ export const milestoneCategoryEnum = pgEnum("milestone_category", [
 
 export const audienceEnum = pgEnum("audience", ["roun", "parents"]);
 
+export const dayCountStartEnum = pgEnum("day_count_start", ["zero", "one"]);
+
 export const families = pgTable("families", {
   id: serial("id").primaryKey(),
   name: varchar("name", { length: 128 }).notNull(),
+  timezone: varchar("timezone", { length: 64 }).notNull().default("America/Los_Angeles"),
+  birthDate: date("birth_date"),
+  dayCountStart: dayCountStartEnum("day_count_start").notNull().default("zero"),
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
 });
 
