@@ -6,7 +6,7 @@ import Image from "next/image";
 import type { JournalEntryWithPhotos } from "@/db/queries";
 import { MILESTONE_CATEGORIES, formatEntryDate } from "@/lib/milestones";
 import { authorBadgeClasses } from "@/lib/author";
-import { formatDayOfLife, formatEntryTime } from "@/lib/date";
+import { formatDayOfLife, formatUploadedAt } from "@/lib/date";
 import { deleteEntry, updateEntry } from "./actions";
 import { CommentThread } from "./CommentThread";
 import { PhotoCollage } from "./PhotoCollage";
@@ -17,10 +17,20 @@ import { useSettings } from "./SettingsProvider";
 
 type MilestoneCategory = (typeof milestoneCategoryEnum.enumValues)[number];
 
-export function EntryCard({ entry }: { entry: JournalEntryWithPhotos }) {
+export function EntryCard({ entry, highlighted }: { entry: JournalEntryWithPhotos; highlighted?: boolean }) {
   const router = useRouter();
-  const { timezone, birthDate, dayCountStart } = useSettings();
+  const { timezone, birthDate, dayCountStart, userId } = useSettings();
+  const isAuthor = entry.authorId === userId;
+  const wasEdited = new Date(entry.updatedAt).getTime() > new Date(entry.createdAt).getTime();
+  const [showHighlight, setShowHighlight] = useState(highlighted ?? false);
   const [isEditing, setIsEditing] = useState(false);
+
+  useEffect(() => {
+    if (!highlighted) return;
+    document.getElementById(`entry-${entry.id}`)?.scrollIntoView({ behavior: "smooth", block: "center" });
+    const timer = setTimeout(() => setShowHighlight(false), 3000);
+    return () => clearTimeout(timer);
+  }, [highlighted, entry.id]);
   const [entryDate, setEntryDate] = useState(entry.entryDate);
   const [title, setTitle] = useState(entry.title ?? "");
   const [body, setBody] = useState(entry.body);
@@ -190,7 +200,14 @@ export function EntryCard({ entry }: { entry: JournalEntryWithPhotos }) {
   }
 
   return (
-    <article className="flex flex-col gap-2 rounded-3xl border border-emerald-100/60 bg-white p-4 shadow-md shadow-emerald-900/5 dark:border-emerald-900/40 dark:bg-zinc-900 dark:shadow-black/40">
+    <article
+      id={`entry-${entry.id}`}
+      className={`flex flex-col gap-2 rounded-3xl border bg-white p-4 shadow-md shadow-emerald-900/5 transition-colors dark:bg-zinc-900 dark:shadow-black/40 ${
+        showHighlight
+          ? "border-amber-400 ring-2 ring-amber-400 dark:border-amber-500 dark:ring-amber-500"
+          : "border-emerald-100/60 dark:border-emerald-900/40"
+      }`}
+    >
       <div className="flex items-center justify-between">
         <div className="flex flex-wrap items-center gap-2">
           {entry.author?.name && (
@@ -201,7 +218,7 @@ export function EntryCard({ entry }: { entry: JournalEntryWithPhotos }) {
             </span>
           )}
           <span className="text-xs font-semibold text-emerald-800 dark:text-emerald-200">
-            {formatEntryDate(entry.entryDate)} · {formatEntryTime(entry.createdAt, timezone)}
+            {formatEntryDate(entry.entryDate)}
           </span>
           <span className="rounded-full bg-emerald-50 px-2 py-0.5 text-xs font-semibold text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300">
             {formatDayOfLife(entry.entryDate, birthDate, dayCountStart)}
@@ -214,21 +231,29 @@ export function EntryCard({ entry }: { entry: JournalEntryWithPhotos }) {
               {entry.milestoneLabel || "Milestone"}
             </span>
           )}
-          <button
-            onClick={() => setIsEditing(true)}
-            className="text-xs text-zinc-500 dark:text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300"
-          >
-            Edit
-          </button>
-          <button
-            onClick={handleDelete}
-            disabled={isPending}
-            className="text-xs text-rose-400 hover:text-rose-600 disabled:opacity-50"
-          >
-            Delete
-          </button>
+          {isAuthor && (
+            <button
+              onClick={() => setIsEditing(true)}
+              className="text-xs text-zinc-500 dark:text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300"
+            >
+              Edit
+            </button>
+          )}
+          {isAuthor && (
+            <button
+              onClick={handleDelete}
+              disabled={isPending}
+              className="text-xs text-rose-400 hover:text-rose-600 disabled:opacity-50"
+            >
+              Delete
+            </button>
+          )}
         </div>
       </div>
+      <p className="text-xs text-zinc-500 dark:text-zinc-400">
+        Uploaded {formatUploadedAt(entry.createdAt, timezone)}
+        {wasEdited && <span className="italic"> · Edited</span>}
+      </p>
       {entry.title && <h2 className="font-heading font-bold text-emerald-950 dark:text-emerald-50">{entry.title}</h2>}
       <p className="whitespace-pre-wrap text-sm text-zinc-800 dark:text-zinc-200">{entry.body}</p>
       {entry.voiceMemoUrl && <audio controls src={entry.voiceMemoUrl} className="h-10 w-full" />}

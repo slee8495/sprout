@@ -29,7 +29,7 @@ export async function createEntry(input: z.infer<typeof entrySchema>) {
   const { userId, familyId, name } = await requireSession();
   const parsed = entrySchema.parse(input);
 
-  await createJournalEntry({
+  const entry = await createJournalEntry({
     familyId,
     authorId: userId,
     audience: parsed.audience,
@@ -49,24 +49,28 @@ export async function createEntry(input: z.infer<typeof entrySchema>) {
   await notifyFamily(familyId, userId, {
     title: `🌱 ${name ?? "New entry"}`,
     body: preview,
-    url: "/feed",
+    url: `/feed?entry=${entry.id}`,
   });
 }
 
 const updateEntrySchema = entrySchema.omit({ audience: true, voiceMemoUrl: true });
 
 export async function updateEntry(entryId: number, input: z.infer<typeof updateEntrySchema>) {
-  const { familyId } = await requireSession();
+  const { userId, familyId } = await requireSession();
   const parsed = updateEntrySchema.parse(input);
 
-  await updateJournalEntry(entryId, familyId, parsed);
+  const entry = await updateJournalEntry(entryId, familyId, userId, parsed);
+  if (!entry) throw new Error("You can only edit entries you wrote.");
+
   revalidatePath("/");
   revalidatePath("/feed");
 }
 
 export async function deleteEntry(entryId: number) {
-  const { familyId } = await requireSession();
-  await deleteJournalEntry(entryId, familyId);
+  const { userId, familyId } = await requireSession();
+  const deleted = await deleteJournalEntry(entryId, familyId, userId);
+  if (!deleted) throw new Error("You can only delete entries you wrote.");
+
   revalidatePath("/");
   revalidatePath("/feed");
 }
@@ -87,7 +91,7 @@ export async function addComment(input: z.infer<typeof commentSchema>) {
   await notifyFamily(familyId, userId, {
     title: `💬 ${name ?? "New comment"}`,
     body: parsed.body.slice(0, 120),
-    url: "/feed",
+    url: `/feed?entry=${parsed.entryId}`,
   });
 }
 

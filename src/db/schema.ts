@@ -17,6 +17,7 @@ export const milestoneCategoryEnum = pgEnum("milestone_category", [
   "language",
   "health",
   "place",
+  "special_day",
   "other",
 ]);
 

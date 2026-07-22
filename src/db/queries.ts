@@ -111,6 +111,7 @@ export async function createJournalEntry(input: {
 export async function updateJournalEntry(
   entryId: number,
   familyId: number,
+  authorId: number,
   patch: {
     entryDate: string;
     title?: string;
@@ -131,7 +132,13 @@ export async function updateJournalEntry(
         milestoneLabel: patch.milestoneLabel || null,
         updatedAt: new Date(),
       })
-      .where(and(eq(journalEntries.id, entryId), eq(journalEntries.familyId, familyId)))
+      .where(
+        and(
+          eq(journalEntries.id, entryId),
+          eq(journalEntries.familyId, familyId),
+          eq(journalEntries.authorId, authorId),
+        ),
+      )
       .returning();
 
     if (entry && patch.photoUrls !== undefined) {
@@ -145,12 +152,21 @@ export async function updateJournalEntry(
   });
 }
 
-export async function deleteJournalEntry(entryId: number, familyId: number) {
+export async function deleteJournalEntry(entryId: number, familyId: number, authorId: number) {
+  const entry = await db.query.journalEntries.findFirst({
+    where: and(
+      eq(journalEntries.id, entryId),
+      eq(journalEntries.familyId, familyId),
+      eq(journalEntries.authorId, authorId),
+    ),
+    columns: { id: true },
+  });
+  if (!entry) return false;
+
   await db.delete(photos).where(eq(photos.entryId, entryId));
   await db.delete(comments).where(eq(comments.entryId, entryId));
-  await db
-    .delete(journalEntries)
-    .where(and(eq(journalEntries.id, entryId), eq(journalEntries.familyId, familyId)));
+  await db.delete(journalEntries).where(eq(journalEntries.id, entryId));
+  return true;
 }
 
 export function getOnThisDayEntries(familyId: number, month: number, day: number, audience?: Audience) {

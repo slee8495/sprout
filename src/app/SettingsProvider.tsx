@@ -13,6 +13,7 @@ type FamilySettings = {
 };
 
 type SettingsContextValue = FamilySettings & {
+  userId: number;
   theme: Theme;
   setTheme: (theme: Theme) => void;
   fontSize: FontSize;
@@ -38,7 +39,15 @@ function readStoredFontSize(): FontSize {
   return stored === "sm" || stored === "md" || stored === "lg" ? stored : "md";
 }
 
-export function SettingsProvider({ family, children }: { family: FamilySettings; children: React.ReactNode }) {
+export function SettingsProvider({
+  family,
+  userId,
+  children,
+}: {
+  family: FamilySettings;
+  userId: number;
+  children: React.ReactNode;
+}) {
   const [theme, setThemeState] = useState<Theme>(readStoredTheme);
   const [fontSize, setFontSizeState] = useState<FontSize>(readStoredFontSize);
 
@@ -66,7 +75,7 @@ export function SettingsProvider({ family, children }: { family: FamilySettings;
   }
 
   return (
-    <SettingsContext.Provider value={{ ...family, theme, setTheme, fontSize, setFontSize }}>
+    <SettingsContext.Provider value={{ ...family, userId, theme, setTheme, fontSize, setFontSize }}>
       {children}
     </SettingsContext.Provider>
   );

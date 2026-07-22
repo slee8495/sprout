@@ -37,3 +37,14 @@ export function formatEntryTime(createdAt: Date | string, timezone: string): str
     minute: "2-digit",
   });
 }
+
+export function formatUploadedAt(createdAt: Date | string, timezone: string): string {
+  return new Date(createdAt).toLocaleString("en-US", {
+    timeZone: timezone,
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+  });
+}

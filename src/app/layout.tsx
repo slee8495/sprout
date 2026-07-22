@@ -63,7 +63,10 @@ export default async function RootLayout({
         <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
       </head>
       <body className="min-h-full flex flex-col">
-        <SettingsProvider family={{ timezone: family.timezone, birthDate: family.birthDate ?? "", dayCountStart: family.dayCountStart }}>
+        <SettingsProvider
+          family={{ timezone: family.timezone, birthDate: family.birthDate ?? "", dayCountStart: family.dayCountStart }}
+          userId={session?.user?.id ? Number(session.user.id) : 0}
+        >
           <NavBar />
           {children}
           <PushNotifications />
