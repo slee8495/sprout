@@ -31,6 +31,8 @@ export const families = pgTable("families", {
   timezone: varchar("timezone", { length: 64 }).notNull().default("America/Los_Angeles"),
   birthDate: date("birth_date"),
   dayCountStart: dayCountStartEnum("day_count_start").notNull().default("zero"),
+  inviteCode: varchar("invite_code", { length: 16 }).notNull().unique(),
+  passphraseHash: text("passphrase_hash").notNull(),
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
 });
 

@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { requireSession } from "@/lib/session";
 import { getFamilySettings } from "@/db/queries";
 import { FamilySettingsForm } from "../settings/FamilySettingsForm";
+import { InviteCodeCard } from "../InviteCodeCard";
 
 export default async function OnboardingPage() {
   const { familyId } = await requireSession();
@@ -18,6 +19,7 @@ export default async function OnboardingPage() {
           A few quick things before we start journaling.
         </p>
       </header>
+      <InviteCodeCard inviteCode={settings.inviteCode} />
       <FamilySettingsForm mode="onboarding" />
     </div>
   );

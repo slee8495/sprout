@@ -1,19 +1,18 @@
 import Link from "next/link";
-import { LoginForm } from "./LoginForm";
+import { JoinForm } from "./JoinForm";
 
-export default function LoginPage() {
+export default function JoinPage() {
   return (
     <main className="mx-auto flex min-h-screen max-w-sm flex-col justify-center gap-4 p-6">
       <h1 className="font-heading text-3xl font-bold text-emerald-700 dark:text-emerald-300">🌱 Sprout</h1>
-      <LoginForm />
+      <p className="text-sm text-zinc-600 dark:text-zinc-400">
+        Join your partner&apos;s family with the code and passphrase they shared with you.
+      </p>
+      <JoinForm />
       <p className="text-center text-sm text-zinc-600 dark:text-zinc-400">
-        New here?{" "}
+        Starting a new family?{" "}
         <Link href="/signup" className="font-semibold text-emerald-700 dark:text-emerald-300">
-          Create a family
-        </Link>{" "}
-        or{" "}
-        <Link href="/join" className="font-semibold text-emerald-700 dark:text-emerald-300">
-          join with a code
+          Sign up
         </Link>
         .
       </p>

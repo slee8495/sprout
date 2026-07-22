@@ -1,4 +1,4 @@
-import { and, desc, eq, isNotNull, ne, sql } from "drizzle-orm";
+import { and, desc, eq, ilike, isNotNull, ne, sql } from "drizzle-orm";
 import { db } from "./index";
 import {
   audienceEnum,
@@ -12,21 +12,62 @@ import {
   users,
 } from "./schema";
 
-export async function getOrCreateUser(email: string, name?: string | null, imageUrl?: string | null) {
-  const existing = await db.query.users.findFirst({ where: eq(users.email, email) });
-  if (existing) return existing;
+const INVITE_CODE_ALPHABET = "ABCDEFGHJKMNPQRSTUVWXYZ23456789"; // no 0/O/1/I/L, avoids ambiguous codes
 
-  let family = await db.query.families.findFirst();
-  if (!family) {
-    [family] = await db
-      .insert(families)
-      .values({ name: process.env.FAMILY_NAME ?? "Our Family" })
+function generateInviteCode(): string {
+  let code = "";
+  for (let i = 0; i < 8; i++) code += INVITE_CODE_ALPHABET[Math.floor(Math.random() * INVITE_CODE_ALPHABET.length)];
+  return code;
+}
+
+export function isUniqueConstraintError(err: unknown, column?: string): boolean {
+  const pgErr = err as { code?: string; constraint_name?: string; message?: string };
+  if (pgErr?.code !== "23505") return false;
+  if (!column) return true;
+  return (pgErr.constraint_name ?? pgErr.message ?? "").toLowerCase().includes(column.toLowerCase());
+}
+
+export async function getFamilyByInviteCode(inviteCode: string) {
+  return db.query.families.findFirst({ where: eq(families.inviteCode, inviteCode) });
+}
+
+export async function getFamilyMemberByName(familyId: number, name: string) {
+  return db.query.users.findFirst({ where: and(eq(users.familyId, familyId), ilike(users.name, name)) });
+}
+
+export async function createFamilyWithOwner(input: {
+  familyName: string;
+  ownerName: string;
+  email: string;
+  passphraseHash: string;
+}) {
+  return db.transaction(async (tx) => {
+    let family: typeof families.$inferSelect | undefined;
+    let lastError: unknown;
+    for (let attempt = 0; attempt < 5 && !family; attempt++) {
+      try {
+        [family] = await tx
+          .insert(families)
+          .values({ name: input.familyName, inviteCode: generateInviteCode(), passphraseHash: input.passphraseHash })
+          .returning();
+      } catch (err) {
+        lastError = err;
+      }
+    }
+    if (!family) throw lastError ?? new Error("Could not create family");
+
+    const [user] = await tx
+      .insert(users)
+      .values({ familyId: family.id, email: input.email, name: input.ownerName })
       .returning();
-  }
+    return { family, user };
+  });
+}
 
+export async function addFamilyMember(input: { familyId: number; name: string; email: string }) {
   const [user] = await db
     .insert(users)
-    .values({ familyId: family.id, email, name, imageUrl })
+    .values({ familyId: input.familyId, email: input.email, name: input.name })
     .returning();
   return user;
 }
@@ -190,7 +231,7 @@ export function getOnThisDayEntries(familyId: number, month: number, day: number
 export async function getFamilySettings(familyId: number) {
   const family = await db.query.families.findFirst({
     where: eq(families.id, familyId),
-    columns: { timezone: true, birthDate: true, dayCountStart: true },
+    columns: { timezone: true, birthDate: true, dayCountStart: true, inviteCode: true, name: true },
   });
   if (!family) throw new Error("Family not found");
   return family;
