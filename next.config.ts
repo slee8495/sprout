@@ -17,7 +17,7 @@ const nextConfig: NextConfig = {
   // them in the serverless function bundle — without this, ffmpeg/ffprobe are missing
   // in production even though the build succeeds and everything works locally.
   outputFileTracingIncludes: {
-    "/api/video/upload": ["./node_modules/ffmpeg-static/**/*", "./node_modules/ffprobe-static/**/*"],
+    "/api/video/transcode": ["./node_modules/ffmpeg-static/**/*", "./node_modules/ffprobe-static/**/*"],
   },
 };
 
