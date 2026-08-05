@@ -79,6 +79,8 @@ export const journalEntries = pgTable("journal_entries", {
   milestoneCategory: milestoneCategoryEnum("milestone_category"),
   milestoneLabel: varchar("milestone_label", { length: 128 }),
   voiceMemoUrl: text("voice_memo_url"),
+  videoUrl: text("video_url"),
+  videoSizeBytes: integer("video_size_bytes"),
   isDraft: boolean("is_draft").notNull().default(false),
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),

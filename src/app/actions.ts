@@ -25,6 +25,8 @@ const entrySchema = z.object({
   milestoneLabel: z.string().max(128).optional(),
   photos: z.array(z.object({ url: z.string().url(), sizeBytes: z.number().optional() })).max(10).optional(),
   voiceMemoUrl: z.string().url().optional(),
+  videoUrl: z.string().url().optional(),
+  videoSizeBytes: z.number().optional(),
   isDraft: z.boolean().optional(),
 });
 
@@ -51,6 +53,8 @@ export async function createEntry(input: z.infer<typeof entrySchema>) {
     milestoneLabel: parsed.milestoneLabel,
     photos: parsed.photos,
     voiceMemoUrl: parsed.voiceMemoUrl,
+    videoUrl: parsed.videoUrl,
+    videoSizeBytes: parsed.videoSizeBytes,
     isDraft: parsed.isDraft,
   });
 
@@ -67,7 +71,14 @@ export async function createEntry(input: z.infer<typeof entrySchema>) {
   });
 }
 
-const updateEntrySchema = entrySchema.omit({ audience: true, childId: true, voiceMemoUrl: true, isDraft: true });
+const updateEntrySchema = entrySchema.omit({
+  audience: true,
+  childId: true,
+  voiceMemoUrl: true,
+  videoUrl: true,
+  videoSizeBytes: true,
+  isDraft: true,
+});
 
 export async function updateEntry(entryId: number, input: z.infer<typeof updateEntrySchema>) {
   const { userId, familyId } = await requireSession();

@@ -267,6 +267,7 @@ export function EntryCard({ entry, highlighted }: { entry: JournalEntryWithPhoto
       {entry.title && <h2 className="font-heading font-bold text-emerald-950 dark:text-emerald-50">{entry.title}</h2>}
       <p className="whitespace-pre-wrap text-sm text-zinc-800 dark:text-zinc-200">{entry.body}</p>
       {entry.voiceMemoUrl && <audio controls src={entry.voiceMemoUrl} className="h-10 w-full" />}
+      {entry.videoUrl && <video controls src={entry.videoUrl} className="w-full rounded-2xl" />}
       <PhotoCollage photos={entry.photos} onOpen={setLightboxIndex} />
       {lightboxIndex !== null && (
         <PhotoLightbox photos={entry.photos} initialIndex={lightboxIndex} onClose={() => setLightboxIndex(null)} />

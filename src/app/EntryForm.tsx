@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { createEntry, updateDraft } from "./actions";
 import { uploadJournalPhoto } from "@/lib/uploadPhoto";
 import { uploadVoiceMemo } from "@/lib/uploadVoiceMemo";
+import { getVideoDuration, MAX_VIDEO_DURATION_SECONDS, uploadJournalVideo } from "@/lib/uploadVideo";
 import type { Child } from "@/db/queries";
 import type { milestoneCategoryEnum } from "@/db/schema";
 import { getMilestoneCategories, subjectEmoji } from "@/lib/milestones";
@@ -60,6 +61,7 @@ export function EntryForm({
   const [existingPhotos, setExistingPhotos] = useState(draft?.photos ?? []);
   const [files, setFiles] = useState<File[]>([]);
   const [voiceMemo, setVoiceMemo] = useState<Blob | null>(null);
+  const [videoFile, setVideoFile] = useState<File | null>(null);
   const [recording, setRecording] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
@@ -80,6 +82,7 @@ export function EntryForm({
     setExistingPhotos(draft?.photos ?? []);
     setFiles([]);
     setVoiceMemo(null);
+    setVideoFile(null);
   }
 
   const selectedChild = kids.find((k) => k.id === childId);
@@ -91,6 +94,33 @@ export function EntryForm({
       if (voiceMemoUrl) URL.revokeObjectURL(voiceMemoUrl);
     };
   }, [voiceMemoUrl]);
+
+  const videoPreviewUrl = useMemo(() => (videoFile ? URL.createObjectURL(videoFile) : null), [videoFile]);
+  useEffect(() => {
+    return () => {
+      if (videoPreviewUrl) URL.revokeObjectURL(videoPreviewUrl);
+    };
+  }, [videoPreviewUrl]);
+
+  async function handleVideoSelected(file: File | undefined) {
+    if (!file) return;
+    try {
+      const duration = await getVideoDuration(file);
+      if (duration > MAX_VIDEO_DURATION_SECONDS + 1) {
+        setError(
+          fill(t("Videos must be {max}s or shorter (this one is {actual}s)."), {
+            max: MAX_VIDEO_DURATION_SECONDS,
+            actual: Math.round(duration),
+          }),
+        );
+        return;
+      }
+      setError(null);
+      setVideoFile(file);
+    } catch {
+      setError(t("Couldn't read that video file."));
+    }
+  }
 
   async function startRecording() {
     try {
@@ -136,6 +166,7 @@ export function EntryForm({
           ...uploaded.map((r) => ({ url: r.url, sizeBytes: r.sizeBytes })),
         ];
         const uploadedVoiceMemoUrl = voiceMemo ? (await uploadVoiceMemo(voiceMemo)).url : undefined;
+        const uploadedVideo = videoFile ? await uploadJournalVideo(videoFile) : undefined;
 
         const shared = {
           entryDate,
@@ -150,7 +181,14 @@ export function EntryForm({
         if (draft) {
           await updateDraft(draft.id, shared);
         } else {
-          await createEntry({ ...shared, audience: childId ? "child" : "parents", childId, voiceMemoUrl: uploadedVoiceMemoUrl });
+          await createEntry({
+            ...shared,
+            audience: childId ? "child" : "parents",
+            childId,
+            voiceMemoUrl: uploadedVoiceMemoUrl,
+            videoUrl: uploadedVideo?.url,
+            videoSizeBytes: uploadedVideo?.sizeBytes,
+          });
         }
 
         setTitle("");
@@ -160,6 +198,7 @@ export function EntryForm({
         setExistingPhotos([]);
         setFiles([]);
         setVoiceMemo(null);
+        setVideoFile(null);
         formRef.current?.reset();
         onSaved?.();
         router.refresh();
@@ -316,6 +355,35 @@ export function EntryForm({
                 {t("Remove")}
               </button>
             </>
+          )}
+        </div>
+      )}
+
+      {!draft && (
+        <div className="flex flex-col gap-2">
+          {videoPreviewUrl ? (
+            <div className="flex items-center gap-3">
+              <video controls src={videoPreviewUrl} className="h-32 rounded-2xl" />
+              <button
+                type="button"
+                onClick={() => setVideoFile(null)}
+                className="text-xs text-zinc-500 dark:text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300"
+              >
+                {t("Remove")}
+              </button>
+            </div>
+          ) : (
+            <label className="flex items-center gap-2 text-sm">
+              <span className="rounded-full border border-emerald-100 px-3 py-1.5 font-heading text-sm font-semibold text-emerald-800 dark:border-emerald-900/40 dark:text-emerald-200">
+                {t("🎥 Video (max 1 min)")}
+              </span>
+              <input
+                type="file"
+                accept="video/*"
+                onChange={(e) => handleVideoSelected(e.target.files?.[0])}
+                className="hidden"
+              />
+            </label>
           )}
         </div>
       )}

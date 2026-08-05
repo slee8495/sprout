@@ -215,6 +215,8 @@ export async function createJournalEntry(input: {
   milestoneLabel?: string;
   photos?: PhotoInput[];
   voiceMemoUrl?: string;
+  videoUrl?: string;
+  videoSizeBytes?: number;
   isDraft?: boolean;
 }) {
   const [entry] = await db
@@ -230,6 +232,8 @@ export async function createJournalEntry(input: {
       milestoneCategory: input.milestoneCategory || null,
       milestoneLabel: input.milestoneLabel || null,
       voiceMemoUrl: input.voiceMemoUrl || null,
+      videoUrl: input.videoUrl || null,
+      videoSizeBytes: input.videoSizeBytes ?? null,
       isDraft: input.isDraft ?? false,
     })
     .returning();
@@ -343,12 +347,18 @@ export async function updateFamilySettings(familyId: number, patch: { timezone: 
 }
 
 export async function getFamilyStorageUsage(familyId: number): Promise<number> {
-  const [row] = await db
-    .select({ totalBytes: sql<string>`coalesce(sum(${photos.sizeBytes}), 0)` })
-    .from(photos)
-    .innerJoin(journalEntries, eq(journalEntries.id, photos.entryId))
-    .where(eq(journalEntries.familyId, familyId));
-  return Number(row?.totalBytes ?? 0);
+  const [[photoRow], [videoRow]] = await Promise.all([
+    db
+      .select({ totalBytes: sql<string>`coalesce(sum(${photos.sizeBytes}), 0)` })
+      .from(photos)
+      .innerJoin(journalEntries, eq(journalEntries.id, photos.entryId))
+      .where(eq(journalEntries.familyId, familyId)),
+    db
+      .select({ totalBytes: sql<string>`coalesce(sum(${journalEntries.videoSizeBytes}), 0)` })
+      .from(journalEntries)
+      .where(eq(journalEntries.familyId, familyId)),
+  ]);
+  return Number(photoRow?.totalBytes ?? 0) + Number(videoRow?.totalBytes ?? 0);
 }
 
 export async function getFamilyBilling(familyId: number) {
@@ -451,12 +461,12 @@ export async function getFamilyDeletionSummary(familyId: number) {
 }
 
 // Permanently deletes a family and everything under it (children, entries, photos, comments,
-// users, push subscriptions). Returns the blob URLs (photos + voice memos) so the caller can
+// users, push subscriptions). Returns the blob URLs (photos + voice memos + videos) so the caller can
 // delete the actual files after this transaction commits — file deletion isn't transactional.
 export async function deleteFamilyAccount(familyId: number): Promise<string[]> {
   return db.transaction(async (tx) => {
     const entryRows = await tx
-      .select({ id: journalEntries.id, voiceMemoUrl: journalEntries.voiceMemoUrl })
+      .select({ id: journalEntries.id, voiceMemoUrl: journalEntries.voiceMemoUrl, videoUrl: journalEntries.videoUrl })
       .from(journalEntries)
       .where(eq(journalEntries.familyId, familyId));
     const entryIds = entryRows.map((e) => e.id);
@@ -483,6 +493,7 @@ export async function deleteFamilyAccount(familyId: number): Promise<string[]> {
     return [
       ...photoRows.map((p) => p.url),
       ...entryRows.map((e) => e.voiceMemoUrl).filter((url): url is string => !!url),
+      ...entryRows.map((e) => e.videoUrl).filter((url): url is string => !!url),
     ];
   });
 }

@@ -4,6 +4,7 @@ import {
   createJournalEntry,
   deleteFamilyAccount,
   getFamilyBilling,
+  getFamilyStorageUsage,
   incrementStorageAddon,
   linkOrJoinFamilyMember,
   listJournalEntries,
@@ -108,5 +109,26 @@ describe("core flows against a disposable test family", () => {
     await incrementStorageAddon(familyId, 5 * 1024 * 1024 * 1024);
     const billing = await getFamilyBilling(familyId);
     expect(billing.storageAddonBytes).toBe(5 * 1024 * 1024 * 1024);
+  });
+
+  it("stores a video's URL and size on the entry, and counts it toward storage usage", async () => {
+    const usageBefore = await getFamilyStorageUsage(familyId);
+
+    const entry = await createJournalEntry({
+      familyId,
+      authorId: ownerId,
+      audience: "parents",
+      entryDate: "2026-08-05",
+      body: "Entry with a video attached.",
+      videoUrl: "https://example-blob.invalid/videos/test.mp4",
+      videoSizeBytes: 12_345_678,
+    });
+
+    const entries = await listJournalEntries(familyId);
+    const found = entries.find((e) => e.id === entry.id);
+    expect(found?.videoUrl).toBe("https://example-blob.invalid/videos/test.mp4");
+
+    const usageAfter = await getFamilyStorageUsage(familyId);
+    expect(usageAfter - usageBefore).toBe(12_345_678);
   });
 });
