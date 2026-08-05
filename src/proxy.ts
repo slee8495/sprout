@@ -25,6 +25,13 @@ export default auth((req) => {
     return;
   }
 
+  // "/" is public — logged-out visitors see the marketing landing page (page.tsx renders
+  // it directly), logged-in ones see their journal. Only the family-linking redirect applies.
+  if (pathname === "/") {
+    if (isLoggedIn && !hasFamily) return NextResponse.redirect(new URL("/connect", req.nextUrl));
+    return;
+  }
+
   if (!isLoggedIn) return NextResponse.redirect(new URL("/login", req.nextUrl));
   if (!hasFamily) return NextResponse.redirect(new URL("/connect", req.nextUrl));
 });

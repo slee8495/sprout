@@ -1,11 +1,17 @@
 import { redirect } from "next/navigation";
+import { auth } from "@/auth";
 import { getFamilySettings, getOnThisDayEntries, listChildren, listJournalEntries, listMyDrafts } from "@/db/queries";
 import { todayInTimezone } from "@/lib/date";
-import { requireSession } from "@/lib/session";
 import { JournalHome } from "./JournalHome";
+import { LandingPage } from "./LandingPage";
 
 export default async function Home() {
-  const { userId, familyId } = await requireSession();
+  const session = await auth();
+  if (!session?.user?.id) return <LandingPage />;
+  if (!session.user.familyId) redirect("/connect");
+
+  const userId = Number(session.user.id);
+  const familyId = session.user.familyId;
   const [settings, kids] = await Promise.all([getFamilySettings(familyId), listChildren(familyId)]);
   if (kids.length === 0) redirect("/onboarding");
 

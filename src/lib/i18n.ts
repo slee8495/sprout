@@ -139,6 +139,18 @@ const ko: Record<string, string> = {
   Terms: "이용약관",
   "Privacy Policy": "개인정보처리방침",
 
+  // Landing page
+  "A private, lifelong journal for your family.": "가족을 위한 프라이빗하고 평생 남는 저널이에요.",
+  "Photos & voice memos": "사진 & 음성 메모",
+  "Capture more than words — attach a photo or a quick voice memo to any entry.":
+    "글로만 담기 아쉬울 땐 — 사진이나 짧은 음성 메모를 어떤 일기에도 첨부하세요.",
+  "Track firsts, big and small, and revisit them on “On this day.”":
+    "크고 작은 처음을 기록하고, “오늘 이날”에서 다시 꺼내보세요.",
+  "Private by default": "기본적으로 비공개",
+  "Only the family members you invite can ever see your journal.": "초대한 가족 구성원만 일기를 볼 수 있어요.",
+  "English & Korean": "영어 & 한국어",
+  "Switch the app's language anytime from Settings.": "설정에서 언제든 앱 언어를 전환할 수 있어요.",
+
   // Auth / onboarding pages
   "Your family's private journal.": "가족을 위한 프라이빗 저널이에요.",
   "Sign in with Google": "Google로 로그인",
