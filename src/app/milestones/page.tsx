@@ -1,14 +1,13 @@
 import { redirect } from "next/navigation";
-import { auth } from "@/auth";
-import { getFamilySettings, listMilestoneEntries } from "@/db/queries";
+import { listChildren, listMilestoneEntries } from "@/db/queries";
+import { requireSession } from "@/lib/session";
 import { MilestoneGrid } from "./MilestoneGrid";
 
 export default async function MilestonesPage() {
-  const session = await auth();
-  const familyId = session!.user!.familyId;
+  const { familyId } = await requireSession();
 
-  const settings = await getFamilySettings(familyId);
-  if (!settings.birthDate) redirect("/onboarding");
+  const kids = await listChildren(familyId);
+  if (kids.length === 0) redirect("/onboarding");
 
   const entries = await listMilestoneEntries(familyId);
 

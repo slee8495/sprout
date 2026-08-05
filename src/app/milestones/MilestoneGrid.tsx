@@ -2,12 +2,13 @@
 
 import { useState } from "react";
 import type { JournalEntryWithPhotos } from "@/db/queries";
-import { MILESTONE_CATEGORIES, formatEntryDate } from "@/lib/milestones";
+import { MILESTONE_CATEGORIES, subjectEmoji, formatEntryDate } from "@/lib/milestones";
 import { authorBadgeClasses } from "@/lib/author";
 import { formatDayOfLife } from "@/lib/date";
 import { useSettings } from "../SettingsProvider";
 
 export function MilestoneGrid({ entries }: { entries: JournalEntryWithPhotos[] }) {
+  const { t, locale } = useSettings();
   const [expandedCategory, setExpandedCategory] = useState<string | null>(null);
 
   const byCategory = new Map<string, JournalEntryWithPhotos[]>();
@@ -35,9 +36,9 @@ export function MilestoneGrid({ entries }: { entries: JournalEntryWithPhotos[] }
               }`}
             >
               <span className="text-2xl">{c.emoji}</span>
-              <span className="font-heading text-sm font-semibold">{c.label}</span>
+              <span className="font-heading text-sm font-semibold">{t(c.label)}</span>
               <span className="text-xs text-zinc-600 dark:text-zinc-400">
-                {hasEntries ? `${categoryEntries.length}개` : "아직 없음"}
+                {hasEntries ? (locale === "ko" ? `${categoryEntries.length}개` : categoryEntries.length) : t("Not yet")}
               </span>
             </button>
           );
@@ -56,7 +57,7 @@ export function MilestoneGrid({ entries }: { entries: JournalEntryWithPhotos[] }
 }
 
 function MilestoneDetail({ entry }: { entry: JournalEntryWithPhotos }) {
-  const { birthDate, dayCountStart } = useSettings();
+  const { t } = useSettings();
   return (
     <div className="rounded-3xl border border-emerald-100/60 bg-white p-4 shadow-md shadow-emerald-900/5 dark:border-emerald-900/40 dark:bg-zinc-900 dark:shadow-black/40">
       <div className="mb-2 flex flex-wrap items-center gap-2">
@@ -67,14 +68,21 @@ function MilestoneDetail({ entry }: { entry: JournalEntryWithPhotos }) {
             {entry.author.name}
           </span>
         )}
+        {entry.child && (
+          <span className="rounded-full bg-violet-100 px-2.5 py-0.5 font-heading text-xs font-semibold text-violet-800 dark:bg-violet-900/50 dark:text-violet-200">
+            {subjectEmoji(entry.child.type)} {entry.child.name}
+          </span>
+        )}
         <span className="text-xs font-medium text-zinc-600 dark:text-zinc-400">
           {formatEntryDate(entry.entryDate)}
         </span>
-        <span className="rounded-full bg-emerald-50 px-2 py-0.5 text-xs font-semibold text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300">
-          {formatDayOfLife(entry.entryDate, birthDate, dayCountStart)}
-        </span>
+        {entry.child?.birthDate && (
+          <span className="rounded-full bg-emerald-50 px-2 py-0.5 text-xs font-semibold text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300">
+            {formatDayOfLife(entry.entryDate, entry.child.birthDate, entry.child.dayCountStart)}
+          </span>
+        )}
       </div>
-      <h3 className="mb-1 font-heading font-bold">{entry.milestoneLabel || "Milestone"}</h3>
+      <h3 className="mb-1 font-heading font-bold">{entry.milestoneLabel || t("Milestone")}</h3>
       {entry.title && <p className="mb-1 text-sm font-semibold text-zinc-700 dark:text-zinc-300">{entry.title}</p>}
       <p className="whitespace-pre-wrap text-sm text-zinc-800 dark:text-zinc-200">{entry.body}</p>
     </div>

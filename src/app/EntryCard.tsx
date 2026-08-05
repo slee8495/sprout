@@ -4,7 +4,8 @@ import { useEffect, useMemo, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import type { JournalEntryWithPhotos } from "@/db/queries";
-import { MILESTONE_CATEGORIES, formatEntryDate } from "@/lib/milestones";
+import { getMilestoneCategories, subjectEmoji, formatEntryDate } from "@/lib/milestones";
+import { fill } from "@/lib/i18n";
 import { authorBadgeClasses } from "@/lib/author";
 import { formatDayOfLife, formatUploadedAt } from "@/lib/date";
 import { deleteEntry, updateEntry } from "./actions";
@@ -19,7 +20,7 @@ type MilestoneCategory = (typeof milestoneCategoryEnum.enumValues)[number];
 
 export function EntryCard({ entry, highlighted }: { entry: JournalEntryWithPhotos; highlighted?: boolean }) {
   const router = useRouter();
-  const { timezone, birthDate, dayCountStart, userId } = useSettings();
+  const { timezone, userId, t } = useSettings();
   const isAuthor = entry.authorId === userId;
   const wasEdited = new Date(entry.updatedAt).getTime() > new Date(entry.createdAt).getTime();
   const [showHighlight, setShowHighlight] = useState(highlighted ?? false);
@@ -41,6 +42,7 @@ export function EntryCard({ entry, highlighted }: { entry: JournalEntryWithPhoto
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
+  const milestoneCategories = getMilestoneCategories(entry.child?.type ?? "child");
 
   const newFilePreviews = useMemo(() => newFiles.map((f) => URL.createObjectURL(f)), [newFiles]);
   useEffect(() => {
@@ -51,16 +53,17 @@ export function EntryCard({ entry, highlighted }: { entry: JournalEntryWithPhoto
 
   function handleSave() {
     if (!body.trim()) {
-      setError("Entry can't be empty.");
+      setError(t("Entry can't be empty."));
       return;
     }
     setError(null);
     startTransition(async () => {
       try {
-        const uploadedUrls = newFiles.length
-          ? (await Promise.all(newFiles.map((f) => uploadJournalPhoto(f)))).map((r) => r.url)
-          : [];
-        const photoUrls = [...existingPhotos.map((p) => p.url), ...uploadedUrls];
+        const uploaded = newFiles.length ? await Promise.all(newFiles.map((f) => uploadJournalPhoto(f))) : [];
+        const photos = [
+          ...existingPhotos.map((p) => ({ url: p.url, sizeBytes: p.sizeBytes ?? undefined })),
+          ...uploaded.map((r) => ({ url: r.url, sizeBytes: r.sizeBytes })),
+        ];
 
         await updateEntry(entry.id, {
           entryDate,
@@ -68,19 +71,19 @@ export function EntryCard({ entry, highlighted }: { entry: JournalEntryWithPhoto
           body: body.trim(),
           milestoneCategory: milestoneCategory ? (milestoneCategory as MilestoneCategory) : undefined,
           milestoneLabel: milestoneCategory ? milestoneLabel.trim() || undefined : undefined,
-          photoUrls,
+          photos,
         });
         setIsEditing(false);
         setNewFiles([]);
         router.refresh();
       } catch {
-        setError("Couldn't save changes — try again.");
+        setError(t("Couldn't save changes — try again."));
       }
     });
   }
 
   function handleDelete() {
-    if (!confirm("Delete this entry? This can't be undone.")) return;
+    if (!confirm(t("Delete this entry? This can't be undone."))) return;
     startTransition(async () => {
       await deleteEntry(entry.id);
       router.refresh();
@@ -99,7 +102,7 @@ export function EntryCard({ entry, highlighted }: { entry: JournalEntryWithPhoto
           />
           <input
             type="text"
-            placeholder="Title (optional)"
+            placeholder={t("Title (optional)")}
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             className="min-w-0 flex-1 rounded-2xl border border-emerald-100 bg-white px-3 py-2 text-sm dark:border-emerald-900/40 dark:bg-zinc-900"
@@ -117,17 +120,17 @@ export function EntryCard({ entry, highlighted }: { entry: JournalEntryWithPhoto
             onChange={(e) => setMilestoneCategory(e.target.value)}
             className="rounded-2xl border border-emerald-100 bg-white px-3 py-2 text-sm dark:border-emerald-900/40 dark:bg-zinc-900"
           >
-            <option value="">No milestone</option>
-            {MILESTONE_CATEGORIES.map((c) => (
+            <option value="">{t("No milestone")}</option>
+            {milestoneCategories.map((c) => (
               <option key={c.value} value={c.value}>
-                {c.emoji} {c.label}
+                {c.emoji} {t(c.label)}
               </option>
             ))}
           </select>
           {milestoneCategory && (
             <input
               type="text"
-              placeholder="e.g. First broccoli"
+              placeholder={t("e.g. First broccoli")}
               value={milestoneLabel}
               onChange={(e) => setMilestoneLabel(e.target.value)}
               className="min-w-0 flex-1 rounded-2xl border border-emerald-100 bg-white px-3 py-2 text-sm dark:border-emerald-900/40 dark:bg-zinc-900"
@@ -149,7 +152,7 @@ export function EntryCard({ entry, highlighted }: { entry: JournalEntryWithPhoto
                   type="button"
                   onClick={() => setExistingPhotos((prev) => prev.filter((p) => p.id !== photo.id))}
                   className="absolute -right-1.5 -top-1.5 flex h-6 w-6 items-center justify-center rounded-full bg-zinc-900/80 text-xs font-bold text-white shadow-sm hover:bg-rose-600"
-                  aria-label="Remove photo"
+                  aria-label={t("Remove photo")}
                 >
                   ×
                 </button>
@@ -163,7 +166,7 @@ export function EntryCard({ entry, highlighted }: { entry: JournalEntryWithPhoto
                   type="button"
                   onClick={() => setNewFiles((prev) => prev.filter((_, idx) => idx !== i))}
                   className="absolute -right-1.5 -top-1.5 flex h-6 w-6 items-center justify-center rounded-full bg-zinc-900/80 text-xs font-bold text-white shadow-sm hover:bg-rose-600"
-                  aria-label="Remove photo"
+                  aria-label={t("Remove photo")}
                 >
                   ×
                 </button>
@@ -185,14 +188,14 @@ export function EntryCard({ entry, highlighted }: { entry: JournalEntryWithPhoto
             disabled={isPending}
             className="rounded-full bg-emerald-600 px-5 py-2 font-heading text-sm font-semibold text-white shadow-sm shadow-emerald-900/20 transition-transform hover:scale-105 hover:bg-emerald-700 active:scale-95 disabled:opacity-50 disabled:hover:scale-100"
           >
-            {isPending ? "Saving…" : "Save"}
+            {isPending ? t("Saving…") : t("Save")}
           </button>
           <button
             onClick={() => setIsEditing(false)}
             disabled={isPending}
             className="rounded-full border border-emerald-100 px-5 py-2 font-heading text-sm font-semibold text-emerald-800 transition-transform hover:scale-105 active:scale-95 dark:border-emerald-900/40 dark:text-emerald-200"
           >
-            Cancel
+            {t("Cancel")}
           </button>
         </div>
       </article>
@@ -217,18 +220,25 @@ export function EntryCard({ entry, highlighted }: { entry: JournalEntryWithPhoto
               {entry.author.name}
             </span>
           )}
+          {entry.child && (
+            <span className="rounded-full bg-violet-100 px-2.5 py-0.5 font-heading text-xs font-semibold text-violet-800 dark:bg-violet-900/50 dark:text-violet-200">
+              {subjectEmoji(entry.child.type)} {entry.child.name}
+            </span>
+          )}
           <span className="text-xs font-semibold text-emerald-800 dark:text-emerald-200">
             {formatEntryDate(entry.entryDate)}
           </span>
-          <span className="rounded-full bg-emerald-50 px-2 py-0.5 text-xs font-semibold text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300">
-            {formatDayOfLife(entry.entryDate, birthDate, dayCountStart)}
-          </span>
+          {entry.child?.birthDate && (
+            <span className="rounded-full bg-emerald-50 px-2 py-0.5 text-xs font-semibold text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300">
+              {formatDayOfLife(entry.entryDate, entry.child.birthDate, entry.child.dayCountStart)}
+            </span>
+          )}
         </div>
         <div className="flex items-center gap-2">
           {entry.milestoneCategory && (
             <span className="rounded-full bg-amber-200 px-2.5 py-0.5 font-heading text-xs font-semibold text-amber-900 dark:bg-amber-900/60 dark:text-amber-200">
-              {MILESTONE_CATEGORIES.find((c) => c.value === entry.milestoneCategory)?.emoji ?? "🏅"}{" "}
-              {entry.milestoneLabel || "Milestone"}
+              {milestoneCategories.find((c) => c.value === entry.milestoneCategory)?.emoji ?? "🏅"}{" "}
+              {entry.milestoneLabel || t("Milestone")}
             </span>
           )}
           {isAuthor && (
@@ -236,7 +246,7 @@ export function EntryCard({ entry, highlighted }: { entry: JournalEntryWithPhoto
               onClick={() => setIsEditing(true)}
               className="text-xs text-zinc-500 dark:text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300"
             >
-              Edit
+              {t("Edit")}
             </button>
           )}
           {isAuthor && (
@@ -245,14 +255,14 @@ export function EntryCard({ entry, highlighted }: { entry: JournalEntryWithPhoto
               disabled={isPending}
               className="text-xs text-rose-400 hover:text-rose-600 disabled:opacity-50"
             >
-              Delete
+              {t("Delete")}
             </button>
           )}
         </div>
       </div>
       <p className="text-xs text-zinc-500 dark:text-zinc-400">
-        Uploaded {formatUploadedAt(entry.createdAt, timezone)}
-        {wasEdited && <span className="italic"> · Edited</span>}
+        {fill(t("Uploaded {time}"), { time: formatUploadedAt(entry.createdAt, timezone) })}
+        {wasEdited && <span className="italic"> {t("· Edited")}</span>}
       </p>
       {entry.title && <h2 className="font-heading font-bold text-emerald-950 dark:text-emerald-50">{entry.title}</h2>}
       <p className="whitespace-pre-wrap text-sm text-zinc-800 dark:text-zinc-200">{entry.body}</p>

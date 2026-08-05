@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
-import { auth } from "@/auth";
-import { getFamilySettings, listJournalEntries } from "@/db/queries";
+import { listChildren, listJournalEntries } from "@/db/queries";
+import { requireSession } from "@/lib/session";
 import { FeedTabs } from "./FeedTabs";
 
 export default async function FeedPage({
@@ -8,14 +8,13 @@ export default async function FeedPage({
 }: {
   searchParams: Promise<{ entry?: string }>;
 }) {
-  const session = await auth();
-  const familyId = session!.user!.familyId;
+  const { familyId } = await requireSession();
 
-  const settings = await getFamilySettings(familyId);
-  if (!settings.birthDate) redirect("/onboarding");
+  const kids = await listChildren(familyId);
+  if (kids.length === 0) redirect("/onboarding");
 
-  const [rounEntries, parentEntries, { entry }] = await Promise.all([
-    listJournalEntries(familyId, "roun"),
+  const [childEntries, parentEntries, { entry }] = await Promise.all([
+    listJournalEntries(familyId, "child"),
     listJournalEntries(familyId, "parents"),
     searchParams,
   ]);
@@ -27,7 +26,8 @@ export default async function FeedPage({
         <h1 className="font-heading text-2xl font-bold text-emerald-700 dark:text-emerald-300">📸 Feed</h1>
       </header>
       <FeedTabs
-        rounEntries={rounEntries}
+        kids={kids}
+        childEntries={childEntries}
         parentEntries={parentEntries}
         highlightEntryId={highlightEntryId && !Number.isNaN(highlightEntryId) ? highlightEntryId : undefined}
       />

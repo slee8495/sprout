@@ -9,7 +9,7 @@ export const maxDuration = 60;
 // The client falls back to the browser's Web Speech API if this request fails.
 export async function GET(req: NextRequest) {
   const session = await auth();
-  if (!session?.user) {
+  if (!session?.user?.familyId) {
     return NextResponse.json({ error: "unauthorized" }, { status: 401 });
   }
 

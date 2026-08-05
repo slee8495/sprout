@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useSettings } from "./SettingsProvider";
 
 const LINKS = [
   { href: "/", label: "Journal" },
@@ -11,8 +12,9 @@ const LINKS = [
 
 export function NavBar() {
   const pathname = usePathname();
+  const { t } = useSettings();
 
-  if (pathname === "/login" || pathname === "/onboarding") return null;
+  if (["/login", "/onboarding", "/connect", "/signup", "/join", "/privacy", "/terms"].includes(pathname)) return null;
 
   return (
     <nav className="sticky top-0 z-10 flex gap-1 border-b border-emerald-100/70 bg-[#fff9f0]/90 px-2 py-2 backdrop-blur dark:border-emerald-900/40 dark:bg-[#1f2420]/90 print:hidden">
@@ -28,13 +30,13 @@ export function NavBar() {
                 : "text-emerald-900 hover:bg-emerald-100/60 dark:text-emerald-100 dark:hover:bg-emerald-900/30"
             }`}
           >
-            {link.label}
+            {t(link.label)}
           </Link>
         );
       })}
       <Link
         href="/settings"
-        aria-label="Settings"
+        aria-label={t("Settings")}
         className={`flex items-center justify-center rounded-full px-3 py-1.5 text-center font-heading text-sm font-semibold transition-transform hover:scale-105 active:scale-95 ${
           pathname.startsWith("/settings")
             ? "bg-emerald-600 text-white shadow-sm shadow-emerald-900/20"

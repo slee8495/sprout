@@ -1,22 +1,36 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/auth";
 
-const PUBLIC_PATHS = new Set(["/login", "/signup", "/join"]);
+// Reachable once signed in with Google but before a family is linked yet.
+const FAMILY_SETUP_PATHS = new Set(["/connect", "/signup", "/join"]);
+
+// Legal pages: always public, regardless of auth state.
+const PUBLIC_PATHS = new Set(["/privacy", "/terms"]);
 
 export default auth((req) => {
   const isLoggedIn = !!req.auth?.user;
-  const isPublicPage = PUBLIC_PATHS.has(req.nextUrl.pathname);
+  const hasFamily = !!req.auth?.user?.familyId;
+  const { pathname } = req.nextUrl;
 
-  if (!isLoggedIn && !isPublicPage) {
-    return NextResponse.redirect(new URL("/login", req.nextUrl));
+  if (PUBLIC_PATHS.has(pathname)) return;
+
+  if (pathname === "/login") {
+    if (isLoggedIn) return NextResponse.redirect(new URL(hasFamily ? "/" : "/connect", req.nextUrl));
+    return;
   }
-  if (isLoggedIn && isPublicPage) {
-    return NextResponse.redirect(new URL("/", req.nextUrl));
+
+  if (FAMILY_SETUP_PATHS.has(pathname)) {
+    if (!isLoggedIn) return NextResponse.redirect(new URL("/login", req.nextUrl));
+    if (hasFamily) return NextResponse.redirect(new URL("/", req.nextUrl));
+    return;
   }
+
+  if (!isLoggedIn) return NextResponse.redirect(new URL("/login", req.nextUrl));
+  if (!hasFamily) return NextResponse.redirect(new URL("/connect", req.nextUrl));
 });
 
 export const config = {
   matcher: [
-    "/((?!api/auth|_next/static|_next/image|favicon.ico|manifest.webmanifest|icon$|icon-192|icon-512|apple-icon|sw.js).*)",
+    "/((?!api/auth|api/stripe/webhook|_next/static|_next/image|favicon.ico|manifest.webmanifest|icon$|icon-192|icon-512|apple-icon|sw.js).*)",
   ],
 };

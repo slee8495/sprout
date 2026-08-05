@@ -3,6 +3,8 @@
 import { useEffect, useRef } from "react";
 import Image from "next/image";
 import type { JournalEntryWithPhotos } from "@/db/queries";
+import { fill } from "@/lib/i18n";
+import { useSettings } from "./SettingsProvider";
 
 type Photo = JournalEntryWithPhotos["photos"][number];
 
@@ -16,6 +18,7 @@ export function PhotoLightbox({
   onClose: () => void;
 }) {
   const containerRef = useRef<HTMLDivElement>(null);
+  const { t } = useSettings();
 
   useEffect(() => {
     const slide = containerRef.current?.children[initialIndex];
@@ -39,14 +42,14 @@ export function PhotoLightbox({
       <button
         type="button"
         onClick={onClose}
-        aria-label="Close"
+        aria-label={t("Close")}
         className="absolute right-4 top-4 z-10 flex h-9 w-9 items-center justify-center rounded-full bg-white/10 text-xl font-bold text-white hover:bg-white/20"
       >
         ×
       </button>
       {photos.length > 1 && (
         <div className="absolute right-4 top-4 mr-14 flex h-9 items-center rounded-full bg-white/10 px-3 text-xs font-semibold text-white">
-          {photos.length} photos — swipe to browse
+          {fill(t("{count} photos — swipe to browse"), { count: photos.length })}
         </div>
       )}
       <div

@@ -2,16 +2,28 @@
 
 import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { createEntry } from "./actions";
+import { createEntry, updateDraft } from "./actions";
 import { uploadJournalPhoto } from "@/lib/uploadPhoto";
 import { uploadVoiceMemo } from "@/lib/uploadVoiceMemo";
-import type { audienceEnum, milestoneCategoryEnum } from "@/db/schema";
-import { MILESTONE_CATEGORIES } from "@/lib/milestones";
+import type { Child } from "@/db/queries";
+import type { milestoneCategoryEnum } from "@/db/schema";
+import { getMilestoneCategories, subjectEmoji } from "@/lib/milestones";
+import { fill } from "@/lib/i18n";
 import { todayInTimezone } from "@/lib/date";
 import { useSettings } from "./SettingsProvider";
 
-type Audience = (typeof audienceEnum.enumValues)[number];
 type MilestoneCategory = (typeof milestoneCategoryEnum.enumValues)[number];
+
+export type DraftEntryData = {
+  id: number;
+  childId: number | null;
+  entryDate: string;
+  title: string | null;
+  body: string;
+  milestoneCategory: string | null;
+  milestoneLabel: string | null;
+  photos: { id: number; url: string; sizeBytes: number | null }[];
+};
 
 const RECORDING_MIME_TYPES = ["audio/webm", "audio/mp4", "audio/ogg"];
 
@@ -20,27 +32,58 @@ function pickRecordingMimeType(): string | undefined {
   return RECORDING_MIME_TYPES.find((type) => MediaRecorder.isTypeSupported(type));
 }
 
-export function EntryForm({ initialDate }: { initialDate?: string }) {
+export function EntryForm({
+  initialDate,
+  kids,
+  defaultChildId,
+  draft,
+  onSaved,
+}: {
+  initialDate?: string;
+  kids: Child[];
+  defaultChildId?: number;
+  draft?: DraftEntryData;
+  onSaved?: () => void;
+}) {
   const router = useRouter();
-  const { timezone } = useSettings();
+  const { timezone, t } = useSettings();
   const formRef = useRef<HTMLFormElement>(null);
-  const [entryDate, setEntryDate] = useState(initialDate ?? todayInTimezone(timezone).iso);
-  const [prevInitialDate, setPrevInitialDate] = useState(initialDate);
-  if (initialDate !== prevInitialDate) {
-    setPrevInitialDate(initialDate);
-    if (initialDate) setEntryDate(initialDate);
-  }
-  const [audience, setAudience] = useState<Audience>("roun");
-  const [title, setTitle] = useState("");
-  const [body, setBody] = useState("");
-  const [milestoneCategory, setMilestoneCategory] = useState("");
-  const [milestoneLabel, setMilestoneLabel] = useState("");
+
+  const [entryDate, setEntryDate] = useState(draft?.entryDate ?? initialDate ?? todayInTimezone(timezone).iso);
+  const [childId, setChildId] = useState<number | undefined>(
+    draft ? (draft.childId ?? undefined) : (defaultChildId ?? kids[0]?.id),
+  );
+  const [title, setTitle] = useState(draft?.title ?? "");
+  const [body, setBody] = useState(draft?.body ?? "");
+  const [milestoneCategory, setMilestoneCategory] = useState(draft?.milestoneCategory ?? "");
+  const [milestoneLabel, setMilestoneLabel] = useState(draft?.milestoneLabel ?? "");
+  const [existingPhotos, setExistingPhotos] = useState(draft?.photos ?? []);
   const [files, setFiles] = useState<File[]>([]);
   const [voiceMemo, setVoiceMemo] = useState<Blob | null>(null);
   const [recording, setRecording] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+
+  // Re-seed all fields whenever the target changes: a different draft to resume, a
+  // different default child, or a different date clicked on the calendar.
+  const [prevKey, setPrevKey] = useState(`${draft?.id ?? "new"}:${defaultChildId}:${initialDate}`);
+  const key = `${draft?.id ?? "new"}:${defaultChildId}:${initialDate}`;
+  if (key !== prevKey) {
+    setPrevKey(key);
+    setEntryDate(draft?.entryDate ?? initialDate ?? todayInTimezone(timezone).iso);
+    setChildId(draft ? (draft.childId ?? undefined) : (defaultChildId ?? kids[0]?.id));
+    setTitle(draft?.title ?? "");
+    setBody(draft?.body ?? "");
+    setMilestoneCategory(draft?.milestoneCategory ?? "");
+    setMilestoneLabel(draft?.milestoneLabel ?? "");
+    setExistingPhotos(draft?.photos ?? []);
+    setFiles([]);
+    setVoiceMemo(null);
+  }
+
+  const selectedChild = kids.find((k) => k.id === childId);
+  const milestoneCategories = getMilestoneCategories(selectedChild?.type ?? "child");
 
   const voiceMemoUrl = useMemo(() => (voiceMemo ? URL.createObjectURL(voiceMemo) : null), [voiceMemo]);
   useEffect(() => {
@@ -78,43 +121,51 @@ export function EntryForm({ initialDate }: { initialDate?: string }) {
     setRecording(false);
   }
 
-  function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    if (!body.trim()) {
-      setError("Write something first.");
+  function handleSave(isDraft: boolean) {
+    if (isDraft === false && !body.trim()) {
+      setError(t("Write something first."));
       return;
     }
     setError(null);
 
     startTransition(async () => {
       try {
-        const photoUrls = files.length
-          ? (await Promise.all(files.map((f) => uploadJournalPhoto(f)))).map((r) => r.url)
-          : [];
+        const uploaded = files.length ? await Promise.all(files.map((f) => uploadJournalPhoto(f))) : [];
+        const photoList = [
+          ...existingPhotos.map((p) => ({ url: p.url, sizeBytes: p.sizeBytes ?? undefined })),
+          ...uploaded.map((r) => ({ url: r.url, sizeBytes: r.sizeBytes })),
+        ];
         const uploadedVoiceMemoUrl = voiceMemo ? (await uploadVoiceMemo(voiceMemo)).url : undefined;
 
-        await createEntry({
-          audience,
+        const shared = {
           entryDate,
           title: title.trim() || undefined,
           body: body.trim(),
           milestoneCategory: milestoneCategory ? (milestoneCategory as MilestoneCategory) : undefined,
           milestoneLabel: milestoneCategory ? milestoneLabel.trim() || undefined : undefined,
-          photoUrls,
-          voiceMemoUrl: uploadedVoiceMemoUrl,
-        });
+          photos: photoList,
+          isDraft,
+        };
+
+        if (draft) {
+          await updateDraft(draft.id, shared);
+        } else {
+          await createEntry({ ...shared, audience: childId ? "child" : "parents", childId, voiceMemoUrl: uploadedVoiceMemoUrl });
+        }
 
         setTitle("");
         setBody("");
         setMilestoneCategory("");
         setMilestoneLabel("");
+        setExistingPhotos([]);
         setFiles([]);
         setVoiceMemo(null);
         formRef.current?.reset();
+        onSaved?.();
         router.refresh();
       } catch (err) {
         const message = err instanceof Error ? err.message : String(err);
-        setError(`Couldn't save that entry — ${message}`);
+        setError(fill(t("Couldn't save that entry — {message}"), { message }));
       }
     });
   }
@@ -122,33 +173,47 @@ export function EntryForm({ initialDate }: { initialDate?: string }) {
   return (
     <form
       ref={formRef}
-      onSubmit={handleSubmit}
+      onSubmit={(e) => e.preventDefault()}
       className="flex flex-col gap-3 rounded-3xl border border-emerald-200/70 bg-white p-4 shadow-md shadow-emerald-900/5 dark:border-emerald-800/50 dark:bg-zinc-900 dark:shadow-black/40"
     >
-      <div className="flex gap-2">
-        <button
-          type="button"
-          onClick={() => setAudience("roun")}
-          className={`rounded-full px-3 py-1.5 font-heading text-sm font-semibold transition-transform hover:scale-105 active:scale-95 ${
-            audience === "roun"
-              ? "bg-emerald-600 text-white shadow-sm shadow-emerald-900/20"
-              : "border border-emerald-100 text-emerald-800 dark:border-emerald-900/40 dark:text-emerald-200"
-          }`}
-        >
-          🌱 로운
-        </button>
-        <button
-          type="button"
-          onClick={() => setAudience("parents")}
-          className={`rounded-full px-3 py-1.5 font-heading text-sm font-semibold transition-transform hover:scale-105 active:scale-95 ${
-            audience === "parents"
-              ? "bg-rose-500 text-white shadow-sm shadow-rose-900/20"
-              : "border border-emerald-100 text-emerald-800 dark:border-emerald-900/40 dark:text-emerald-200"
-          }`}
-        >
-          💌 엄마아빠
-        </button>
-      </div>
+      {draft ? (
+        <div className="flex items-center gap-2">
+          <span className="rounded-full bg-emerald-100 px-3 py-1.5 font-heading text-sm font-semibold text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-200">
+            {childId
+              ? `${subjectEmoji(selectedChild?.type ?? "child")} ${selectedChild?.name ?? "Child"}`
+              : t("💌 Parents only")}
+          </span>
+          <span className="text-xs text-zinc-500 dark:text-zinc-400">{t("(can't change once saved)")}</span>
+        </div>
+      ) : (
+        <div className="flex flex-wrap gap-2">
+          {kids.map((child) => (
+            <button
+              key={child.id}
+              type="button"
+              onClick={() => setChildId(child.id)}
+              className={`rounded-full px-3 py-1.5 font-heading text-sm font-semibold transition-transform hover:scale-105 active:scale-95 ${
+                childId === child.id
+                  ? "bg-emerald-600 text-white shadow-sm shadow-emerald-900/20"
+                  : "border border-emerald-100 text-emerald-800 dark:border-emerald-900/40 dark:text-emerald-200"
+              }`}
+            >
+              {subjectEmoji(child.type)} {child.name}
+            </button>
+          ))}
+          <button
+            type="button"
+            onClick={() => setChildId(undefined)}
+            className={`rounded-full px-3 py-1.5 font-heading text-sm font-semibold transition-transform hover:scale-105 active:scale-95 ${
+              childId === undefined
+                ? "bg-rose-500 text-white shadow-sm shadow-rose-900/20"
+                : "border border-emerald-100 text-emerald-800 dark:border-emerald-900/40 dark:text-emerald-200"
+            }`}
+          >
+            {t("💌 Parents only")}
+          </button>
+        </div>
+      )}
 
       <div className="flex gap-3">
         <input
@@ -159,7 +224,7 @@ export function EntryForm({ initialDate }: { initialDate?: string }) {
         />
         <input
           type="text"
-          placeholder="Title (optional)"
+          placeholder={t("Title (optional)")}
           value={title}
           onChange={(e) => setTitle(e.target.value)}
           className="min-w-0 flex-1 rounded-2xl border border-emerald-100 bg-white px-3 py-2 text-sm dark:border-emerald-900/40 dark:bg-zinc-900"
@@ -167,36 +232,55 @@ export function EntryForm({ initialDate }: { initialDate?: string }) {
       </div>
 
       <textarea
-        placeholder="What happened today?"
+        placeholder={t("What happened today?")}
         value={body}
         onChange={(e) => setBody(e.target.value)}
         rows={4}
         className="rounded-2xl border border-emerald-100 bg-white px-3 py-2 text-sm dark:border-emerald-900/40 dark:bg-zinc-900"
       />
 
-      {audience === "roun" && (
+      {childId !== undefined && (
         <div className="flex flex-wrap gap-3">
           <select
             value={milestoneCategory}
             onChange={(e) => setMilestoneCategory(e.target.value)}
             className="rounded-2xl border border-emerald-100 bg-white px-3 py-2 text-sm dark:border-emerald-900/40 dark:bg-zinc-900"
           >
-            <option value="">No milestone</option>
-            {MILESTONE_CATEGORIES.map((c) => (
+            <option value="">{t("No milestone")}</option>
+            {milestoneCategories.map((c) => (
               <option key={c.value} value={c.value}>
-                {c.emoji} {c.label}
+                {c.emoji} {t(c.label)}
               </option>
             ))}
           </select>
           {milestoneCategory && (
             <input
               type="text"
-              placeholder="e.g. First broccoli"
+              placeholder={t("e.g. First broccoli")}
               value={milestoneLabel}
               onChange={(e) => setMilestoneLabel(e.target.value)}
               className="min-w-0 flex-1 rounded-2xl border border-emerald-100 bg-white px-3 py-2 text-sm dark:border-emerald-900/40 dark:bg-zinc-900"
             />
           )}
+        </div>
+      )}
+
+      {existingPhotos.length > 0 && (
+        <div className="flex flex-wrap gap-2">
+          {existingPhotos.map((photo) => (
+            <div key={photo.id} className="relative">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={photo.url} alt="" className="h-24 w-24 rounded-2xl object-cover" />
+              <button
+                type="button"
+                onClick={() => setExistingPhotos((prev) => prev.filter((p) => p.id !== photo.id))}
+                className="absolute -right-1.5 -top-1.5 flex h-6 w-6 items-center justify-center rounded-full bg-zinc-900/80 text-xs font-bold text-white shadow-sm hover:bg-rose-600"
+                aria-label={t("Remove photo")}
+              >
+                ×
+              </button>
+            </div>
+          ))}
         </div>
       )}
 
@@ -208,41 +292,54 @@ export function EntryForm({ initialDate }: { initialDate?: string }) {
         className="text-sm"
       />
 
-      <div className="flex items-center gap-3">
-        <button
-          type="button"
-          onClick={() => (recording ? stopRecording() : startRecording())}
-          className={`rounded-full px-3 py-1.5 font-heading text-sm font-semibold transition-transform hover:scale-105 active:scale-95 ${
-            recording
-              ? "bg-rose-500 text-white shadow-sm shadow-rose-900/20"
-              : "border border-emerald-100 text-emerald-800 dark:border-emerald-900/40 dark:text-emerald-200"
-          }`}
-        >
-          {recording ? "⏹ Stop recording" : "🎤 Voice memo"}
-        </button>
-        {voiceMemoUrl && !recording && (
-          <>
-            <audio controls src={voiceMemoUrl} className="h-8" />
-            <button
-              type="button"
-              onClick={() => setVoiceMemo(null)}
-              className="text-xs text-zinc-500 dark:text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300"
-            >
-              Remove
-            </button>
-          </>
-        )}
-      </div>
+      {!draft && (
+        <div className="flex items-center gap-3">
+          <button
+            type="button"
+            onClick={() => (recording ? stopRecording() : startRecording())}
+            className={`rounded-full px-3 py-1.5 font-heading text-sm font-semibold transition-transform hover:scale-105 active:scale-95 ${
+              recording
+                ? "bg-rose-500 text-white shadow-sm shadow-rose-900/20"
+                : "border border-emerald-100 text-emerald-800 dark:border-emerald-900/40 dark:text-emerald-200"
+            }`}
+          >
+            {recording ? t("⏹ Stop recording") : t("🎤 Voice memo")}
+          </button>
+          {voiceMemoUrl && !recording && (
+            <>
+              <audio controls src={voiceMemoUrl} className="h-8" />
+              <button
+                type="button"
+                onClick={() => setVoiceMemo(null)}
+                className="text-xs text-zinc-500 dark:text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300"
+              >
+                {t("Remove")}
+              </button>
+            </>
+          )}
+        </div>
+      )}
 
       {error && <p className="text-sm text-rose-600">{error}</p>}
 
-      <button
-        type="submit"
-        disabled={isPending}
-        className="self-start rounded-full bg-emerald-600 px-6 py-2 font-heading text-sm font-semibold text-white shadow-sm shadow-emerald-900/20 transition-transform hover:scale-105 hover:bg-emerald-700 active:scale-95 disabled:opacity-50 disabled:hover:scale-100"
-      >
-        {isPending ? "Saving…" : "Save entry"}
-      </button>
+      <div className="flex gap-2">
+        <button
+          type="button"
+          onClick={() => handleSave(false)}
+          disabled={isPending}
+          className="self-start rounded-full bg-emerald-600 px-6 py-2 font-heading text-sm font-semibold text-white shadow-sm shadow-emerald-900/20 transition-transform hover:scale-105 hover:bg-emerald-700 active:scale-95 disabled:opacity-50 disabled:hover:scale-100"
+        >
+          {isPending ? t("Saving…") : draft ? t("Publish") : t("Save entry")}
+        </button>
+        <button
+          type="button"
+          onClick={() => handleSave(true)}
+          disabled={isPending}
+          className="self-start rounded-full border border-emerald-600 px-6 py-2 font-heading text-sm font-semibold text-emerald-700 transition-transform hover:scale-105 active:scale-95 disabled:opacity-50 disabled:hover:scale-100 dark:text-emerald-300"
+        >
+          {t("Save as draft")}
+        </button>
+      </div>
     </form>
   );
 }

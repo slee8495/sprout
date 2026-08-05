@@ -8,7 +8,7 @@ export const maxDuration = 60;
 // Speech-to-text for the chatbot's mic input, routed through AI Gateway (openai/whisper-1).
 export async function POST(req: NextRequest) {
   const session = await auth();
-  if (!session?.user) {
+  if (!session?.user?.familyId) {
     return NextResponse.json({ error: "unauthorized" }, { status: 401 });
   }
 

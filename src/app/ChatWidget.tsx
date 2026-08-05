@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { useChat } from "@ai-sdk/react";
 import { DefaultChatTransport, type UIMessage } from "ai";
 import { prefetchSpeech, speak } from "@/lib/speak";
+import { useSettings } from "./SettingsProvider";
 
 function messageText(message: UIMessage): string {
   return message.parts
@@ -21,6 +22,7 @@ function pickRecordingMimeType(): string | undefined {
 }
 
 export function ChatWidget() {
+  const { t } = useSettings();
   const [open, setOpen] = useState(false);
   const [input, setInput] = useState("");
   const [autoSpeak, setAutoSpeak] = useState(false);
@@ -99,14 +101,14 @@ export function ChatWidget() {
         >
           <div className="flex items-center justify-between border-b border-emerald-100 px-4 py-3 dark:border-emerald-900">
             <span className="font-heading text-sm font-bold text-emerald-800 dark:text-emerald-200">
-              🌱 Ask about Roun
+              {t("🌱 Ask about your family")}
             </span>
             <div className="flex items-center gap-3">
               <button
                 onClick={() => setAutoSpeak((v) => !v)}
                 aria-pressed={autoSpeak}
-                aria-label="Read replies aloud"
-                title="Read replies aloud"
+                aria-label={t("Read replies aloud")}
+                title={t("Read replies aloud")}
                 className={`text-base ${autoSpeak ? "" : "opacity-40"}`}
               >
                 {autoSpeak ? "🔊" : "🔇"}
@@ -120,7 +122,7 @@ export function ChatWidget() {
           <div className="flex-1 overflow-y-auto px-4 py-3">
             {messages.length === 0 && (
               <p className="text-sm text-zinc-600 dark:text-zinc-400">
-                Ask things like &quot;when did Roun first eat solid food?&quot; or &quot;처음 걸은 날이 언제야?&quot;
+                {t('Ask things like "when did they first eat solid food?" or "when did they first walk?"')}
               </p>
             )}
             <div className="flex flex-col gap-3">
@@ -145,8 +147,8 @@ export function ChatWidget() {
                         setLoadingSpeakId((id) => (id === message.id ? null : id));
                       }}
                       disabled={loadingSpeakId === message.id}
-                      aria-label="Read this reply aloud"
-                      title="Read aloud"
+                      aria-label={t("Read this reply aloud")}
+                      title={t("Read this reply aloud")}
                       className="ml-1 align-middle text-xs text-zinc-500 dark:text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300 disabled:opacity-50"
                     >
                       {loadingSpeakId === message.id ? "…" : "🔊"}
@@ -154,7 +156,9 @@ export function ChatWidget() {
                   )}
                 </div>
               ))}
-              {status === "submitted" && <div className="text-sm text-zinc-500 dark:text-zinc-400">Thinking…</div>}
+              {status === "submitted" && (
+                <div className="text-sm text-zinc-500 dark:text-zinc-400">{t("Thinking…")}</div>
+              )}
             </div>
           </div>
 
@@ -171,7 +175,7 @@ export function ChatWidget() {
               value={input}
               onChange={(e) => setInput(e.target.value)}
               disabled={status !== "ready"}
-              placeholder={recording ? "Listening…" : transcribing ? "Transcribing…" : "Ask a question…"}
+              placeholder={recording ? t("Listening…") : transcribing ? t("Transcribing…") : t("Ask a question…")}
               className="min-w-0 flex-1 rounded-full border border-emerald-100 bg-transparent px-3 py-1.5 text-sm outline-none focus:border-emerald-400 dark:border-emerald-900/40"
             />
             <button
@@ -179,8 +183,8 @@ export function ChatWidget() {
               onClick={() => (recording ? stopRecording() : startRecording())}
               disabled={status !== "ready" || transcribing}
               aria-pressed={recording}
-              aria-label={recording ? "Stop recording" : "Ask by voice"}
-              title={recording ? "Stop recording" : "Ask by voice"}
+              aria-label={recording ? t("Stop recording") : t("Ask by voice")}
+              title={recording ? t("Stop recording") : t("Ask by voice")}
               className={`rounded-full px-3 py-1.5 text-sm transition-transform hover:scale-105 active:scale-95 disabled:opacity-40 ${
                 recording
                   ? "bg-rose-500 text-white"
@@ -194,7 +198,7 @@ export function ChatWidget() {
               disabled={status !== "ready"}
               className="rounded-full bg-emerald-600 px-4 py-1.5 font-heading text-sm font-semibold text-white transition-transform hover:scale-105 active:scale-95 disabled:opacity-40 disabled:hover:scale-100"
             >
-              Send
+              {t("Send")}
             </button>
           </form>
         </div>
@@ -204,7 +208,7 @@ export function ChatWidget() {
         onClick={() => setOpen((o) => !o)}
         className="fixed bottom-4 right-4 z-20 flex h-14 w-14 items-center justify-center rounded-full bg-emerald-600 text-2xl text-white shadow-lg shadow-emerald-900/25 transition-transform hover:scale-110 active:scale-95 print:hidden"
         style={{ marginBottom: "env(safe-area-inset-bottom)" }}
-        aria-label="Chat"
+        aria-label={t("Chat")}
       >
         {open ? "✕" : "🌱"}
       </button>

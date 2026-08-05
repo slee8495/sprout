@@ -1,31 +1,31 @@
 import { redirect } from "next/navigation";
-import { auth } from "@/auth";
-import { getFamilySettings, getOnThisDayEntries, listEntryDates, listJournalEntries } from "@/db/queries";
+import { getFamilySettings, getOnThisDayEntries, listChildren, listJournalEntries, listMyDrafts } from "@/db/queries";
 import { todayInTimezone } from "@/lib/date";
+import { requireSession } from "@/lib/session";
 import { JournalHome } from "./JournalHome";
 
 export default async function Home() {
-  const session = await auth();
-  const familyId = session!.user!.familyId;
-
-  const settings = await getFamilySettings(familyId);
-  if (!settings.birthDate) redirect("/onboarding");
+  const { userId, familyId } = await requireSession();
+  const [settings, kids] = await Promise.all([getFamilySettings(familyId), listChildren(familyId)]);
+  if (kids.length === 0) redirect("/onboarding");
 
   const today = todayInTimezone(settings.timezone);
-  const [entryDates, onThisDayEntries, entries] = await Promise.all([
-    listEntryDates(familyId, "roun"),
-    getOnThisDayEntries(familyId, today.month, today.day, "roun"),
-    listJournalEntries(familyId, "roun"),
+  const [onThisDayEntries, childEntries, parentEntries, drafts] = await Promise.all([
+    getOnThisDayEntries(familyId, today.month, today.day, "child"),
+    listJournalEntries(familyId, "child"),
+    listJournalEntries(familyId, "parents"),
+    listMyDrafts(familyId, userId),
   ]);
 
   return (
     <div className="mx-auto flex w-full max-w-2xl flex-1 flex-col gap-6 p-4 pb-24">
-      <header className="pt-4">
-        <h1 className="font-heading text-2xl font-bold text-emerald-700 dark:text-emerald-300">
-          🌱 Roun&apos;s Journal
-        </h1>
-      </header>
-      <JournalHome entryDates={entryDates} onThisDayEntries={onThisDayEntries} entries={entries} />
+      <JournalHome
+        kids={kids}
+        onThisDayEntries={onThisDayEntries}
+        childEntries={childEntries}
+        parentEntries={parentEntries}
+        drafts={drafts}
+      />
     </div>
   );
 }

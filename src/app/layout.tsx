@@ -5,7 +5,6 @@ import { auth } from "@/auth";
 import { getFamilySettings } from "@/db/queries";
 import { DEFAULT_TIMEZONE } from "@/lib/date";
 import { NavBar } from "./NavBar";
-import { PushNotifications } from "./PushNotifications";
 import { SettingsProvider } from "./SettingsProvider";
 
 const THEME_INIT_SCRIPT = `
@@ -15,6 +14,7 @@ const THEME_INIT_SCRIPT = `
     var isDark = theme === "dark" || (theme === "system" && matchMedia("(prefers-color-scheme: dark)").matches);
     document.documentElement.classList.toggle("dark", isDark);
     document.documentElement.dataset.fontSize = localStorage.getItem("fontSize") || "md";
+    document.documentElement.lang = localStorage.getItem("locale") || "en";
   } catch (e) {}
 })();
 `;
@@ -32,7 +32,7 @@ const nunito = Nunito({
 
 export const metadata: Metadata = {
   title: "Sprout",
-  description: "Roun's family journal",
+  description: "A private family journal",
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
@@ -52,7 +52,7 @@ export default async function RootLayout({
   const session = await auth();
   const family = session?.user?.familyId
     ? await getFamilySettings(session.user.familyId)
-    : { timezone: DEFAULT_TIMEZONE, birthDate: null, dayCountStart: "zero" as const };
+    : { timezone: DEFAULT_TIMEZONE };
 
   return (
     <html
@@ -64,12 +64,11 @@ export default async function RootLayout({
       </head>
       <body className="min-h-full flex flex-col">
         <SettingsProvider
-          family={{ timezone: family.timezone, birthDate: family.birthDate ?? "", dayCountStart: family.dayCountStart }}
+          family={{ timezone: family.timezone }}
           userId={session?.user?.id ? Number(session.user.id) : 0}
         >
           <NavBar />
           {children}
-          <PushNotifications />
         </SettingsProvider>
       </body>
     </html>

@@ -1,12 +1,15 @@
 import { handleUpload, type HandleUploadBody } from "@vercel/blob/client";
 import { NextResponse } from "next/server";
 import { auth } from "@/auth";
+import { getFamilyBilling, getFamilyStorageUsage } from "@/db/queries";
+import { formatBytes, getStorageQuota } from "@/lib/storage";
 
 export async function POST(request: Request): Promise<NextResponse> {
   const session = await auth();
-  if (!session?.user) {
+  if (!session?.user?.familyId) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
+  const familyId = session.user.familyId;
 
   const body = (await request.json()) as HandleUploadBody;
 
@@ -14,10 +17,19 @@ export async function POST(request: Request): Promise<NextResponse> {
     const jsonResponse = await handleUpload({
       body,
       request,
-      onBeforeGenerateToken: async () => ({
-        allowedContentTypes: ["image/webp", "image/avif", "image/jpeg", "image/png"],
-        addRandomSuffix: true,
-      }),
+      onBeforeGenerateToken: async () => {
+        const [used, billing] = await Promise.all([getFamilyStorageUsage(familyId), getFamilyBilling(familyId)]);
+        const quota = getStorageQuota(billing);
+        if (used >= quota) {
+          throw new Error(
+            `Storage limit reached (${formatBytes(used)} / ${formatBytes(quota)}). Delete some photos to free up space.`,
+          );
+        }
+        return {
+          allowedContentTypes: ["image/webp", "image/avif", "image/jpeg", "image/png"],
+          addRandomSuffix: true,
+        };
+      },
       onUploadCompleted: async () => {
         // The client links the resulting blob URL to a journal entry via the entries API
         // after upload completes, so nothing to do here.

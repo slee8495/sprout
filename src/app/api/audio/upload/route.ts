@@ -4,7 +4,7 @@ import { auth } from "@/auth";
 
 export async function POST(request: Request): Promise<NextResponse> {
   const session = await auth();
-  if (!session?.user) {
+  if (!session?.user?.familyId) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 

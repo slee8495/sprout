@@ -1,68 +1,61 @@
-# Sprout 시판 준비 — 진행 상황 (2026-07-22 기준)
+# Sprout 시판 준비 — 진행 상황 (2026-07-24 기준)
 
 이 파일은 다음 Claude Code 세션에서 이어서 작업하기 위한 핸드오프 노트입니다.
 새 세션에서 이 repo를 열고 "LAUNCH_PROGRESS.md 읽고 이어서 진행해줘" 라고 하면 됩니다.
 
-같은 세션을 그대로 이어가고 싶다면, 최근 커밋 메시지에 적힌 세션 링크로도 복귀할 수 있습니다:
-`https://claude.ai/code/session_01Q37XobaFP3vS8romQd7j7H`
+**실행용 체크리스트는 `LAUNCH_CHECKLIST.md`** 에 별도로 정리되어 있음 — 항목 완료될 때마다 거기서 체크.
 
 ## 시판 체크리스트 (원래 8개 항목)
 
-1. ✅ **멀티테넌시** — 완료 (아래 상세)
-2. 🔜 **진짜 로그인** — 지금 방향 전환 중: Google OAuth로 가기로 결정함 (아래 "다음 작업" 참고)
+1. ✅ **멀티테넌시** — 완료
+2. ✅ **진짜 로그인 (Google OAuth)** — 완료 (아래 상세)
 3. ⬜ 스토리지 quota + 압축
 4. ⬜ 결제 연동 (가족당 $0.99/월 예정)
-5. ⬜ 아이 여러 명 지원
+5. ✅ **아이 여러 명 지원** — 완료 (아래 상세)
 6. ⬜ 개인정보/법적 문서
 7. ⬜ 관찰성/운영
-8. ⬜ 다국어, 브랜딩 일반화
+8. 🔜 다국어, 브랜딩 일반화 — 하드코딩된 "Roun" 이름/문구는 다 제거함. 다국어(i18n)는 아직 미착수
 
-## 방금 완료한 것: 멀티테넌시
+## 방금 완료한 것 1: Google OAuth 로그인
 
-- `families` 테이블에 `invite_code`(초대코드), `passphrase_hash`(가족 공유 패스프레이즈 해시) 추가
-- `/signup`: 가족 대표가 이메일+가족명+패스프레이즈로 새 가족 생성
-- `/join`: 초대코드+이름+패스프레이즈로 기존 가족에 합류 (이메일 불필요)
-- `/login`: 가족코드+이름+패스프레이즈로 로그인 (기존 PARENT_NAMES/APP_PASSPHRASE env변수 방식 완전히 대체)
-- 기존 가족(로운이네) 데이터 100% 보존 — 마이그레이션 전후 row count 동일 확인함 (journal_entries 35, users 3, photos 86)
-- **기존 가족 초대코드: `3982BXBP`** (로그인 시 필요, 패스프레이즈는 기존 그대로)
-- 커밋: `29929f7`, 배포 완료 (READY)
+- 패스프레이즈 방식 완전 제거, next-auth v5 beta의 Google provider(커스텀 `type:"oauth"` 설정 — 아래 "주의" 참고)로 교체
+- `/login`: "Sign in with Google" 버튼만 있음
+- 첫 Google 로그인 시 기존 계정과 이메일 매칭 안 되면 `/connect` → "가족 만들기"(`/signup`) 또는 "초대코드로 참여"(`/join`) 선택
+- `/join`은 이름으로 기존 가족 구성원과 매칭되면 그 계정에 구글 이메일을 연결(같은 user id 유지, 작성 이력 보존), 매칭 안 되면 새 멤버 생성
+- 기존 가족(로운이네): Dad(id=1) ↔ `sanlee8495@gmail.com`, Mom(id=3) ↔ `ahnsk215@gmail.com` 연결 완료 — 두 분 다 그냥 Google 로그인만 하면 바로 들어와짐 (초대코드 불필요)
+- Settings에 Sign out 버튼 추가함 (이전엔 없었음)
 
-## 다음 작업: 패스프레이즈 방식 → Google 로그인으로 전환
+### ⚠️ 중요: Google provider가 built-in이 아니라 커스텀 구현임
 
-**결정된 방향**: 지금 만든 "가족코드+공유패스프레이즈" 로그인을 걷어내고 Google OAuth로 교체.
-이유: 비밀번호 찾기 기능을 따로 만들 필요가 없어짐 (Google이 계정 복구 처리), 진짜 로그인 문제도 동시에 해결됨.
+`src/auth.ts`의 `GoogleProvider()`는 next-auth의 기본 `next-auth/providers/google`을 안 쓰고 직접 구현했음. 이유:
+- next-auth v5 beta(`5.0.0-beta.31`)의 OIDC discovery 경로가 Google의 `authorization_response_iss_parameter_supported: true` 처리에서 버그가 있어서(`response parameter "iss" (issuer) missing` 에러) 로그인 자체가 실패했음
+- 해결: `type: "oauth"`(oidc 아님) + `authorization`/`token`/`userinfo` 엔드포인트를 명시적으로 지정해서 discovery 자체를 스킵, `issuer`도 직접 설정
+- next-auth를 나중에 업그레이드해서 이 버그가 픽스된 게 확인되면(현재 최신 `5.0.0-beta.32`/`@auth/core@0.41.3`엔 아직 안 고쳐져 있었음), built-in `Google` provider로 되돌려도 됨 — 지금 커스텀 구현 자체가 필수는 아니고 우회책임
 
-### 사용자가 먼저 해야 할 일 (외부 작업, Claude가 대신 못 함)
-Google Cloud Console에서 OAuth 클라이언트 생성:
-1. https://console.cloud.google.com/ 에서 프로젝트 생성 (또는 기존 프로젝트 사용)
-2. "APIs & Services" → "OAuth consent screen" 설정 (External, 앱 이름/로고/지원 이메일 입력)
-3. "Credentials" → "Create Credentials" → "OAuth client ID" → Application type: Web application
-4. Authorized redirect URI 등록: `https://sprout-theta-rosy.vercel.app/api/auth/callback/google` (로컬 개발용으로 `http://localhost:3000/api/auth/callback/google` 도 추가)
-5. 발급된 **Client ID**와 **Client Secret**을 Claude에게 전달 (또는 직접 Vercel env에 등록해도 됨: `AUTH_GOOGLE_ID`, `AUTH_GOOGLE_SECRET`)
+## 방금 완료한 것 2: 아이 여러 명 지원 + "Roun" 하드코딩 제거
 
-### Claude가 이어서 할 작업 (Client ID/Secret 받으면)
-1. `next-auth/providers/google` 추가, `src/auth.ts`에 Google provider 연결
-2. 가족 연결 흐름 재설계:
-   - 첫 로그인(Google) 시 소속 가족이 없으면 → "가족 만들기(가족명 입력)" 또는 "초대코드로 합류" 선택 화면
-   - 가족 생성 시 여전히 invite code 발급 (공유 패스프레이즈는 이제 불필요)
-   - 합류 시 invite code만 입력하면 됨 (패스프레이즈 입력란 제거)
-3. `families.passphraseHash` 컬럼 및 관련 로직(`/login`, `/signup`, `/join`의 패스프레이즈 부분) 제거
-4. 기존 가족(로운이네) 마이그레이션: 두 분 다 Google 계정으로 최초 로그인 시 기존 family(id=1)에 연결되도록 처리 필요 — **이 부분은 신중하게, 데이터 유실 없이** 처리할 것. (예: 이메일 매칭이 아니라, 최초 1회 초대코드 입력받아 연결하는 방식이 안전함)
-5. `/login`, `/signup`, `/join` 페이지 UI를 "Sign in with Google" 버튼 중심으로 재작성
-6. `.env.local`과 Vercel 프로덕션 env에 `AUTH_GOOGLE_ID`/`AUTH_GOOGLE_SECRET` 추가
-7. 배포 전 반드시: 기존 가족 로그인 경로가 안 끊기는지 확인, 데이터 row count 재확인
+- 새 `children` 테이블 추가 (`familyId`, `name`, `birthDate`, `dayCountStart`) — 기존엔 `families` 테이블에 birthDate/dayCountStart가 가족당 1개만 있었음 (지금도 컬럼은 남아있지만 앱 코드에서는 더 이상 안 씀 — DROP 안 함)
+- `journal_entries.child_id` 컬럼 추가 (nullable — "parents"(부모 전용) 글은 특정 아이와 무관하므로 null)
+- `audience` enum 값 `"roun"` → `"child"`로 이름 변경 (라벨만 바꾼 거라 데이터 재작성 없음)
+- 기존 가족(로운이네)의 birthDate/dayCountStart로 "Roun" child row 생성, 기존 32개 child-audience 글에 child_id 백필 완료
+- 홈/피드/마일스톤 전부 아이별로 동작: 아이가 1명이면 지금처럼 그대로 보이고, 2명 이상이면 아이 전환 탭(pill)이 나타남
+- 새 글 작성 시 아이 선택(또는 "Parents only") 가능
+- `layout.tsx`, `manifest.ts`, `ChatWidget.tsx`, `api/chat/route.ts`, `chatTools.ts`의 하드코딩된 "Roun" 문구 다 제거 (chatTools.ts는 family별 이름을 DB에서 실시간으로 가져옴)
+- **덤으로 고친 버그**: `chatTools.ts`의 `searchJournalEntries`/`getMilestoneEntries`가 원래 `familyId` 필터가 아예 없어서 다른 가족 데이터까지 조회 가능했던 크로스테넌트 취약점 — 이번에 고침
 
-## 지켜야 할 원칙 (사용자가 여러 번 강조함)
+### 배포 중 발생했던 사고 (교훈)
 
-- **데이터 유실 절대 금지.** DB 스키마 변경은 항상 nullable 추가 → 백필 → notNull 전환 순서로. DROP/TRUNCATE 금지.
-- 프로덕션 배포 전에는 항상 사용자에게 확인받기.
-- `next dev`와 `next build`를 동시에 돌리지 말 것 (`.next`에 " 2" 중복 파일 생기는 버그 있음 — 메모리에 기록됨).
+`ALTER TYPE audience RENAME VALUE 'roun' TO 'child'`를 프로덕션 DB에 먼저 실행하고, 새 코드를 아직 배포 안 한 상태로 잠깐 방치했다가 — 그 사이 프로덕션에 떠 있던 **구코드**가 `audience = 'roun'`으로 쿼리하다가 DB 에러 나서 사이트가 잠깐 다운됐었음. **교훈: DB 스키마 변경(특히 enum 값 변경)과 그 변경을 전제로 하는 코드 배포는 반드시 같은 타이밍에 붙여서 해야 함, 사이에 텀을 두면 안 됨.**
 
-## 참고: 이 세션에서 이미 완료된 다른 작업들 (멀티테넌시 이전)
+## 지켜야 할 원칙 (이전 세션들에서 계속 강조됨)
 
-- Milestone에 Place, Special Day 카테고리 추가
-- 아이폰 푸시 알림 (Web Push, 새 글/댓글 시 배우자에게 알림, 특정 포스팅으로 딥링크)
-- 챗봇 위젯 UI에서 숨김 (코드는 남아있음)
-- Settings 페이지 (타임존/생일/Day카운트기준/테마/글씨크기) + 첫 실행 온보딩
-- Feed: 업로드된 날짜 표시, Calendar/Uploaded date × Latest/Oldest 필터, Edited 표시
-- 본인 글만 Edit/Delete 가능하도록 권한 제한 (서버+클라이언트 양쪽)
+- **데이터 유실 절대 금지.** DB 스키마 변경은 항상 nullable 추가 → 백필 → notNull 전환 순서로. DROP/TRUNCATE 금지 (컬럼이 안 쓰이게 됐어도 일단 남겨둠).
+- 프로덕션 배포 전에는 항상 사용자에게 확인받기. 단, DB 스키마 변경과 그걸 전제로 한 코드 배포는 텀 없이 붙여서 진행할 것 (위 사고 참고).
+- `next dev`와 `next build`를 동시에 돌리지 말 것 (`.next`에 " 2" 중복 파일 생기는 버그 있음).
+- Vercel 자동 모드 안전장치가 `ALTER TYPE`, `vercel deploy --prod` 같은 명령을 차단할 수 있음 — 이 경우 사용자에게 `!<command>` 형태로 직접 채팅에 입력해달라고 요청하면 그 세션에서 바로 실행됨.
+
+## 참고: Vercel 프로젝트 구조
+
+- 프로덕션: `sprout-theta-rosy.vercel.app`
+- 프리뷰 배포(`vercel deploy`, `--prod` 없이)는 Vercel 팀 SSO로 보호되어 있어서, 팀 멤버가 아니면 Google 로그인 테스트가 막힘 — 실제 로그인 플로우 테스트는 프로덕션에서 하는 게 제일 간단함 (데이터는 프리뷰/프로덕션이 같은 Neon DB를 공유하므로 위험은 동일)
+- Google OAuth 리다이렉트 URI는 정확히 일치해야 함 — 프리뷰 URL로 테스트하려면 그 배포 URL을 Google Console에 매번 추가해야 함 (프로덕션 URL은 이미 등록되어 있음)

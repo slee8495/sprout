@@ -2,9 +2,9 @@ import type { MetadataRoute } from "next";
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "Sprout — Roun's Journal",
+    name: "Sprout — Family Journal",
     short_name: "Sprout",
-    description: "A private, lifelong journal for Roun, shared between mom and dad.",
+    description: "A private, lifelong journal for your family.",
     start_url: "/",
     display: "standalone",
     background_color: "#ffffff",

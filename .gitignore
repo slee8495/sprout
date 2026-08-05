@@ -37,6 +37,9 @@ yarn-error.log*
 # vercel
 .vercel
 
+# local-only session notes, never commit
+.claude-resume.md
+
 # typescript
 *.tsbuildinfo
 next-env.d.ts

@@ -7,6 +7,7 @@ import {
   createJournalEntry,
   deleteJournalEntry,
   deletePushSubscription,
+  getChild,
   savePushSubscription,
   updateJournalEntry,
 } from "@/db/queries";
@@ -15,35 +16,48 @@ import { requireSession } from "@/lib/session";
 import { notifyFamily } from "@/lib/push";
 
 const entrySchema = z.object({
-  audience: z.enum(audienceEnum.enumValues).default("roun"),
+  audience: z.enum(audienceEnum.enumValues).default("child"),
+  childId: z.number().optional(),
   entryDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
   title: z.string().max(256).optional(),
-  body: z.string().min(1).max(10000),
+  body: z.string().max(10000),
   milestoneCategory: z.enum(milestoneCategoryEnum.enumValues).optional(),
   milestoneLabel: z.string().max(128).optional(),
-  photoUrls: z.array(z.string().url()).max(10).optional(),
+  photos: z.array(z.object({ url: z.string().url(), sizeBytes: z.number().optional() })).max(10).optional(),
   voiceMemoUrl: z.string().url().optional(),
+  isDraft: z.boolean().optional(),
 });
 
 export async function createEntry(input: z.infer<typeof entrySchema>) {
   const { userId, familyId, name } = await requireSession();
   const parsed = entrySchema.parse(input);
 
+  if (parsed.audience === "child") {
+    if (!parsed.childId) throw new Error("Pick which child this entry is about.");
+    const child = await getChild(parsed.childId, familyId);
+    if (!child) throw new Error("That child doesn't belong to your family.");
+  }
+  if (!parsed.isDraft && !parsed.body.trim()) throw new Error("Write something before publishing.");
+
   const entry = await createJournalEntry({
     familyId,
     authorId: userId,
     audience: parsed.audience,
+    childId: parsed.audience === "child" ? parsed.childId : undefined,
     entryDate: parsed.entryDate,
     title: parsed.title,
     body: parsed.body,
     milestoneCategory: parsed.milestoneCategory,
     milestoneLabel: parsed.milestoneLabel,
-    photoUrls: parsed.photoUrls,
+    photos: parsed.photos,
     voiceMemoUrl: parsed.voiceMemoUrl,
+    isDraft: parsed.isDraft,
   });
 
   revalidatePath("/");
   revalidatePath("/feed");
+
+  if (parsed.isDraft) return;
 
   const preview = (parsed.title || parsed.body).slice(0, 120);
   await notifyFamily(familyId, userId, {
@@ -53,17 +67,44 @@ export async function createEntry(input: z.infer<typeof entrySchema>) {
   });
 }
 
-const updateEntrySchema = entrySchema.omit({ audience: true, voiceMemoUrl: true });
+const updateEntrySchema = entrySchema.omit({ audience: true, childId: true, voiceMemoUrl: true, isDraft: true });
 
 export async function updateEntry(entryId: number, input: z.infer<typeof updateEntrySchema>) {
   const { userId, familyId } = await requireSession();
   const parsed = updateEntrySchema.parse(input);
+  if (!parsed.body.trim()) throw new Error("Entry can't be empty.");
 
   const entry = await updateJournalEntry(entryId, familyId, userId, parsed);
   if (!entry) throw new Error("You can only edit entries you wrote.");
 
   revalidatePath("/");
   revalidatePath("/feed");
+}
+
+const draftUpdateSchema = entrySchema.omit({ audience: true, childId: true, voiceMemoUrl: true });
+
+// Resumes and saves a private draft — either re-saving it as a draft (isDraft: true, no
+// notification) or publishing it to the family for the first time (isDraft: false, notifies
+// like a fresh entry would).
+export async function updateDraft(entryId: number, input: z.infer<typeof draftUpdateSchema>) {
+  const { userId, familyId, name } = await requireSession();
+  const parsed = draftUpdateSchema.parse(input);
+  if (!parsed.isDraft && !parsed.body.trim()) throw new Error("Write something before publishing.");
+
+  const entry = await updateJournalEntry(entryId, familyId, userId, parsed);
+  if (!entry) throw new Error("You can only edit drafts you wrote.");
+
+  revalidatePath("/");
+  revalidatePath("/feed");
+
+  if (parsed.isDraft) return;
+
+  const preview = (parsed.title || parsed.body).slice(0, 120);
+  await notifyFamily(familyId, userId, {
+    title: `🌱 ${name ?? "New entry"}`,
+    body: preview,
+    url: `/feed?entry=${entry.id}`,
+  });
 }
 
 export async function deleteEntry(entryId: number) {

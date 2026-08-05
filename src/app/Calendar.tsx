@@ -21,7 +21,7 @@ export function Calendar({
   selectedDate: string | null;
   onSelectDate: (date: string | null) => void;
 }) {
-  const { timezone } = useSettings();
+  const { timezone, t } = useSettings();
   const todayISO = todayInTimezone(timezone).iso;
   const [todayYear, todayMonth] = todayISO.split("-").map(Number);
   const [viewYear, setViewYear] = useState(todayYear);
@@ -55,7 +55,7 @@ export function Calendar({
       <div className="mb-3 flex items-center justify-between">
         <button
           onClick={() => changeMonth(-1)}
-          aria-label="Previous month"
+          aria-label={t("Previous month")}
           className="rounded-full px-2 py-1 text-sm text-emerald-700 transition-transform hover:scale-110 hover:bg-emerald-50 dark:text-emerald-300 dark:hover:bg-emerald-900/30"
         >
           ‹
@@ -68,7 +68,7 @@ export function Calendar({
         </span>
         <button
           onClick={() => changeMonth(1)}
-          aria-label="Next month"
+          aria-label={t("Next month")}
           className="rounded-full px-2 py-1 text-sm text-emerald-700 transition-transform hover:scale-110 hover:bg-emerald-50 dark:text-emerald-300 dark:hover:bg-emerald-900/30"
         >
           ›
@@ -112,7 +112,7 @@ export function Calendar({
           onClick={() => onSelectDate(null)}
           className="mt-3 text-xs text-emerald-700/70 hover:text-emerald-900 dark:text-emerald-300/70 dark:hover:text-emerald-200"
         >
-          Clear selected date
+          {t("Clear selected date")}
         </button>
       )}
     </div>

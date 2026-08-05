@@ -1,15 +1,14 @@
 "use client";
 
 import { createContext, useContext, useEffect, useState } from "react";
-import type { DayCountStart } from "@/lib/date";
+import { translate, type Locale } from "@/lib/i18n";
 
 export type Theme = "light" | "dark" | "system";
 export type FontSize = "sm" | "md" | "lg";
+export type { Locale };
 
 type FamilySettings = {
   timezone: string;
-  birthDate: string;
-  dayCountStart: DayCountStart;
 };
 
 type SettingsContextValue = FamilySettings & {
@@ -18,6 +17,9 @@ type SettingsContextValue = FamilySettings & {
   setTheme: (theme: Theme) => void;
   fontSize: FontSize;
   setFontSize: (fontSize: FontSize) => void;
+  locale: Locale;
+  setLocale: (locale: Locale) => void;
+  t: (text: string) => string;
 };
 
 const SettingsContext = createContext<SettingsContextValue | null>(null);
@@ -39,6 +41,12 @@ function readStoredFontSize(): FontSize {
   return stored === "sm" || stored === "md" || stored === "lg" ? stored : "md";
 }
 
+function readStoredLocale(): Locale {
+  if (typeof window === "undefined") return "en";
+  const stored = localStorage.getItem("locale");
+  return stored === "en" || stored === "ko" ? stored : "en";
+}
+
 export function SettingsProvider({
   family,
   userId,
@@ -50,6 +58,7 @@ export function SettingsProvider({
 }) {
   const [theme, setThemeState] = useState<Theme>(readStoredTheme);
   const [fontSize, setFontSizeState] = useState<FontSize>(readStoredFontSize);
+  const [locale, setLocaleState] = useState<Locale>(readStoredLocale);
 
   useEffect(() => {
     applyTheme(theme);
@@ -64,6 +73,10 @@ export function SettingsProvider({
     document.documentElement.dataset.fontSize = fontSize;
   }, [fontSize]);
 
+  useEffect(() => {
+    document.documentElement.lang = locale;
+  }, [locale]);
+
   function setTheme(next: Theme) {
     setThemeState(next);
     localStorage.setItem("theme", next);
@@ -74,8 +87,19 @@ export function SettingsProvider({
     localStorage.setItem("fontSize", next);
   }
 
+  function setLocale(next: Locale) {
+    setLocaleState(next);
+    localStorage.setItem("locale", next);
+  }
+
+  function t(text: string) {
+    return translate(locale, text);
+  }
+
   return (
-    <SettingsContext.Provider value={{ ...family, userId, theme, setTheme, fontSize, setFontSize }}>
+    <SettingsContext.Provider
+      value={{ ...family, userId, theme, setTheme, fontSize, setFontSize, locale, setLocale, t }}
+    >
       {children}
     </SettingsContext.Provider>
   );
