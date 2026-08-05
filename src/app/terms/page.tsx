@@ -57,8 +57,8 @@ export default function TermsPage() {
           <p>
             You can stop using Sprout at any time. We may suspend or end access for accounts that abuse the service
             or violate these terms. Email{" "}
-            <a href="mailto:sanlee8495@gmail.com" className="text-emerald-700 underline dark:text-emerald-300">
-              sanlee8495@gmail.com
+            <a href="mailto:support@sl-studio.dev" className="text-emerald-700 underline dark:text-emerald-300">
+              support@sl-studio.dev
             </a>{" "}
             to close your account or request your data be deleted.
           </p>
@@ -84,8 +84,8 @@ export default function TermsPage() {
           <h2 className="font-heading font-semibold text-emerald-800 dark:text-emerald-200">Contact</h2>
           <p>
             Questions about these terms? Reach us at{" "}
-            <a href="mailto:sanlee8495@gmail.com" className="text-emerald-700 underline dark:text-emerald-300">
-              sanlee8495@gmail.com
+            <a href="mailto:support@sl-studio.dev" className="text-emerald-700 underline dark:text-emerald-300">
+              support@sl-studio.dev
             </a>
             .
           </p>

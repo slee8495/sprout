@@ -77,8 +77,8 @@ export default function PrivacyPage() {
           <p>
             You can permanently delete your family&apos;s account and all associated data yourself, any time, from
             the Danger Zone in Settings. If you&apos;d rather we do it for you, email{" "}
-            <a href="mailto:sanlee8495@gmail.com" className="text-emerald-700 underline dark:text-emerald-300">
-              sanlee8495@gmail.com
+            <a href="mailto:support@sl-studio.dev" className="text-emerald-700 underline dark:text-emerald-300">
+              support@sl-studio.dev
             </a>
             .
           </p>
@@ -96,8 +96,8 @@ export default function PrivacyPage() {
           <h2 className="font-heading font-semibold text-emerald-800 dark:text-emerald-200">Contact</h2>
           <p>
             Questions about this policy? Reach us at{" "}
-            <a href="mailto:sanlee8495@gmail.com" className="text-emerald-700 underline dark:text-emerald-300">
-              sanlee8495@gmail.com
+            <a href="mailto:support@sl-studio.dev" className="text-emerald-700 underline dark:text-emerald-300">
+              support@sl-studio.dev
             </a>
             .
           </p>
