@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { z } from "zod";
 import { auth, unstable_update } from "@/auth";
 import { getFamilyByInviteCode, isUniqueConstraintError, linkOrJoinFamilyMember } from "@/db/queries";
+import { isRateLimited } from "@/lib/rateLimit";
 
 const joinSchema = z.object({
   familyCode: z.string().trim().min(1, "Family code is required.").max(16),
@@ -14,6 +15,10 @@ export async function join(_prevState: string | undefined, formData: FormData) {
   const session = await auth();
   if (!session?.user?.email) redirect("/login");
   if (session.user.familyId) redirect("/");
+
+  if (isRateLimited(`join:${session.user.email}`, 10, 10 * 60 * 1000)) {
+    return "Too many attempts — please wait a few minutes and try again.";
+  }
 
   const parsed = joinSchema.safeParse({
     familyCode: formData.get("familyCode"),
