@@ -2,6 +2,12 @@ import type { NextConfig } from "next";
 import { withSentryConfig } from "@sentry/nextjs";
 
 const nextConfig: NextConfig = {
+  // ffmpeg-static/ffprobe-static resolve their binary path via __dirname at require-time.
+  // Left to Next's default bundling, that module gets rewritten/inlined and __dirname no
+  // longer points at the real node_modules location, producing ENOENT at runtime even
+  // though outputFileTracingIncludes (below) correctly copies the binary into the deploy.
+  // Marking them external keeps their own path resolution intact.
+  serverExternalPackages: ["ffmpeg-static", "ffprobe-static"],
   images: {
     remotePatterns: [
       {
