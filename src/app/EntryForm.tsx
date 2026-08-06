@@ -220,7 +220,7 @@ export function EntryForm({
           <span className="rounded-full bg-emerald-100 px-3 py-1.5 font-heading text-sm font-semibold text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-200">
             {childId
               ? `${subjectEmoji(selectedChild?.type ?? "child")} ${selectedChild?.name ?? "Child"}`
-              : t("💌 Parents only")}
+              : t("💌 Parents")}
           </span>
           <span className="text-xs text-zinc-500 dark:text-zinc-400">{t("(can't change once saved)")}</span>
         </div>
@@ -249,7 +249,7 @@ export function EntryForm({
                 : "border border-emerald-100 text-emerald-800 dark:border-emerald-900/40 dark:text-emerald-200"
             }`}
           >
-            {t("💌 Parents only")}
+            {t("💌 Parents")}
           </button>
         </div>
       )}

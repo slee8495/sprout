@@ -14,7 +14,7 @@ const ko: Record<string, string> = {
   "'s Feed": "의 피드",
 
   // Feed
-  "💌 Parents": "💌 부모님",
+  "💌 Parents": "💌 엄마아빠",
   "🔍 Search entries…": "🔍 항목 검색…",
   "📅 Calendar date": "📅 캘린더 날짜",
   "⏱️ Uploaded date": "⏱️ 업로드 날짜",
@@ -45,7 +45,6 @@ const ko: Record<string, string> = {
   "✨ On this day": "✨ 오늘 이날",
 
   // Entry form / card (shared)
-  "💌 Parents only": "💌 부모님만",
   "(can't change once saved)": "(저장 후에는 변경할 수 없어요)",
   "Title (optional)": "제목 (선택)",
   "What happened today?": "오늘 무슨 일이 있었나요?",
@@ -230,7 +229,7 @@ const zh: Record<string, string> = {
   "'s Feed": "的动态",
 
   // Feed
-  "💌 Parents": "💌 父母",
+  "💌 Parents": "💌 爸爸妈妈",
   "🔍 Search entries…": "🔍 搜索日记…",
   "📅 Calendar date": "📅 日历日期",
   "⏱️ Uploaded date": "⏱️ 上传日期",
@@ -261,7 +260,6 @@ const zh: Record<string, string> = {
   "✨ On this day": "✨ 那年今日",
 
   // Entry form / card (shared)
-  "💌 Parents only": "💌 仅父母可见",
   "(can't change once saved)": "（保存后无法更改）",
   "Title (optional)": "标题（可选）",
   "What happened today?": "今天发生了什么？",
@@ -446,7 +444,7 @@ const ja: Record<string, string> = {
   "'s Feed": "のフィード",
 
   // Feed
-  "💌 Parents": "💌 両親",
+  "💌 Parents": "💌 パパママ",
   "🔍 Search entries…": "🔍 記録を検索…",
   "📅 Calendar date": "📅 カレンダー日付",
   "⏱️ Uploaded date": "⏱️ アップロード日",
@@ -477,7 +475,6 @@ const ja: Record<string, string> = {
   "✨ On this day": "✨ この日の思い出",
 
   // Entry form / card (shared)
-  "💌 Parents only": "💌 両親のみ",
   "(can't change once saved)": "（保存後は変更できません）",
   "Title (optional)": "タイトル（任意）",
   "What happened today?": "今日は何がありましたか？",
@@ -662,7 +659,7 @@ const es: Record<string, string> = {
   "'s Feed": " - Novedades",
 
   // Feed
-  "💌 Parents": "💌 Padres",
+  "💌 Parents": "💌 Papá y mamá",
   "🔍 Search entries…": "🔍 Buscar entradas…",
   "📅 Calendar date": "📅 Fecha del calendario",
   "⏱️ Uploaded date": "⏱️ Fecha de subida",
@@ -693,7 +690,6 @@ const es: Record<string, string> = {
   "✨ On this day": "✨ Este día",
 
   // Entry form / card (shared)
-  "💌 Parents only": "💌 Solo para padres",
   "(can't change once saved)": "(no se puede cambiar después de guardar)",
   "Title (optional)": "Título (opcional)",
   "What happened today?": "¿Qué pasó hoy?",
