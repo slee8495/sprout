@@ -38,6 +38,14 @@ export async function getFamilyMemberByName(familyId: number, name: string) {
   return db.query.users.findFirst({ where: and(eq(users.familyId, familyId), ilike(users.name, name)) });
 }
 
+export async function listFamilyMemberEmails(familyId: number) {
+  const rows = await db
+    .select({ email: users.email, name: users.name })
+    .from(users)
+    .where(eq(users.familyId, familyId));
+  return rows;
+}
+
 export async function getUserByEmail(email: string) {
   return db.query.users.findFirst({ where: eq(users.email, email) });
 }

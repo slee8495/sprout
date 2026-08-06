@@ -3,11 +3,18 @@ import type Stripe from "stripe";
 import {
   getFamilyByStripeCustomerId,
   incrementStorageAddon,
+  listFamilyMemberEmails,
   updateFamilyBilling,
 } from "@/db/queries";
 import { subscriptionStatusEnum } from "@/db/schema";
+import { sendEmail } from "@/lib/email";
+import { subscriptionCanceledEmail } from "@/lib/emailTemplates";
 import { STORAGE_ADDON_BYTES } from "@/lib/storage";
 import { getStripe } from "@/lib/stripe";
+
+// Webhooks are called server-to-server by Stripe, not from a user's browser, so there's no
+// request origin to derive the app URL from — this is the app's one fixed production domain.
+const APP_URL = "https://sprout-theta-rosy.vercel.app";
 
 type SubscriptionStatus = (typeof subscriptionStatusEnum.enumValues)[number];
 
@@ -62,6 +69,14 @@ export async function POST(request: Request) {
         subscriptionStatus: event.type === "customer.subscription.deleted" ? "canceled" : mapStripeStatus(subscription.status),
         subscriptionRenewsAt: item ? new Date(item.current_period_end * 1000) : null,
       });
+
+      if (event.type === "customer.subscription.deleted") {
+        const members = await listFamilyMemberEmails(family.id);
+        await sendEmail({
+          to: members.map((m) => m.email),
+          ...subscriptionCanceledEmail({ appUrl: APP_URL }),
+        }).catch(() => {}); // Best-effort — a failed notification email shouldn't fail the webhook.
+      }
       break;
     }
   }
