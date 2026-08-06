@@ -19,7 +19,7 @@ const FEATURES: { emoji: string; title: string; body: string }[] = [
   },
   {
     emoji: "🌐",
-    title: "English & Korean",
+    title: "5 languages",
     body: "Switch the app's language anytime from Settings.",
   },
 ];

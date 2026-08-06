@@ -41,10 +41,12 @@ function readStoredFontSize(): FontSize {
   return stored === "sm" || stored === "md" || stored === "lg" ? stored : "md";
 }
 
+const LOCALES: Locale[] = ["en", "ko", "zh", "ja", "es"];
+
 function readStoredLocale(): Locale {
   if (typeof window === "undefined") return "en";
   const stored = localStorage.getItem("locale");
-  return stored === "en" || stored === "ko" ? stored : "en";
+  return (LOCALES as string[]).includes(stored ?? "") ? (stored as Locale) : "en";
 }
 
 export function SettingsProvider({

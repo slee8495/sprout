@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { fill, translate } from "./i18n";
+import { fill, localizedCount, translate, type Locale } from "./i18n";
 
 describe("translate", () => {
   it("returns English text unchanged for the en locale", () => {
@@ -12,6 +12,29 @@ describe("translate", () => {
 
   it("falls back to the original English text for an unknown string", () => {
     expect(translate("ko", "Some brand-new UI string")).toBe("Some brand-new UI string");
+  });
+
+  it.each(["zh", "ja", "es"] as Locale[])("translates a known string for %s", (locale) => {
+    const translated = translate(locale, "Sign out");
+    expect(translated).not.toBe("Sign out");
+    expect(translated.length).toBeGreaterThan(0);
+  });
+
+  it.each(["zh", "ja", "es"] as Locale[])("falls back to English for an unknown string in %s", (locale) => {
+    expect(translate(locale, "Some brand-new UI string")).toBe("Some brand-new UI string");
+  });
+});
+
+describe("localizedCount", () => {
+  it("appends a counter word for Korean, Chinese, and Japanese", () => {
+    expect(localizedCount("ko", 3)).toBe("3개");
+    expect(localizedCount("zh", 3)).toBe("3个");
+    expect(localizedCount("ja", 3)).toBe("3個");
+  });
+
+  it("uses the plain number for English and Spanish", () => {
+    expect(localizedCount("en", 3)).toBe("3");
+    expect(localizedCount("es", 3)).toBe("3");
   });
 });
 

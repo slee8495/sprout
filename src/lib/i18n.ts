@@ -1,4 +1,4 @@
-export type Locale = "en" | "ko";
+export type Locale = "en" | "ko" | "zh" | "ja" | "es";
 
 // Keyed by the English source string itself — no separate key namespace to maintain.
 // Falls back to the English text unchanged if a string isn't in here yet.
@@ -152,7 +152,7 @@ const ko: Record<string, string> = {
     "크고 작은 처음을 기록하고, “오늘 이날”에서 다시 꺼내보세요.",
   "Private by default": "기본적으로 비공개",
   "Only the family members you invite can ever see your journal.": "초대한 가족 구성원만 일기를 볼 수 있어요.",
-  "English & Korean": "영어 & 한국어",
+  "5 languages": "5개 언어",
   "Switch the app's language anytime from Settings.": "설정에서 언제든 앱 언어를 전환할 수 있어요.",
 
   // Auth / onboarding pages
@@ -218,9 +218,659 @@ const ko: Record<string, string> = {
   "{count} photos — swipe to browse": "사진 {count}장 — 넘겨서 보기",
 };
 
+const zh: Record<string, string> = {
+  // NavBar
+  Journal: "日记",
+  Feed: "动态",
+  Milestones: "里程碑",
+  Settings: "设置",
+
+  // JournalHome
+  "'s Journal": "的日记",
+  "'s Feed": "的动态",
+
+  // Feed
+  "💌 Parents": "💌 父母",
+  "🔍 Search entries…": "🔍 搜索日记…",
+  "📅 Calendar date": "📅 日历日期",
+  "⏱️ Uploaded date": "⏱️ 上传日期",
+  "Latest first": "最新优先",
+  "Oldest first": "最早优先",
+  'No results for "{query}" 🔍': '未找到"{query}"的结果 🔍',
+
+  // Milestones
+  "Not yet": "还没有",
+  Milestone: "里程碑",
+  Food: "饮食",
+  Social: "社交",
+  Physical: "身体",
+  Language: "语言",
+  Health: "健康",
+  Place: "地点",
+  "Special Day": "特别的日子",
+  Other: "其他",
+  Training: "训练",
+
+  // Drafts
+  "📝 Drafts — only you can see these": "📝 草稿 — 只有你能看到",
+  "(empty draft)": "（空草稿）",
+  Resume: "继续编辑",
+  "Delete this draft? This can't be undone.": "删除这条草稿吗？此操作无法撤销。",
+
+  // On this day
+  "✨ On this day": "✨ 那年今日",
+
+  // Entry form / card (shared)
+  "💌 Parents only": "💌 仅父母可见",
+  "(can't change once saved)": "（保存后无法更改）",
+  "Title (optional)": "标题（可选）",
+  "What happened today?": "今天发生了什么？",
+  "No milestone": "无里程碑",
+  "e.g. First broccoli": "例如：第一次吃西兰花",
+  "Remove photo": "删除照片",
+  "⏹ Stop recording": "⏹ 停止录音",
+  "🎤 Voice memo": "🎤 语音留言",
+  "🎥 Video (max 1 min)": "🎥 视频（最长1分钟）",
+  "Videos must be {max}s or shorter (this one is {actual}s).": "视频时长不能超过{max}秒（这段视频为{actual}秒）。",
+  "Couldn't read that video file.": "无法读取该视频文件。",
+  "That video file is too large (max {max}MB).": "该视频文件过大（最大{max}MB）。",
+  Remove: "删除",
+  "Write something first.": "请先写点什么。",
+  "Saving…": "保存中…",
+  Publish: "发布",
+  "Save entry": "保存日记",
+  "Save as draft": "保存为草稿",
+  "Couldn't save that entry — {message}": "无法保存该日记 — {message}",
+  "Entry can't be empty.": "内容不能为空。",
+  "Couldn't save changes — try again.": "无法保存更改 — 请重试。",
+  "Delete this entry? This can't be undone.": "删除这条日记吗？此操作无法撤销。",
+  Save: "保存",
+  Cancel: "取消",
+  Edit: "编辑",
+  Delete: "删除",
+  "Uploaded {time}": "{time}上传",
+  "· Edited": "· 已编辑",
+
+  // Empty states
+  "No entries yet — write the first one above 🌱": "还没有日记 — 在上面写下第一篇吧 🌱",
+
+  // Settings — Plan / Storage
+  Plan: "套餐",
+  "Pro plan": "Pro 套餐",
+  "renews {date}": "{date}续订",
+  "Payment failed — update your card to keep your Pro plan.": "支付失败 — 请更新您的卡以保留 Pro 套餐。",
+  "Manage billing": "管理账单",
+  "Buy +5GB storage": "购买 +5GB 存储空间",
+  "Free plan (previously subscribed)": "免费套餐（曾订阅过）",
+  "Free plan": "免费套餐",
+  " — 1 child or pet, 1GB storage.": " — 1个孩子或宠物，1GB存储空间。",
+  "Upgrade to Pro": "升级到 Pro",
+  Storage: "存储空间",
+  "{used} / {quota} used": "已使用 {used} / {quota}",
+  "— delete some photos to free up space": "— 删除一些照片以释放空间",
+
+  // Settings — Kids & Pets
+  "Kids & Pets": "孩子与宠物",
+  "+ Add a kid or pet": "+ 添加孩子或宠物",
+  Name: "姓名",
+  "👶 Child": "👶 孩子",
+  "🐾 Pet": "🐾 宠物",
+  "Birthday / adoption day": "生日 / 领养日",
+  "Birth date": "出生日期",
+  "Day count starts at": "天数计算从",
+  "Day 0 (born day = 0)": "第0天开始（出生当天 = 第0天）",
+  "Day 1 (born day = 1)": "第1天开始（出生当天 = 第1天）",
+  "Name is required.": "请输入姓名。",
+  "Pick a birth date.": "请选择出生日期。",
+  "Couldn't save — try again.": "保存失败 — 请重试。",
+  Add: "添加",
+
+  // Settings — Family / Appearance
+  Family: "家庭",
+  Timezone: "时区",
+  Appearance: "外观",
+  Theme: "主题",
+  "☀️ Light": "☀️ 浅色",
+  "🌙 Dark": "🌙 深色",
+  "🖥️ System": "🖥️ 系统",
+  "Font size": "字体大小",
+  "Couldn't save settings — try again.": "设置保存失败 — 请重试。",
+  "Saved.": "已保存。",
+
+  // Settings — Danger zone / delete account
+  "Danger zone": "危险区域",
+  "This will permanently delete {name} — {entries} entries, {photos} photos, {members} members — and cancel any active subscription. This cannot be undone.":
+    "此操作将永久删除{name} — {entries}篇日记，{photos}张照片，{members}位成员 — 并取消任何有效订阅。此操作无法撤销。",
+  "Type {name} to confirm": '输入"{name}"以确认',
+  "Deleting…": "删除中…",
+  "Permanently delete this family's account": "永久删除此家庭账户",
+
+  // Settings — Invite
+  "Invite your partner": "邀请伴侣",
+  "Share this family code — they can sign in with Google and join at":
+    "分享这个家庭代码 — 对方可以用 Google 登录并加入",
+  "Copied!": "已复制！",
+  Copy: "复制",
+
+  // Settings — page chrome
+  "⚙️ Settings": "⚙️ 设置",
+  "Signed in as": "登录账号：",
+  "Sign out": "退出登录",
+  Terms: "服务条款",
+  "Privacy Policy": "隐私政策",
+
+  // Landing page
+  "A private, lifelong journal for your family.": "为您的家庭打造的私密、伴随一生的日记。",
+  "Photos & voice memos": "照片和语音留言",
+  "Capture more than words — attach a photo or a quick voice memo to any entry.":
+    "不止是文字 — 为任何一篇日记添加照片或语音留言。",
+  "Track firsts, big and small, and revisit them on “On this day.”":
+    "记录大大小小的\"第一次\"，在\"那年今日\"重温这些瞬间。",
+  "Private by default": "默认私密",
+  "Only the family members you invite can ever see your journal.": "只有您邀请的家庭成员才能看到您的日记。",
+  "5 languages": "5种语言",
+  "Switch the app's language anytime from Settings.": "随时可在设置中切换应用语言。",
+
+  // Auth / onboarding pages
+  "Your family's private journal.": "您家庭的私密日记。",
+  "Sign in with Google": "使用 Google 登录",
+  "By continuing, you agree to our": "继续即表示您同意我们的",
+  and: "和",
+  "Create a new family journal or join one with an invite code.":
+    "创建一个新的家庭日记，或使用邀请代码加入现有的。",
+  "Create a family": "创建家庭",
+  "Join with an invite code": "使用邀请代码加入",
+  "Sign in with a different account": "使用其他账号登录",
+  "Join your family's journal with the invite code they shared with you.":
+    "使用家人分享给您的邀请代码加入家庭日记。",
+  "Starting a new family?": "要创建新的家庭吗？",
+  "Create one": "立即创建",
+  "Family code": "家庭代码",
+  "Your name": "您的姓名",
+  "If this name already exists in the family, your Google account will be linked to it.":
+    "如果家庭中已存在此姓名，您的 Google 账号将与其关联。",
+  "Joining…": "加入中…",
+  "Join family": "加入家庭",
+  "Create your family's private journal.": "创建您家庭的私密日记。",
+  "Joining an existing family?": "要加入现有的家庭吗？",
+  "Use an invite code": "使用邀请代码",
+  "Family name (e.g. The Lee Family)": "家庭名称（例如：李氏家族）",
+  "Creating family…": "正在创建家庭…",
+  "Create family": "创建家庭",
+  "🌱 Welcome to Sprout": "🌱 欢迎使用 Sprout",
+  "A few quick things before we start journaling.": "在开始写日记之前，先确认几件小事。",
+  "Your kid or pet": "您的孩子或宠物",
+  "Their name": "请输入姓名",
+  "Your pet's name is required.": "请输入宠物的姓名。",
+  "Your child's name is required.": "请输入孩子的姓名。",
+  "Pick a date first.": "请先选择日期。",
+  "Get started": "开始使用",
+
+  // Chat widget (currently hidden from UI)
+  "🌱 Ask about your family": "🌱 询问关于家庭的问题",
+  "Read replies aloud": "朗读回复",
+  'Ask things like "when did they first eat solid food?" or "when did they first walk?"':
+    '可以问"第一次吃辅食是什么时候？"或"第一次走路是什么时候？"',
+  "Thinking…": "思考中…",
+  "Listening…": "聆听中…",
+  "Transcribing…": "转录中…",
+  "Ask a question…": "输入问题…",
+  Send: "发送",
+  "Read this reply aloud": "朗读此回复",
+  "Stop recording": "停止录音",
+  "Ask by voice": "语音提问",
+  Chat: "聊天",
+
+  // CommentThread
+  Someone: "某人",
+  "Add a comment… 💬": "添加评论… 💬",
+  Post: "发布",
+
+  // Calendar / PhotoLightbox
+  "Previous month": "上个月",
+  "Next month": "下个月",
+  "Clear selected date": "清除选中日期",
+  Close: "关闭",
+  "{count} photos — swipe to browse": "{count} 张照片 — 滑动浏览",
+};
+
+const ja: Record<string, string> = {
+  // NavBar
+  Journal: "日記",
+  Feed: "フィード",
+  Milestones: "マイルストーン",
+  Settings: "設定",
+
+  // JournalHome
+  "'s Journal": "の日記",
+  "'s Feed": "のフィード",
+
+  // Feed
+  "💌 Parents": "💌 両親",
+  "🔍 Search entries…": "🔍 記録を検索…",
+  "📅 Calendar date": "📅 カレンダー日付",
+  "⏱️ Uploaded date": "⏱️ アップロード日",
+  "Latest first": "新しい順",
+  "Oldest first": "古い順",
+  'No results for "{query}" 🔍': '「{query}」の検索結果はありません 🔍',
+
+  // Milestones
+  "Not yet": "まだ",
+  Milestone: "マイルストーン",
+  Food: "食事",
+  Social: "社会性",
+  Physical: "運動",
+  Language: "言語",
+  Health: "健康",
+  Place: "場所",
+  "Special Day": "特別な日",
+  Other: "その他",
+  Training: "しつけ",
+
+  // Drafts
+  "📝 Drafts — only you can see these": "📝 下書き — あなただけが見られます",
+  "(empty draft)": "（空の下書き）",
+  Resume: "再開する",
+  "Delete this draft? This can't be undone.": "この下書きを削除しますか？元に戻せません。",
+
+  // On this day
+  "✨ On this day": "✨ この日の思い出",
+
+  // Entry form / card (shared)
+  "💌 Parents only": "💌 両親のみ",
+  "(can't change once saved)": "（保存後は変更できません）",
+  "Title (optional)": "タイトル（任意）",
+  "What happened today?": "今日は何がありましたか？",
+  "No milestone": "マイルストーンなし",
+  "e.g. First broccoli": "例：はじめてのブロッコリー",
+  "Remove photo": "写真を削除",
+  "⏹ Stop recording": "⏹ 録音を停止",
+  "🎤 Voice memo": "🎤 ボイスメモ",
+  "🎥 Video (max 1 min)": "🎥 動画（最大1分）",
+  "Videos must be {max}s or shorter (this one is {actual}s).": "動画は{max}秒以内にしてください（この動画は{actual}秒です）。",
+  "Couldn't read that video file.": "この動画ファイルを読み込めませんでした。",
+  "That video file is too large (max {max}MB).": "この動画ファイルは大きすぎます（最大{max}MB）。",
+  Remove: "削除",
+  "Write something first.": "まず何か入力してください。",
+  "Saving…": "保存中…",
+  Publish: "公開する",
+  "Save entry": "記録を保存",
+  "Save as draft": "下書きとして保存",
+  "Couldn't save that entry — {message}": "記録を保存できませんでした — {message}",
+  "Entry can't be empty.": "内容を空にはできません。",
+  "Couldn't save changes — try again.": "変更を保存できませんでした。もう一度お試しください。",
+  "Delete this entry? This can't be undone.": "この記録を削除しますか？元に戻せません。",
+  Save: "保存",
+  Cancel: "キャンセル",
+  Edit: "編集",
+  Delete: "削除",
+  "Uploaded {time}": "{time}にアップロード",
+  "· Edited": "・編集済み",
+
+  // Empty states
+  "No entries yet — write the first one above 🌱": "まだ記録がありません — 上から最初の記録を書いてみましょう 🌱",
+
+  // Settings — Plan / Storage
+  Plan: "プラン",
+  "Pro plan": "Pro プラン",
+  "renews {date}": "{date}に更新",
+  "Payment failed — update your card to keep your Pro plan.": "支払いに失敗しました — Pro プランを維持するにはカード情報を更新してください。",
+  "Manage billing": "請求情報を管理",
+  "Buy +5GB storage": "+5GB ストレージを購入",
+  "Free plan (previously subscribed)": "無料プラン（過去に契約あり）",
+  "Free plan": "無料プラン",
+  " — 1 child or pet, 1GB storage.": " — 子供またはペット1人、ストレージ1GB。",
+  "Upgrade to Pro": "Pro にアップグレード",
+  Storage: "ストレージ",
+  "{used} / {quota} used": "{used} / {quota} 使用中",
+  "— delete some photos to free up space": "— 写真を削除して空き容量を確保してください",
+
+  // Settings — Kids & Pets
+  "Kids & Pets": "子供とペット",
+  "+ Add a kid or pet": "+ 子供またはペットを追加",
+  Name: "名前",
+  "👶 Child": "👶 子供",
+  "🐾 Pet": "🐾 ペット",
+  "Birthday / adoption day": "誕生日 / お迎え日",
+  "Birth date": "誕生日",
+  "Day count starts at": "日数の数え方",
+  "Day 0 (born day = 0)": "0日目から（生まれた日 = 0日目）",
+  "Day 1 (born day = 1)": "1日目から（生まれた日 = 1日目）",
+  "Name is required.": "名前を入力してください。",
+  "Pick a birth date.": "誕生日を選択してください。",
+  "Couldn't save — try again.": "保存できませんでした。もう一度お試しください。",
+  Add: "追加",
+
+  // Settings — Family / Appearance
+  Family: "家族",
+  Timezone: "タイムゾーン",
+  Appearance: "外観",
+  Theme: "テーマ",
+  "☀️ Light": "☀️ ライト",
+  "🌙 Dark": "🌙 ダーク",
+  "🖥️ System": "🖥️ システム",
+  "Font size": "文字サイズ",
+  "Couldn't save settings — try again.": "設定を保存できませんでした。もう一度お試しください。",
+  "Saved.": "保存しました。",
+
+  // Settings — Danger zone / delete account
+  "Danger zone": "危険な操作",
+  "This will permanently delete {name} — {entries} entries, {photos} photos, {members} members — and cancel any active subscription. This cannot be undone.":
+    "これにより{name}が完全に削除されます — 記録{entries}件、写真{photos}枚、メンバー{members}人 — 有効なサブスクリプションもすべて解約されます。元に戻すことはできません。",
+  "Type {name} to confirm": "確認のため「{name}」と入力してください",
+  "Deleting…": "削除中…",
+  "Permanently delete this family's account": "この家族のアカウントを完全に削除する",
+
+  // Settings — Invite
+  "Invite your partner": "パートナーを招待",
+  "Share this family code — they can sign in with Google and join at":
+    "この家族コードを共有してください — 相手は Google でログインして参加できます",
+  "Copied!": "コピーしました！",
+  Copy: "コピー",
+
+  // Settings — page chrome
+  "⚙️ Settings": "⚙️ 設定",
+  "Signed in as": "ログイン中：",
+  "Sign out": "ログアウト",
+  Terms: "利用規約",
+  "Privacy Policy": "プライバシーポリシー",
+
+  // Landing page
+  "A private, lifelong journal for your family.": "家族のための、一生続くプライベートな日記。",
+  "Photos & voice memos": "写真とボイスメモ",
+  "Capture more than words — attach a photo or a quick voice memo to any entry.":
+    "言葉だけじゃない — どの記録にも写真やボイスメモを添付できます。",
+  "Track firsts, big and small, and revisit them on “On this day.”":
+    "大小さまざまな「はじめて」を記録して、「この日の思い出」でまた出会えます。",
+  "Private by default": "デフォルトで非公開",
+  "Only the family members you invite can ever see your journal.": "招待した家族だけがあなたの日記を見ることができます。",
+  "5 languages": "5つの言語",
+  "Switch the app's language anytime from Settings.": "設定からいつでもアプリの言語を切り替えられます。",
+
+  // Auth / onboarding pages
+  "Your family's private journal.": "あなたの家族のプライベートな日記。",
+  "Sign in with Google": "Google でログイン",
+  "By continuing, you agree to our": "続行することで、以下に同意したものとみなされます：",
+  and: "と",
+  "Create a new family journal or join one with an invite code.":
+    "新しく家族の日記を作成するか、招待コードで参加してください。",
+  "Create a family": "家族を作成",
+  "Join with an invite code": "招待コードで参加",
+  "Sign in with a different account": "別のアカウントでログイン",
+  "Join your family's journal with the invite code they shared with you.":
+    "共有された招待コードで家族の日記に参加しましょう。",
+  "Starting a new family?": "新しく家族を始めますか？",
+  "Create one": "作成する",
+  "Family code": "家族コード",
+  "Your name": "お名前",
+  "If this name already exists in the family, your Google account will be linked to it.":
+    "この名前がすでに家族内にある場合、その名前に Google アカウントが紐づけられます。",
+  "Joining…": "参加中…",
+  "Join family": "家族に参加",
+  "Create your family's private journal.": "あなたの家族のプライベートな日記を作成しましょう。",
+  "Joining an existing family?": "既存の家族に参加しますか？",
+  "Use an invite code": "招待コードを使う",
+  "Family name (e.g. The Lee Family)": "家族の名前（例：田中家）",
+  "Creating family…": "家族を作成中…",
+  "Create family": "家族を作成",
+  "🌱 Welcome to Sprout": "🌱 Sprout へようこそ",
+  "A few quick things before we start journaling.": "日記を始める前に、いくつか確認しましょう。",
+  "Your kid or pet": "お子さまやペット",
+  "Their name": "名前を入力",
+  "Your pet's name is required.": "ペットの名前を入力してください。",
+  "Your child's name is required.": "お子さまの名前を入力してください。",
+  "Pick a date first.": "先に日付を選択してください。",
+  "Get started": "はじめる",
+
+  // Chat widget (currently hidden from UI)
+  "🌱 Ask about your family": "🌱 家族について質問する",
+  "Read replies aloud": "返信を読み上げる",
+  'Ask things like "when did they first eat solid food?" or "when did they first walk?"':
+    '「はじめて離乳食を食べたのはいつ？」「はじめて歩いたのはいつ？」のように聞いてみましょう',
+  "Thinking…": "考え中…",
+  "Listening…": "聞き取り中…",
+  "Transcribing…": "文字起こし中…",
+  "Ask a question…": "質問を入力…",
+  Send: "送信",
+  "Read this reply aloud": "この返信を読み上げる",
+  "Stop recording": "録音を停止",
+  "Ask by voice": "音声で質問",
+  Chat: "チャット",
+
+  // CommentThread
+  Someone: "誰か",
+  "Add a comment… 💬": "コメントを追加… 💬",
+  Post: "投稿",
+
+  // Calendar / PhotoLightbox
+  "Previous month": "前の月",
+  "Next month": "次の月",
+  "Clear selected date": "選択した日付を解除",
+  Close: "閉じる",
+  "{count} photos — swipe to browse": "{count}枚の写真 — スワイプして見る",
+};
+
+const es: Record<string, string> = {
+  // NavBar
+  Journal: "Diario",
+  Feed: "Novedades",
+  Milestones: "Hitos",
+  Settings: "Ajustes",
+
+  // JournalHome
+  "'s Journal": " - Diario",
+  "'s Feed": " - Novedades",
+
+  // Feed
+  "💌 Parents": "💌 Padres",
+  "🔍 Search entries…": "🔍 Buscar entradas…",
+  "📅 Calendar date": "📅 Fecha del calendario",
+  "⏱️ Uploaded date": "⏱️ Fecha de subida",
+  "Latest first": "Más recientes primero",
+  "Oldest first": "Más antiguos primero",
+  'No results for "{query}" 🔍': 'Sin resultados para "{query}" 🔍',
+
+  // Milestones
+  "Not yet": "Aún no",
+  Milestone: "Hito",
+  Food: "Comida",
+  Social: "Social",
+  Physical: "Físico",
+  Language: "Idioma",
+  Health: "Salud",
+  Place: "Lugar",
+  "Special Day": "Día especial",
+  Other: "Otro",
+  Training: "Entrenamiento",
+
+  // Drafts
+  "📝 Drafts — only you can see these": "📝 Borradores — solo tú puedes verlos",
+  "(empty draft)": "(borrador vacío)",
+  Resume: "Continuar",
+  "Delete this draft? This can't be undone.": "¿Eliminar este borrador? No se puede deshacer.",
+
+  // On this day
+  "✨ On this day": "✨ Este día",
+
+  // Entry form / card (shared)
+  "💌 Parents only": "💌 Solo para padres",
+  "(can't change once saved)": "(no se puede cambiar después de guardar)",
+  "Title (optional)": "Título (opcional)",
+  "What happened today?": "¿Qué pasó hoy?",
+  "No milestone": "Sin hito",
+  "e.g. First broccoli": "p. ej. Primer brócoli",
+  "Remove photo": "Eliminar foto",
+  "⏹ Stop recording": "⏹ Detener grabación",
+  "🎤 Voice memo": "🎤 Nota de voz",
+  "🎥 Video (max 1 min)": "🎥 Video (máx. 1 min)",
+  "Videos must be {max}s or shorter (this one is {actual}s).": "Los videos deben durar {max}s o menos (este dura {actual}s).",
+  "Couldn't read that video file.": "No se pudo leer ese archivo de video.",
+  "That video file is too large (max {max}MB).": "Ese archivo de video es demasiado grande (máx. {max}MB).",
+  Remove: "Quitar",
+  "Write something first.": "Escribe algo primero.",
+  "Saving…": "Guardando…",
+  Publish: "Publicar",
+  "Save entry": "Guardar entrada",
+  "Save as draft": "Guardar como borrador",
+  "Couldn't save that entry — {message}": "No se pudo guardar la entrada — {message}",
+  "Entry can't be empty.": "La entrada no puede estar vacía.",
+  "Couldn't save changes — try again.": "No se pudieron guardar los cambios — inténtalo de nuevo.",
+  "Delete this entry? This can't be undone.": "¿Eliminar esta entrada? No se puede deshacer.",
+  Save: "Guardar",
+  Cancel: "Cancelar",
+  Edit: "Editar",
+  Delete: "Eliminar",
+  "Uploaded {time}": "Subido {time}",
+  "· Edited": "· Editado",
+
+  // Empty states
+  "No entries yet — write the first one above 🌱": "Aún no hay entradas — escribe la primera arriba 🌱",
+
+  // Settings — Plan / Storage
+  Plan: "Plan",
+  "Pro plan": "Plan Pro",
+  "renews {date}": "se renueva el {date}",
+  "Payment failed — update your card to keep your Pro plan.": "El pago falló — actualiza tu tarjeta para mantener tu plan Pro.",
+  "Manage billing": "Gestionar facturación",
+  "Buy +5GB storage": "Comprar +5GB de almacenamiento",
+  "Free plan (previously subscribed)": "Plan gratuito (con suscripción anterior)",
+  "Free plan": "Plan gratuito",
+  " — 1 child or pet, 1GB storage.": " — 1 hijo o mascota, 1GB de almacenamiento.",
+  "Upgrade to Pro": "Mejorar a Pro",
+  Storage: "Almacenamiento",
+  "{used} / {quota} used": "{used} / {quota} usado",
+  "— delete some photos to free up space": "— elimina algunas fotos para liberar espacio",
+
+  // Settings — Kids & Pets
+  "Kids & Pets": "Hijos y mascotas",
+  "+ Add a kid or pet": "+ Añadir hijo o mascota",
+  Name: "Nombre",
+  "👶 Child": "👶 Hijo/a",
+  "🐾 Pet": "🐾 Mascota",
+  "Birthday / adoption day": "Cumpleaños / día de adopción",
+  "Birth date": "Fecha de nacimiento",
+  "Day count starts at": "El conteo de días empieza en",
+  "Day 0 (born day = 0)": "Día 0 (día de nacimiento = 0)",
+  "Day 1 (born day = 1)": "Día 1 (día de nacimiento = 1)",
+  "Name is required.": "El nombre es obligatorio.",
+  "Pick a birth date.": "Elige una fecha de nacimiento.",
+  "Couldn't save — try again.": "No se pudo guardar — inténtalo de nuevo.",
+  Add: "Añadir",
+
+  // Settings — Family / Appearance
+  Family: "Familia",
+  Timezone: "Zona horaria",
+  Appearance: "Apariencia",
+  Theme: "Tema",
+  "☀️ Light": "☀️ Claro",
+  "🌙 Dark": "🌙 Oscuro",
+  "🖥️ System": "🖥️ Sistema",
+  "Font size": "Tamaño de fuente",
+  "Couldn't save settings — try again.": "No se pudieron guardar los ajustes — inténtalo de nuevo.",
+  "Saved.": "Guardado.",
+
+  // Settings — Danger zone / delete account
+  "Danger zone": "Zona de peligro",
+  "This will permanently delete {name} — {entries} entries, {photos} photos, {members} members — and cancel any active subscription. This cannot be undone.":
+    "Esto eliminará permanentemente {name} — {entries} entradas, {photos} fotos, {members} miembros — y cancelará cualquier suscripción activa. Esta acción no se puede deshacer.",
+  "Type {name} to confirm": "Escribe {name} para confirmar",
+  "Deleting…": "Eliminando…",
+  "Permanently delete this family's account": "Eliminar permanentemente la cuenta de esta familia",
+
+  // Settings — Invite
+  "Invite your partner": "Invita a tu pareja",
+  "Share this family code — they can sign in with Google and join at":
+    "Comparte este código familiar — pueden iniciar sesión con Google y unirse en",
+  "Copied!": "¡Copiado!",
+  Copy: "Copiar",
+
+  // Settings — page chrome
+  "⚙️ Settings": "⚙️ Ajustes",
+  "Signed in as": "Sesión iniciada como",
+  "Sign out": "Cerrar sesión",
+  Terms: "Términos",
+  "Privacy Policy": "Política de privacidad",
+
+  // Landing page
+  "A private, lifelong journal for your family.": "Un diario privado y para toda la vida, para tu familia.",
+  "Photos & voice memos": "Fotos y notas de voz",
+  "Capture more than words — attach a photo or a quick voice memo to any entry.":
+    "Más que palabras — adjunta una foto o una nota de voz a cualquier entrada.",
+  "Track firsts, big and small, and revisit them on “On this day.”":
+    "Registra los primeros momentos, grandes y pequeños, y revívelos en \"Este día\".",
+  "Private by default": "Privado por defecto",
+  "Only the family members you invite can ever see your journal.": "Solo los familiares que invites podrán ver tu diario.",
+  "5 languages": "5 idiomas",
+  "Switch the app's language anytime from Settings.": "Cambia el idioma de la app en cualquier momento desde Ajustes.",
+
+  // Auth / onboarding pages
+  "Your family's private journal.": "El diario privado de tu familia.",
+  "Sign in with Google": "Iniciar sesión con Google",
+  "By continuing, you agree to our": "Al continuar, aceptas nuestros",
+  and: "y",
+  "Create a new family journal or join one with an invite code.":
+    "Crea un nuevo diario familiar o únete a uno con un código de invitación.",
+  "Create a family": "Crear una familia",
+  "Join with an invite code": "Unirse con un código de invitación",
+  "Sign in with a different account": "Iniciar sesión con otra cuenta",
+  "Join your family's journal with the invite code they shared with you.":
+    "Únete al diario de tu familia con el código de invitación que te compartieron.",
+  "Starting a new family?": "¿Empezando una familia nueva?",
+  "Create one": "Crear una",
+  "Family code": "Código familiar",
+  "Your name": "Tu nombre",
+  "If this name already exists in the family, your Google account will be linked to it.":
+    "Si este nombre ya existe en la familia, tu cuenta de Google se vinculará a él.",
+  "Joining…": "Uniéndose…",
+  "Join family": "Unirse a la familia",
+  "Create your family's private journal.": "Crea el diario privado de tu familia.",
+  "Joining an existing family?": "¿Te unes a una familia existente?",
+  "Use an invite code": "Usar un código de invitación",
+  "Family name (e.g. The Lee Family)": "Nombre familiar (p. ej. Familia García)",
+  "Creating family…": "Creando familia…",
+  "Create family": "Crear familia",
+  "🌱 Welcome to Sprout": "🌱 Bienvenido a Sprout",
+  "A few quick things before we start journaling.": "Unas cosas rápidas antes de empezar a escribir.",
+  "Your kid or pet": "Tu hijo/a o mascota",
+  "Their name": "Su nombre",
+  "Your pet's name is required.": "El nombre de tu mascota es obligatorio.",
+  "Your child's name is required.": "El nombre de tu hijo/a es obligatorio.",
+  "Pick a date first.": "Elige primero una fecha.",
+  "Get started": "Empezar",
+
+  // Chat widget (currently hidden from UI)
+  "🌱 Ask about your family": "🌱 Pregunta sobre tu familia",
+  "Read replies aloud": "Leer respuestas en voz alta",
+  'Ask things like "when did they first eat solid food?" or "when did they first walk?"':
+    'Pregunta cosas como "¿cuándo comió sólidos por primera vez?" o "¿cuándo caminó por primera vez?"',
+  "Thinking…": "Pensando…",
+  "Listening…": "Escuchando…",
+  "Transcribing…": "Transcribiendo…",
+  "Ask a question…": "Haz una pregunta…",
+  Send: "Enviar",
+  "Read this reply aloud": "Leer esta respuesta en voz alta",
+  "Stop recording": "Detener grabación",
+  "Ask by voice": "Preguntar por voz",
+  Chat: "Chat",
+
+  // CommentThread
+  Someone: "Alguien",
+  "Add a comment… 💬": "Añadir un comentario… 💬",
+  Post: "Publicar",
+
+  // Calendar / PhotoLightbox
+  "Previous month": "Mes anterior",
+  "Next month": "Mes siguiente",
+  "Clear selected date": "Borrar fecha seleccionada",
+  Close: "Cerrar",
+  "{count} photos — swipe to browse": "{count} fotos — desliza para ver",
+};
+
+const DICTIONARIES: Partial<Record<Locale, Record<string, string>>> = { ko, zh, ja, es };
+
 export function translate(locale: Locale, text: string): string {
   if (locale === "en") return text;
-  return ko[text] ?? text;
+  return DICTIONARIES[locale]?.[text] ?? text;
 }
 
 // Simple {placeholder} substitution for translated strings that need interpolation,
@@ -230,4 +880,10 @@ export function fill(text: string, values: Record<string, string | number>): str
     (result, [key, value]) => result.replaceAll(`{${key}}`, String(value)),
     text,
   );
+}
+
+// Korean/Chinese/Japanese count nouns with a counter word; English/Spanish just use the number.
+const COUNT_SUFFIX: Partial<Record<Locale, string>> = { ko: "개", zh: "个", ja: "個" };
+export function localizedCount(locale: Locale, count: number): string {
+  return `${count}${COUNT_SUFFIX[locale] ?? ""}`;
 }

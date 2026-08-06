@@ -5,6 +5,7 @@ import type { JournalEntryWithPhotos } from "@/db/queries";
 import { MILESTONE_CATEGORIES, subjectEmoji, formatEntryDate } from "@/lib/milestones";
 import { authorBadgeClasses } from "@/lib/author";
 import { formatDayOfLife } from "@/lib/date";
+import { localizedCount } from "@/lib/i18n";
 import { useSettings } from "../SettingsProvider";
 
 export function MilestoneGrid({ entries }: { entries: JournalEntryWithPhotos[] }) {
@@ -38,7 +39,7 @@ export function MilestoneGrid({ entries }: { entries: JournalEntryWithPhotos[] }
               <span className="text-2xl">{c.emoji}</span>
               <span className="font-heading text-sm font-semibold">{t(c.label)}</span>
               <span className="text-xs text-zinc-600 dark:text-zinc-400">
-                {hasEntries ? (locale === "ko" ? `${categoryEntries.length}개` : categoryEntries.length) : t("Not yet")}
+                {hasEntries ? localizedCount(locale, categoryEntries.length) : t("Not yet")}
               </span>
             </button>
           );

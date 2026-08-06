@@ -23,6 +23,9 @@ const FONT_SIZE_OPTIONS: { value: FontSize; label: string }[] = [
 const LOCALE_OPTIONS: { value: Locale; label: string }[] = [
   { value: "en", label: "🇺🇸 English" },
   { value: "ko", label: "🇰🇷 한국어" },
+  { value: "zh", label: "🇨🇳 中文" },
+  { value: "ja", label: "🇯🇵 日本語" },
+  { value: "es", label: "🇪🇸 Español" },
 ];
 
 export function FamilySettingsForm() {
@@ -116,13 +119,13 @@ export function FamilySettingsForm() {
 
         <div className="flex flex-col gap-1 text-sm">
           {t("Language")}
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2">
             {LOCALE_OPTIONS.map((opt) => (
               <button
                 key={opt.value}
                 type="button"
                 onClick={() => settings.setLocale(opt.value)}
-                className={`flex-1 rounded-2xl border px-3 py-2 text-sm font-semibold transition-transform hover:scale-105 active:scale-95 ${
+                className={`rounded-2xl border px-3 py-2 text-sm font-semibold transition-transform hover:scale-105 active:scale-95 ${
                   settings.locale === opt.value
                     ? "border-emerald-600 bg-emerald-600 text-white"
                     : "border-emerald-100 text-emerald-800 dark:border-emerald-900/40 dark:text-emerald-200"
