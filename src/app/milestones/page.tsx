@@ -16,7 +16,7 @@ export default async function MilestonesPage() {
       <header className="pt-4">
         <h1 className="font-heading text-2xl font-bold text-emerald-700 dark:text-emerald-300">🏅 Milestones</h1>
       </header>
-      <MilestoneGrid entries={entries} />
+      <MilestoneGrid entries={entries} kids={kids} />
     </div>
   );
 }

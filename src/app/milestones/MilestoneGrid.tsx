@@ -1,19 +1,24 @@
 "use client";
 
 import { useState } from "react";
-import type { JournalEntryWithPhotos } from "@/db/queries";
-import { MILESTONE_CATEGORIES, subjectEmoji, formatEntryDate } from "@/lib/milestones";
+import type { Child, JournalEntryWithPhotos } from "@/db/queries";
+import { getMilestoneCategories, subjectEmoji, formatEntryDate } from "@/lib/milestones";
 import { authorBadgeClasses } from "@/lib/author";
 import { formatDayOfLife } from "@/lib/date";
 import { localizedCount } from "@/lib/i18n";
 import { useSettings } from "../SettingsProvider";
 
-export function MilestoneGrid({ entries }: { entries: JournalEntryWithPhotos[] }) {
+export function MilestoneGrid({ entries, kids }: { entries: JournalEntryWithPhotos[]; kids: Child[] }) {
   const { t, locale } = useSettings();
+  const [selectedChildId, setSelectedChildId] = useState(kids[0]?.id);
   const [expandedCategory, setExpandedCategory] = useState<string | null>(null);
 
+  const selectedChild = kids.find((k) => k.id === selectedChildId);
+  const categories = getMilestoneCategories(selectedChild?.type ?? "child");
+  const childEntries = entries.filter((entry) => entry.childId === selectedChildId);
+
   const byCategory = new Map<string, JournalEntryWithPhotos[]>();
-  for (const entry of entries) {
+  for (const entry of childEntries) {
     if (!entry.milestoneCategory) continue;
     const list = byCategory.get(entry.milestoneCategory) ?? [];
     list.push(entry);
@@ -22,8 +27,29 @@ export function MilestoneGrid({ entries }: { entries: JournalEntryWithPhotos[] }
 
   return (
     <div className="flex flex-col gap-6">
+      {kids.length > 1 && (
+        <div className="flex flex-wrap gap-2">
+          {kids.map((child) => (
+            <button
+              key={child.id}
+              onClick={() => {
+                setSelectedChildId(child.id);
+                setExpandedCategory(null);
+              }}
+              className={`rounded-full px-4 py-1.5 font-heading text-sm font-semibold transition-transform hover:scale-105 active:scale-95 ${
+                selectedChildId === child.id
+                  ? "bg-emerald-600 text-white shadow-sm shadow-emerald-900/20"
+                  : "border border-emerald-100 text-emerald-800 dark:border-emerald-900/40 dark:text-emerald-200"
+              }`}
+            >
+              {subjectEmoji(child.type)} {child.name}
+            </button>
+          ))}
+        </div>
+      )}
+
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-        {MILESTONE_CATEGORIES.map((c) => {
+        {categories.map((c) => {
           const categoryEntries = byCategory.get(c.value) ?? [];
           const hasEntries = categoryEntries.length > 0;
           return (
