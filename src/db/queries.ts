@@ -1,4 +1,4 @@
-import { and, desc, eq, ilike, inArray, isNotNull, ne, sql } from "drizzle-orm";
+import { and, desc, eq, ilike, inArray, isNotNull, isNull, lt, ne, sql } from "drizzle-orm";
 import { db } from "./index";
 import {
   audienceEnum,
@@ -523,4 +523,58 @@ export function listMilestoneEntries(familyId: number, childId?: number) {
       comments: { with: { author: true }, orderBy: (comments, { asc }) => [asc(comments.createdAt)] },
     },
   });
+}
+
+export async function listAllFamiliesForAdmin() {
+  const [familyRows, userRows] = await Promise.all([
+    db.select().from(families).orderBy(desc(families.createdAt)),
+    db.select({ familyId: users.familyId, email: users.email, name: users.name }).from(users),
+  ]);
+
+  const membersByFamily = new Map<number, { email: string; name: string | null }[]>();
+  for (const u of userRows) {
+    const list = membersByFamily.get(u.familyId) ?? [];
+    list.push({ email: u.email, name: u.name });
+    membersByFamily.set(u.familyId, list);
+  }
+
+  return familyRows.map((f) => ({ ...f, members: membersByFamily.get(f.id) ?? [] }));
+}
+
+export type AdminFamilyRow = Awaited<ReturnType<typeof listAllFamiliesForAdmin>>[number];
+
+// Grants free Pro access without a real Stripe subscription. Deliberately leaves
+// stripeCustomerId/stripeSubscriptionId untouched — their absence (or presence, for a family
+// that once had a real subscription) is what distinguishes complimentary access from a real
+// one in the billing UI. expiresAt null means it never expires.
+export async function setComplimentaryAccess(familyId: number, expiresAt: Date | null) {
+  await db
+    .update(families)
+    .set({ subscriptionStatus: "active", subscriptionRenewsAt: expiresAt })
+    .where(eq(families.id, familyId));
+}
+
+export async function revokeComplimentaryAccess(familyId: number) {
+  await db
+    .update(families)
+    .set({ subscriptionStatus: "free", subscriptionRenewsAt: null })
+    .where(eq(families.id, familyId));
+}
+
+// Auto-downgrades expired complimentary grants back to Free. Only touches families with no
+// real Stripe subscription behind their "active" status, so it can never cancel a real payer.
+export async function expireComplimentaryAccess(): Promise<number> {
+  const result = await db
+    .update(families)
+    .set({ subscriptionStatus: "free", subscriptionRenewsAt: null })
+    .where(
+      and(
+        eq(families.subscriptionStatus, "active"),
+        isNull(families.stripeSubscriptionId),
+        isNotNull(families.subscriptionRenewsAt),
+        lt(families.subscriptionRenewsAt, new Date()),
+      ),
+    )
+    .returning({ id: families.id });
+  return result.length;
 }

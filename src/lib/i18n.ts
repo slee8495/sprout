@@ -80,6 +80,9 @@ const ko: Record<string, string> = {
   // Settings — Plan / Storage
   Plan: "플랜",
   "Pro plan": "Pro 플랜",
+  "Pro plan (complimentary)": "Pro 플랜 (무료 제공)",
+  "free until {date}": "{date}까지 무료",
+  "free forever": "평생 무료",
   "renews {date}": "{date}에 갱신",
   "Payment failed — update your card to keep your Pro plan.": "결제에 실패했어요 — Pro 플랜을 유지하려면 카드 정보를 업데이트해주세요.",
   "Manage billing": "결제 관리",
@@ -295,6 +298,9 @@ const zh: Record<string, string> = {
   // Settings — Plan / Storage
   Plan: "套餐",
   "Pro plan": "Pro 套餐",
+  "Pro plan (complimentary)": "Pro 套餐（赠送）",
+  "free until {date}": "免费至{date}",
+  "free forever": "永久免费",
   "renews {date}": "{date}续订",
   "Payment failed — update your card to keep your Pro plan.": "支付失败 — 请更新您的卡以保留 Pro 套餐。",
   "Manage billing": "管理账单",
@@ -510,6 +516,9 @@ const ja: Record<string, string> = {
   // Settings — Plan / Storage
   Plan: "プラン",
   "Pro plan": "Pro プラン",
+  "Pro plan (complimentary)": "Pro プラン（無料提供）",
+  "free until {date}": "{date}まで無料",
+  "free forever": "永久無料",
   "renews {date}": "{date}に更新",
   "Payment failed — update your card to keep your Pro plan.": "支払いに失敗しました — Pro プランを維持するにはカード情報を更新してください。",
   "Manage billing": "請求情報を管理",
@@ -725,6 +734,9 @@ const es: Record<string, string> = {
   // Settings — Plan / Storage
   Plan: "Plan",
   "Pro plan": "Plan Pro",
+  "Pro plan (complimentary)": "Plan Pro (cortesía)",
+  "free until {date}": "gratis hasta el {date}",
+  "free forever": "gratis para siempre",
   "renews {date}": "se renueva el {date}",
   "Payment failed — update your card to keep your Pro plan.": "El pago falló — actualiza tu tarjeta para mantener tu plan Pro.",
   "Manage billing": "Gestionar facturación",

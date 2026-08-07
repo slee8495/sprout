@@ -22,12 +22,36 @@ export function BillingCard({
   const { t } = useSettings();
   const isPaid = billing.subscriptionStatus === "active" || billing.subscriptionStatus === "past_due";
   const wasSubscribed = billing.subscriptionStatus === "canceled";
+  // Admin-granted free access (no real Stripe subscription behind it) — distinct from a real subscriber.
+  const isComplimentary = isPaid && !billing.stripeCustomerId;
 
   return (
     <section className="flex flex-col gap-3 rounded-3xl border border-emerald-200/70 bg-white p-4 dark:border-emerald-800/50 dark:bg-zinc-900">
       <h2 className="font-heading text-sm font-semibold text-emerald-800 dark:text-emerald-200">{t("Plan")}</h2>
 
-      {isPaid ? (
+      {isComplimentary ? (
+        <>
+          <p className="text-sm text-zinc-600 dark:text-zinc-400">
+            {t("Pro plan (complimentary)")}
+            {billing.subscriptionRenewsAt
+              ? ` — ${fill(t("free until {date}"), {
+                  date: billing.subscriptionRenewsAt.toLocaleDateString(undefined, {
+                    year: "numeric",
+                    month: "short",
+                    day: "numeric",
+                  }),
+                })}`
+              : ` — ${t("free forever")}`}
+          </p>
+          {showAddon && (
+            <form action={startStorageAddonCheckout}>
+              <button type="submit" className={secondaryButtonClasses}>
+                {t("Buy +5GB storage")}
+              </button>
+            </form>
+          )}
+        </>
+      ) : isPaid ? (
         <>
           <p className="text-sm text-zinc-600 dark:text-zinc-400">
             {t("Pro plan")}
