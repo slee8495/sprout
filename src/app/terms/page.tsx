@@ -7,7 +7,7 @@ export default function TermsPage() {
     <div className="mx-auto flex w-full max-w-2xl flex-1 flex-col gap-6 p-4 pb-24">
       <header className="pt-4">
         <h1 className="font-heading text-2xl font-bold text-emerald-700 dark:text-emerald-300">Terms of Service</h1>
-        <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">Last updated: July 24, 2026</p>
+        <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">Last updated: August 6, 2026</p>
       </header>
 
       <div className="flex flex-col gap-5 rounded-3xl border border-emerald-200/70 bg-white p-5 text-sm leading-relaxed text-zinc-700 dark:border-emerald-800/50 dark:bg-zinc-900 dark:text-zinc-300">
@@ -20,8 +20,8 @@ export default function TermsPage() {
           <h2 className="font-heading font-semibold text-emerald-800 dark:text-emerald-200">Your account and family</h2>
           <p>
             You sign in with your Google account. A &quot;family&quot; is a private group created by one person and
-            joined by others using an invite code. Keep your invite code and passphrase to people you trust — anyone
-            with it can join your family and see your journal entries.
+            joined by others using an invite code. Keep your invite code to people you trust — anyone with it can
+            join your family and see your journal entries.
           </p>
         </section>
 
@@ -45,22 +45,46 @@ export default function TermsPage() {
         </section>
 
         <section className="flex flex-col gap-2">
-          <h2 className="font-heading font-semibold text-emerald-800 dark:text-emerald-200">Subscriptions</h2>
+          <h2 className="font-heading font-semibold text-emerald-800 dark:text-emerald-200">Subscriptions and billing</h2>
           <p>
-            Some features may require a paid subscription. If so, pricing and billing terms will be shown before you
-            pay, and you can cancel at any time. Some families may be granted free access at our discretion.
+            Sprout offers a free plan and a paid Pro subscription. The current price is always shown in the app
+            before you pay. Payments are processed by Stripe — we never see or store your card details.
+          </p>
+          <p>
+            Pro subscriptions renew automatically each month until you cancel. You can cancel anytime from Settings;
+            your Pro access continues until the end of the billing period you&apos;ve already paid for, then your
+            family moves to the Free plan. Moving to the Free plan never deletes anything — every entry, photo,
+            voice memo, and video you&apos;ve already saved stays exactly as it is and remains visible. On the Free
+            plan you just can&apos;t add a new child or pet beyond your first one, or upload new photos or videos
+            once you&apos;re over the free storage limit, until you resubscribe.
+          </p>
+          <p>
+            The storage add-on is a one-time purchase that permanently increases your family&apos;s storage limit —
+            it isn&apos;t a subscription and doesn&apos;t need to be renewed.
+          </p>
+          <p>
+            Charges are generally non-refundable, including partial subscription periods and storage add-on
+            purchases, except where required by law or at our discretion. If something went wrong with a charge,
+            email{" "}
+            <a href="mailto:support@sl-studio.dev" className="text-emerald-700 underline dark:text-emerald-300">
+              support@sl-studio.dev
+            </a>{" "}
+            and we&apos;ll take a look. We&apos;ll give notice in the app before any price change takes effect for
+            existing subscribers. Some families may be granted free access at our discretion.
           </p>
         </section>
 
         <section className="flex flex-col gap-2">
           <h2 className="font-heading font-semibold text-emerald-800 dark:text-emerald-200">Ending your account</h2>
           <p>
-            You can stop using Sprout at any time. We may suspend or end access for accounts that abuse the service
-            or violate these terms. Email{" "}
+            You can permanently delete your family&apos;s account and all associated data yourself, anytime, from
+            the Danger Zone in Settings — this also cancels any active subscription. We may suspend or end access
+            for accounts that abuse the service or violate these terms. If you&apos;d rather we handle a deletion
+            for you, email{" "}
             <a href="mailto:support@sl-studio.dev" className="text-emerald-700 underline dark:text-emerald-300">
               support@sl-studio.dev
-            </a>{" "}
-            to close your account or request your data be deleted.
+            </a>
+            .
           </p>
         </section>
 
