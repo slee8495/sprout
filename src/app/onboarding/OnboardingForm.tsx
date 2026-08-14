@@ -174,7 +174,7 @@ export function OnboardingForm() {
         </label>
       </section>
 
-      <section className="flex flex-col gap-5 rounded-3xl border border-brand-200/70 bg-white p-4 dark:border-brand-800/50 dark:bg-zinc-900">
+      <section className="flex flex-col gap-8 rounded-3xl border border-brand-200/70 bg-white p-4 dark:border-brand-800/50 dark:bg-zinc-900">
         <h2 className="font-heading text-sm font-semibold text-brand-800 dark:text-brand-200">
           {t("Appearance")}
         </h2>
