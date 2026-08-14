@@ -5,6 +5,7 @@ import { translate, type Locale } from "@/lib/i18n";
 
 export type Theme = "light" | "dark" | "system";
 export type FontSize = "sm" | "md" | "lg";
+export type ColorTheme = "green" | "ocean" | "rose" | "lavender" | "sunset";
 export type { Locale };
 
 type FamilySettings = {
@@ -19,6 +20,8 @@ type SettingsContextValue = FamilySettings & {
   canEdit: boolean;
   theme: Theme;
   setTheme: (theme: Theme) => void;
+  colorTheme: ColorTheme;
+  setColorTheme: (colorTheme: ColorTheme) => void;
   fontSize: FontSize;
   setFontSize: (fontSize: FontSize) => void;
   locale: Locale;
@@ -45,6 +48,14 @@ function readStoredFontSize(): FontSize {
   return stored === "sm" || stored === "md" || stored === "lg" ? stored : "md";
 }
 
+const COLOR_THEMES: ColorTheme[] = ["green", "ocean", "rose", "lavender", "sunset"];
+
+function readStoredColorTheme(): ColorTheme {
+  if (typeof window === "undefined") return "green";
+  const stored = localStorage.getItem("colorTheme");
+  return (COLOR_THEMES as string[]).includes(stored ?? "") ? (stored as ColorTheme) : "green";
+}
+
 const LOCALES: Locale[] = ["en", "ko", "zh", "ja", "es"];
 
 function readStoredLocale(): Locale {
@@ -65,6 +76,7 @@ export function SettingsProvider({
   children: React.ReactNode;
 }) {
   const [theme, setThemeState] = useState<Theme>(readStoredTheme);
+  const [colorTheme, setColorThemeState] = useState<ColorTheme>(readStoredColorTheme);
   const [fontSize, setFontSizeState] = useState<FontSize>(readStoredFontSize);
   const [locale, setLocaleState] = useState<Locale>(readStoredLocale);
 
@@ -78,6 +90,10 @@ export function SettingsProvider({
   }, [theme]);
 
   useEffect(() => {
+    document.documentElement.dataset.colorTheme = colorTheme;
+  }, [colorTheme]);
+
+  useEffect(() => {
     document.documentElement.dataset.fontSize = fontSize;
   }, [fontSize]);
 
@@ -88,6 +104,11 @@ export function SettingsProvider({
   function setTheme(next: Theme) {
     setThemeState(next);
     localStorage.setItem("theme", next);
+  }
+
+  function setColorTheme(next: ColorTheme) {
+    setColorThemeState(next);
+    localStorage.setItem("colorTheme", next);
   }
 
   function setFontSize(next: FontSize) {
@@ -113,6 +134,8 @@ export function SettingsProvider({
         canEdit: role !== "viewer",
         theme,
         setTheme,
+        colorTheme,
+        setColorTheme,
         fontSize,
         setFontSize,
         locale,

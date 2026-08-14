@@ -5,6 +5,23 @@
 :root {
   --background: #fff9f0;
   --foreground: #2b2822;
+
+  /* Sage — default color theme. Every other palette below just overrides these
+     same --brand-* variables under html[data-color-theme="..."] (set by
+     SettingsProvider); the --color-brand-* utilities stay wired to these via
+     indirection so none of the 526 existing "brand-*" call sites need to
+     change to support theme switching. */
+  --brand-50: #eef6f1;
+  --brand-100: #dceee1;
+  --brand-200: #c0dfc9;
+  --brand-300: #9bcca9;
+  --brand-400: #85bd96;
+  --brand-500: #6fae83;
+  --brand-600: #57956b;
+  --brand-700: #457857;
+  --brand-800: #375f46;
+  --brand-900: #2b4b38;
+  --brand-950: #1c2f24;
 }
 
 @theme inline {
@@ -13,25 +30,78 @@
   --font-sans: var(--font-body);
   --font-heading: var(--font-heading);
 
-  /* Brand green — Tailwind's stock emerald palette, kept exactly as it was
-     before the "brand-" rename (values only; the class prefix stays "brand-"
-     since 526 call sites across the app already reference it). */
-  --color-brand-50: #ecfdf5;
-  --color-brand-100: #d1fae5;
-  --color-brand-200: #a7f3d0;
-  --color-brand-300: #6ee7b7;
-  --color-brand-400: #34d399;
-  --color-brand-500: #10b981;
-  --color-brand-600: #059669;
-  --color-brand-700: #047857;
-  --color-brand-800: #065f46;
-  --color-brand-900: #064e3b;
-  --color-brand-950: #022c22;
+  --color-brand-50: var(--brand-50);
+  --color-brand-100: var(--brand-100);
+  --color-brand-200: var(--brand-200);
+  --color-brand-300: var(--brand-300);
+  --color-brand-400: var(--brand-400);
+  --color-brand-500: var(--brand-500);
+  --color-brand-600: var(--brand-600);
+  --color-brand-700: var(--brand-700);
+  --color-brand-800: var(--brand-800);
+  --color-brand-900: var(--brand-900);
+  --color-brand-950: var(--brand-950);
 }
 
 .dark {
   --background: #1f2420;
   --foreground: #f3efe6;
+}
+
+html[data-color-theme="ocean"] {
+  --brand-50: #eef4f9;
+  --brand-100: #dce9f2;
+  --brand-200: #bfd8e9;
+  --brand-300: #99c0da;
+  --brand-400: #82aed1;
+  --brand-500: #6b9cc2;
+  --brand-600: #5484ac;
+  --brand-700: #436b8c;
+  --brand-800: #365570;
+  --brand-900: #2a4258;
+  --brand-950: #1b2b3a;
+}
+
+html[data-color-theme="rose"] {
+  --brand-50: #f9eeef;
+  --brand-100: #f3dee1;
+  --brand-200: #eac4ca;
+  --brand-300: #dda3ac;
+  --brand-400: #d38e9a;
+  --brand-500: #c97985;
+  --brand-600: #b45f6d;
+  --brand-700: #93495a;
+  --brand-800: #753a47;
+  --brand-900: #5c2e38;
+  --brand-950: #3c1e25;
+}
+
+html[data-color-theme="lavender"] {
+  --brand-50: #f2eef8;
+  --brand-100: #e6e0f0;
+  --brand-200: #d3c7e6;
+  --brand-300: #b8a5d6;
+  --brand-400: #a78fca;
+  --brand-500: #9678be;
+  --brand-600: #8161a9;
+  --brand-700: #67498c;
+  --brand-800: #513a70;
+  --brand-900: #402e58;
+  --brand-950: #2a1e3a;
+}
+
+html[data-color-theme="sunset"] {
+  --brand-50: #f9efe9;
+  --brand-100: #f3e0d6;
+  --brand-200: #eac7b4;
+  --brand-300: #dda787;
+  --brand-400: #d2936d;
+  --brand-500: #c77f53;
+  --brand-600: #b26640;
+  --brand-700: #915033;
+  --brand-800: #743f29;
+  --brand-900: #5c3221;
+  --brand-950: #3c2015;
 }
 
 html[data-font-size="sm"] {

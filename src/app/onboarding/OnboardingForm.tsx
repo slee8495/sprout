@@ -4,7 +4,7 @@ import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import type { DayCountStart } from "@/lib/date";
 import type { SubjectType } from "@/lib/milestones";
-import { useSettings, type FontSize, type Locale, type Theme } from "../SettingsProvider";
+import { useSettings, type ColorTheme, type FontSize, type Locale, type Theme } from "../SettingsProvider";
 import { completeOnboarding } from "./actions";
 
 const TIMEZONES =
@@ -14,6 +14,14 @@ const THEME_OPTIONS: { value: Theme; label: string }[] = [
   { value: "light", label: "☀️ Light" },
   { value: "dark", label: "🌙 Dark" },
   { value: "system", label: "🖥️ System" },
+];
+
+const COLOR_THEME_OPTIONS: { value: ColorTheme; label: string; swatch: string }[] = [
+  { value: "green", label: "Sage", swatch: "#57956b" },
+  { value: "ocean", label: "Dusty Blue", swatch: "#5484ac" },
+  { value: "rose", label: "Dusty Rose", swatch: "#b45f6d" },
+  { value: "lavender", label: "Lavender", swatch: "#8161a9" },
+  { value: "sunset", label: "Terracotta", swatch: "#b26640" },
 ];
 
 const FONT_SIZE_OPTIONS: { value: FontSize; label: string }[] = [
@@ -179,6 +187,30 @@ export function OnboardingForm() {
                     : "border-brand-100 text-brand-800 dark:border-brand-900/40 dark:text-brand-200"
                 }`}
               >
+                {t(opt.label)}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div className="flex flex-col gap-1 text-sm">
+          {t("Color theme")}
+          <div className="flex flex-wrap gap-2">
+            {COLOR_THEME_OPTIONS.map((opt) => (
+              <button
+                key={opt.value}
+                type="button"
+                onClick={() => settings.setColorTheme(opt.value)}
+                className={`flex items-center gap-2 rounded-2xl border px-3 py-2 text-sm font-semibold transition-transform hover:scale-105 active:scale-95 ${
+                  settings.colorTheme === opt.value
+                    ? "border-brand-600 bg-brand-600 text-white"
+                    : "border-brand-100 text-brand-800 dark:border-brand-900/40 dark:text-brand-200"
+                }`}
+              >
+                <span
+                  className="h-4 w-4 shrink-0 rounded-full border border-black/10"
+                  style={{ backgroundColor: opt.swatch }}
+                />
                 {t(opt.label)}
               </button>
             ))}
