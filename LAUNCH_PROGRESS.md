@@ -244,6 +244,19 @@ release: eee0bd2c33c7
 
 ---
 
+## 🟡 대기 중 — 인앱 리뷰 요청 (코드 완성, 네이티브 빌드/배포 전, 2026-08-14)
+
+`@capacitor-community/in-app-review` 설치 + `npx cap sync` 완료. `src/lib/inAppReview.ts`의 `maybeRequestReview()`가 실제 엔트리를 3개 발행(초안 아님)한 시점에 OS 자체 리뷰 팝업(iOS `SKStoreReviewController` / Android Play In-App Review)을 한 번 요청하도록 `EntryForm.tsx`의 발행 성공 지점에 연결해둠. `Capacitor.isPluginAvailable("InAppReview")` 가드 + try/catch로, 이 플러그인이 없는 구버전 네이티브 앱이나 그냥 웹 브라우저에서는 안전하게 아무 일도 안 일어남.
+
+**중요**: 이건 웹 배포(`vercel deploy --prod`)만으로는 절대 작동 안 함 — 네이티브 플러그인이라서 Android/iOS 양쪽 다 **새 빌드를 만들어서 각 스토어에 릴리즈해야만** 실제로 팝업이 뜸. 사용자가 명시적으로 "지금은 코드만 준비, 배포는 나중에"라고 결정함.
+
+**다음에 할 일** (Android/iOS 배포 타이밍에 같이 진행):
+- Android: `versionCode`/`versionName` 올리고 `./gradlew bundleRelease` → Play Console Closed testing에 업로드
+- iOS: Apple Developer Program 결제 문제 해결되고 App Store Connect 정상화된 이후에 진행 (위 Apple 섹션 참고)
+- 웹 코드(`src/lib/inAppReview.ts`, `src/app/EntryForm.tsx`)는 이미 커밋되어 있고, 언제 `vercel deploy --prod` 해도 안전함 (네이티브 빌드 전까지는 그냥 비활성 상태로 있음)
+
+---
+
 ## 참고: 아직 git commit 안 된 변경사항 많음
 
 이 저장소는 여러 세션에 걸쳐 쌓인 미커밋 변경사항이 많음 (리브랜딩, 권한 시스템, i18n 확장, admin 패널, 오늘 작업한 로그인 수정 등). `git status`로 전체 목록 확인 가능. **커밋 시점은 사용자와 상의해서 결정** — 아직 명시적으로 요청받지 않았으면 임의로 커밋하지 말 것.

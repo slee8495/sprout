@@ -6,6 +6,7 @@ import { createEntry, updateDraft } from "./actions";
 import { uploadJournalPhoto } from "@/lib/uploadPhoto";
 import { uploadVoiceMemo } from "@/lib/uploadVoiceMemo";
 import { getVideoDuration, MAX_VIDEO_DURATION_SECONDS, uploadJournalVideo } from "@/lib/uploadVideo";
+import { maybeRequestReview } from "@/lib/inAppReview";
 import type { Child } from "@/db/queries";
 import type { milestoneCategoryEnum } from "@/db/schema";
 import { getMilestoneCategories, subjectEmoji } from "@/lib/milestones";
@@ -197,6 +198,8 @@ export function EntryForm({
             videoSizeBytes: uploadedVideo?.sizeBytes,
           });
         }
+
+        if (!isDraft) maybeRequestReview();
 
         setTitle("");
         setBody("");
