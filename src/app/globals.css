@@ -48,6 +48,25 @@
   --foreground: #f3efe6;
 }
 
+/* Background — independent of color theme. "Cream" (above) is the default; these override
+   just --background under html[data-bg="..."] (set by SettingsProvider), combined with .dark
+   for each background's own dark-mode shade. */
+html[data-bg="paper"] {
+  --background: #ffffff;
+}
+
+html[data-bg="mist"] {
+  --background: #f4f5f7;
+}
+
+.dark[data-bg="paper"] {
+  --background: #18181b;
+}
+
+.dark[data-bg="mist"] {
+  --background: #1c1f24;
+}
+
 html[data-color-theme="ocean"] {
   --brand-50: #eef4f9;
   --brand-100: #dce9f2;

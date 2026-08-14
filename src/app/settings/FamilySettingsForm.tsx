@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { useSettings, type ColorTheme, type FontSize, type Locale, type Theme } from "../SettingsProvider";
+import { useSettings, type Background, type ColorTheme, type FontSize, type Locale, type Theme } from "../SettingsProvider";
 import { saveFamilySettings } from "./actions";
 
 const TIMEZONES =
@@ -20,6 +20,12 @@ const COLOR_THEME_OPTIONS: { value: ColorTheme; label: string; swatch: string }[
   { value: "rose", label: "Dusty Rose", swatch: "#b45f6d" },
   { value: "lavender", label: "Lavender", swatch: "#8161a9" },
   { value: "sunset", label: "Terracotta", swatch: "#b26640" },
+];
+
+const BACKGROUND_OPTIONS: { value: Background; label: string; swatch: string }[] = [
+  { value: "cream", label: "Cream", swatch: "#fff9f0" },
+  { value: "paper", label: "Paper", swatch: "#ffffff" },
+  { value: "mist", label: "Mist", swatch: "#f4f5f7" },
 ];
 
 const FONT_SIZE_OPTIONS: { value: FontSize; label: string }[] = [
@@ -82,7 +88,7 @@ export function FamilySettingsForm() {
         </section>
       )}
 
-      <section className="flex flex-col gap-3 rounded-3xl border border-brand-200/70 bg-white p-4 dark:border-brand-800/50 dark:bg-zinc-900">
+      <section className="flex flex-col gap-5 rounded-3xl border border-brand-200/70 bg-white p-4 dark:border-brand-800/50 dark:bg-zinc-900">
         <h2 className="font-heading text-sm font-semibold text-brand-800 dark:text-brand-200">
           {t("Appearance")}
         </h2>
@@ -117,6 +123,30 @@ export function FamilySettingsForm() {
                 onClick={() => settings.setColorTheme(opt.value)}
                 className={`flex items-center gap-2 rounded-2xl border px-3 py-2 text-sm font-semibold transition-transform hover:scale-105 active:scale-95 ${
                   settings.colorTheme === opt.value
+                    ? "border-brand-600 bg-brand-600 text-white"
+                    : "border-brand-100 text-brand-800 dark:border-brand-900/40 dark:text-brand-200"
+                }`}
+              >
+                <span
+                  className="h-4 w-4 shrink-0 rounded-full border border-black/10"
+                  style={{ backgroundColor: opt.swatch }}
+                />
+                {t(opt.label)}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div className="flex flex-col gap-1 text-sm">
+          {t("Background")}
+          <div className="flex flex-wrap gap-2">
+            {BACKGROUND_OPTIONS.map((opt) => (
+              <button
+                key={opt.value}
+                type="button"
+                onClick={() => settings.setBackground(opt.value)}
+                className={`flex items-center gap-2 rounded-2xl border px-3 py-2 text-sm font-semibold transition-transform hover:scale-105 active:scale-95 ${
+                  settings.background === opt.value
                     ? "border-brand-600 bg-brand-600 text-white"
                     : "border-brand-100 text-brand-800 dark:border-brand-900/40 dark:text-brand-200"
                 }`}

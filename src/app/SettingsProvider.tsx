@@ -6,6 +6,7 @@ import { translate, type Locale } from "@/lib/i18n";
 export type Theme = "light" | "dark" | "system";
 export type FontSize = "sm" | "md" | "lg";
 export type ColorTheme = "green" | "ocean" | "rose" | "lavender" | "sunset";
+export type Background = "cream" | "paper" | "mist";
 export type { Locale };
 
 type FamilySettings = {
@@ -22,6 +23,8 @@ type SettingsContextValue = FamilySettings & {
   setTheme: (theme: Theme) => void;
   colorTheme: ColorTheme;
   setColorTheme: (colorTheme: ColorTheme) => void;
+  background: Background;
+  setBackground: (background: Background) => void;
   fontSize: FontSize;
   setFontSize: (fontSize: FontSize) => void;
   locale: Locale;
@@ -56,6 +59,14 @@ function readStoredColorTheme(): ColorTheme {
   return (COLOR_THEMES as string[]).includes(stored ?? "") ? (stored as ColorTheme) : "green";
 }
 
+const BACKGROUNDS: Background[] = ["cream", "paper", "mist"];
+
+function readStoredBackground(): Background {
+  if (typeof window === "undefined") return "cream";
+  const stored = localStorage.getItem("background");
+  return (BACKGROUNDS as string[]).includes(stored ?? "") ? (stored as Background) : "cream";
+}
+
 const LOCALES: Locale[] = ["en", "ko", "zh", "ja", "es"];
 
 function readStoredLocale(): Locale {
@@ -77,6 +88,7 @@ export function SettingsProvider({
 }) {
   const [theme, setThemeState] = useState<Theme>(readStoredTheme);
   const [colorTheme, setColorThemeState] = useState<ColorTheme>(readStoredColorTheme);
+  const [background, setBackgroundState] = useState<Background>(readStoredBackground);
   const [fontSize, setFontSizeState] = useState<FontSize>(readStoredFontSize);
   const [locale, setLocaleState] = useState<Locale>(readStoredLocale);
 
@@ -94,6 +106,10 @@ export function SettingsProvider({
   }, [colorTheme]);
 
   useEffect(() => {
+    document.documentElement.dataset.bg = background;
+  }, [background]);
+
+  useEffect(() => {
     document.documentElement.dataset.fontSize = fontSize;
   }, [fontSize]);
 
@@ -109,6 +125,11 @@ export function SettingsProvider({
   function setColorTheme(next: ColorTheme) {
     setColorThemeState(next);
     localStorage.setItem("colorTheme", next);
+  }
+
+  function setBackground(next: Background) {
+    setBackgroundState(next);
+    localStorage.setItem("background", next);
   }
 
   function setFontSize(next: FontSize) {
@@ -136,6 +157,8 @@ export function SettingsProvider({
         setTheme,
         colorTheme,
         setColorTheme,
+        background,
+        setBackground,
         fontSize,
         setFontSize,
         locale,

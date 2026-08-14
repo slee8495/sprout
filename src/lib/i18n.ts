@@ -130,6 +130,10 @@ const ko: Record<string, string> = {
   "Dusty Rose": "더스티 로즈",
   Lavender: "라벤더",
   Terracotta: "테라코타",
+  Background: "배경색",
+  Cream: "크림",
+  Paper: "페이퍼",
+  Mist: "미스트",
   "Couldn't save settings — try again.": "설정을 저장하지 못했어요 — 다시 시도해주세요.",
   "Saved.": "저장했어요.",
 
@@ -383,6 +387,10 @@ const zh: Record<string, string> = {
   "Dusty Rose": "灰玫瑰色",
   Lavender: "薰衣草紫",
   Terracotta: "赤陶色",
+  Background: "背景色",
+  Cream: "奶油色",
+  Paper: "纸白色",
+  Mist: "雾灰色",
   "Couldn't save settings — try again.": "设置保存失败 — 请重试。",
   "Saved.": "已保存。",
 
@@ -635,6 +643,10 @@ const ja: Record<string, string> = {
   "Dusty Rose": "ダスティローズ",
   Lavender: "ラベンダー",
   Terracotta: "テラコッタ",
+  Background: "背景色",
+  Cream: "クリーム",
+  Paper: "ペーパー",
+  Mist: "ミスト",
   "Couldn't save settings — try again.": "設定を保存できませんでした。もう一度お試しください。",
   "Saved.": "保存しました。",
 
@@ -888,6 +900,10 @@ const es: Record<string, string> = {
   "Dusty Rose": "Rosa apagado",
   Lavender: "Lavanda",
   Terracotta: "Terracota",
+  Background: "Fondo",
+  Cream: "Crema",
+  Paper: "Papel",
+  Mist: "Bruma",
   "Couldn't save settings — try again.": "No se pudieron guardar los ajustes — inténtalo de nuevo.",
   "Saved.": "Guardado.",
 
