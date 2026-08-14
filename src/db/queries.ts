@@ -1,5 +1,6 @@
 import { and, desc, eq, ilike, inArray, isNotNull, isNull, lt, ne, sql } from "drizzle-orm";
 import { db } from "./index";
+import { isPaidStatus } from "@/lib/storage";
 import {
   audienceEnum,
   children,
@@ -8,10 +9,12 @@ import {
   families,
   journalEntries,
   milestoneCategoryEnum,
+  notifications,
   photos,
   pushSubscriptions,
   subjectTypeEnum,
   subscriptionStatusEnum,
+  userRoleEnum,
   users,
 } from "./schema";
 
@@ -48,6 +51,10 @@ export async function listFamilyMemberEmails(familyId: number) {
 
 export async function getUserByEmail(email: string) {
   return db.query.users.findFirst({ where: eq(users.email, email) });
+}
+
+export async function getUserById(id: number) {
+  return db.query.users.findFirst({ where: eq(users.id, id) });
 }
 
 export function listChildren(familyId: number) {
@@ -98,6 +105,7 @@ export async function updateChild(
     .set(patch)
     .where(and(eq(children.id, childId), eq(children.familyId, familyId)))
     .returning();
+  if (!child) throw new Error("Couldn't find that child or pet to update.");
   return child;
 }
 
@@ -119,10 +127,28 @@ export async function createFamilyWithOwner(input: { familyName: string; ownerNa
 
     const [user] = await tx
       .insert(users)
-      .values({ familyId: family.id, email: input.email, name: input.ownerName })
+      .values({ familyId: family.id, email: input.email, name: input.ownerName, role: "owner" })
       .returning();
     return { family, user };
   });
+}
+
+export function listFamilyMembers(familyId: number) {
+  return db.query.users.findMany({
+    where: eq(users.familyId, familyId),
+    columns: { id: true, name: true, email: true, role: true },
+    orderBy: [users.id],
+  });
+}
+
+export async function updateMemberRole(familyId: number, targetUserId: number, role: (typeof userRoleEnum.enumValues)[number]) {
+  const [updated] = await db
+    .update(users)
+    .set({ role })
+    .where(and(eq(users.id, targetUserId), eq(users.familyId, familyId)))
+    .returning();
+  if (!updated) throw new Error("Couldn't find that family member.");
+  return updated;
 }
 
 // Links a Google account to an existing member (matched by name) so their author history
@@ -198,7 +224,7 @@ export async function createComment(input: {
 }) {
   const entry = await db.query.journalEntries.findFirst({
     where: and(eq(journalEntries.id, input.entryId), eq(journalEntries.familyId, input.familyId)),
-    columns: { id: true },
+    columns: { id: true, audience: true, childId: true },
   });
   if (!entry) throw new Error("Entry not found");
 
@@ -206,7 +232,7 @@ export async function createComment(input: {
     .insert(comments)
     .values({ entryId: input.entryId, authorId: input.authorId, body: input.body })
     .returning();
-  return comment;
+  return { ...comment, audience: entry.audience, childId: entry.childId };
 }
 
 export type PhotoInput = { url: string; sizeBytes?: number };
@@ -266,6 +292,9 @@ export async function updateJournalEntry(
     milestoneCategory?: (typeof milestoneCategoryEnum.enumValues)[number];
     milestoneLabel?: string;
     photos?: PhotoInput[];
+    voiceMemoUrl?: string | null;
+    videoUrl?: string | null;
+    videoSizeBytes?: number | null;
     isDraft?: boolean;
   },
 ) {
@@ -280,6 +309,10 @@ export async function updateJournalEntry(
         milestoneLabel: patch.milestoneLabel || null,
         updatedAt: new Date(),
         ...(patch.isDraft !== undefined ? { isDraft: patch.isDraft } : {}),
+        ...(patch.voiceMemoUrl !== undefined ? { voiceMemoUrl: patch.voiceMemoUrl } : {}),
+        ...(patch.videoUrl !== undefined
+          ? { videoUrl: patch.videoUrl, videoSizeBytes: patch.videoSizeBytes ?? null }
+          : {}),
       })
       .where(
         and(
@@ -378,6 +411,7 @@ export async function getFamilyBilling(familyId: number) {
       subscriptionStatus: true,
       subscriptionRenewsAt: true,
       storageAddonBytes: true,
+      isTrial: true,
     },
   });
   if (!family) throw new Error("Family not found");
@@ -409,6 +443,17 @@ export async function incrementStorageAddon(familyId: number, bytes: number) {
     .where(eq(families.id, familyId));
 }
 
+// Free-tier families see interstitial ads (frequency controlled client-side by tap count);
+// paid/trial/complimentary families never do. Client asks this once per threshold reached,
+// not per tap, so it stays a cheap single lookup rather than a per-tap round trip.
+export async function isFamilyPaid(familyId: number): Promise<boolean> {
+  const family = await db.query.families.findFirst({
+    where: eq(families.id, familyId),
+    columns: { subscriptionStatus: true },
+  });
+  return !!family && isPaidStatus(family.subscriptionStatus);
+}
+
 export async function savePushSubscription(input: {
   userId: number;
   endpoint: string;
@@ -426,6 +471,61 @@ export async function savePushSubscription(input: {
 
 export async function deletePushSubscription(endpoint: string) {
   await db.delete(pushSubscriptions).where(eq(pushSubscriptions.endpoint, endpoint));
+}
+
+// Writes one row per other family member so the in-app bell has a history even for members
+// without (or with an expired) push subscription — called alongside notifyFamily(), not instead of it.
+export async function createNotificationsForFamily(
+  familyId: number,
+  actorId: number,
+  payload: { title: string; body: string; url?: string },
+) {
+  const members = await db
+    .select({ id: users.id })
+    .from(users)
+    .where(and(eq(users.familyId, familyId), ne(users.id, actorId)));
+  if (members.length === 0) return;
+
+  await db.insert(notifications).values(
+    members.map((m) => ({
+      familyId,
+      recipientId: m.id,
+      actorId,
+      title: payload.title,
+      body: payload.body,
+      url: payload.url,
+    })),
+  );
+}
+
+export async function listNotifications(userId: number, limit = 20) {
+  return db.query.notifications.findMany({
+    where: eq(notifications.recipientId, userId),
+    orderBy: [desc(notifications.createdAt)],
+    limit,
+  });
+}
+
+export async function countUnreadNotifications(userId: number): Promise<number> {
+  const [row] = await db
+    .select({ count: sql<number>`count(*)::int` })
+    .from(notifications)
+    .where(and(eq(notifications.recipientId, userId), isNull(notifications.readAt)));
+  return row?.count ?? 0;
+}
+
+export async function markNotificationRead(notificationId: number, userId: number) {
+  await db
+    .update(notifications)
+    .set({ readAt: sql`now()` })
+    .where(and(eq(notifications.id, notificationId), eq(notifications.recipientId, userId), isNull(notifications.readAt)));
+}
+
+export async function markAllNotificationsRead(userId: number) {
+  await db
+    .update(notifications)
+    .set({ readAt: sql`now()` })
+    .where(and(eq(notifications.recipientId, userId), isNull(notifications.readAt)));
 }
 
 export async function listOtherFamilyPushSubscriptions(familyId: number, excludeUserId: number) {
@@ -547,26 +647,27 @@ export type AdminFamilyRow = Awaited<ReturnType<typeof listAllFamiliesForAdmin>>
 // stripeCustomerId/stripeSubscriptionId untouched — their absence (or presence, for a family
 // that once had a real subscription) is what distinguishes complimentary access from a real
 // one in the billing UI. expiresAt null means it never expires.
-export async function setComplimentaryAccess(familyId: number, expiresAt: Date | null) {
+export async function setComplimentaryAccess(familyId: number, expiresAt: Date | null, isTrial = false) {
   await db
     .update(families)
-    .set({ subscriptionStatus: "active", subscriptionRenewsAt: expiresAt })
+    .set({ subscriptionStatus: "active", subscriptionRenewsAt: expiresAt, isTrial })
     .where(eq(families.id, familyId));
 }
 
 export async function revokeComplimentaryAccess(familyId: number) {
   await db
     .update(families)
-    .set({ subscriptionStatus: "free", subscriptionRenewsAt: null })
+    .set({ subscriptionStatus: "free", subscriptionRenewsAt: null, isTrial: false })
     .where(eq(families.id, familyId));
 }
 
-// Auto-downgrades expired complimentary grants back to Free. Only touches families with no
-// real Stripe subscription behind their "active" status, so it can never cancel a real payer.
+// Auto-downgrades expired complimentary grants (including expired signup trials) back to Free.
+// Only touches families with no real Stripe subscription behind their "active" status, so it
+// can never cancel a real payer.
 export async function expireComplimentaryAccess(): Promise<number> {
   const result = await db
     .update(families)
-    .set({ subscriptionStatus: "free", subscriptionRenewsAt: null })
+    .set({ subscriptionStatus: "free", subscriptionRenewsAt: null, isTrial: false })
     .where(
       and(
         eq(families.subscriptionStatus, "active"),

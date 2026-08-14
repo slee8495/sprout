@@ -13,8 +13,8 @@ export default async function OnboardingPage() {
   return (
     <div className="mx-auto flex w-full max-w-2xl flex-1 flex-col gap-6 p-4 pb-24">
       <header className="pt-8 text-center">
-        <h1 className="font-heading text-2xl font-bold text-emerald-700 dark:text-emerald-300">
-          <T>🌱 Welcome to Sprout</T>
+        <h1 className="font-heading text-2xl font-bold text-brand-700 dark:text-brand-300">
+          <T>🌱 Welcome to Roun</T>
         </h1>
         <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">
           <T>A few quick things before we start journaling.</T>

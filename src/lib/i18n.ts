@@ -51,6 +51,7 @@ const ko: Record<string, string> = {
   "No milestone": "마일스톤 없음",
   "e.g. First broccoli": "예: 첫 브로콜리",
   "Remove photo": "사진 삭제",
+  "📷 Add photos": "📷 사진 추가",
   "⏹ Stop recording": "⏹ 녹음 중지",
   "🎤 Voice memo": "🎤 음성 메모",
   "🎥 Video (max 1 min)": "🎥 동영상 (최대 1분)",
@@ -84,6 +85,9 @@ const ko: Record<string, string> = {
   "free until {date}": "{date}까지 무료",
   "free forever": "평생 무료",
   "renews {date}": "{date}에 갱신",
+  "Free trial": "무료 체험",
+  "ends {date}": "{date}에 종료",
+  "Then {price} after your trial ends.": "체험이 끝나면 {price}로 자동 전환돼요.",
   "Payment failed — update your card to keep your Pro plan.": "결제에 실패했어요 — Pro 플랜을 유지하려면 카드 정보를 업데이트해주세요.",
   "Manage billing": "결제 관리",
   "Buy +5GB storage": "+5GB 저장공간 구매",
@@ -183,7 +187,7 @@ const ko: Record<string, string> = {
   "Family name (e.g. The Lee Family)": "가족 이름 (예: 이씨네 가족)",
   "Creating family…": "가족 생성 중…",
   "Create family": "가족 만들기",
-  "🌱 Welcome to Sprout": "🌱 Sprout에 오신 것을 환영해요",
+  "🌱 Welcome to Roun": "🌱 Roun에 오신 것을 환영해요",
   "A few quick things before we start journaling.": "일기를 쓰기 전에 몇 가지만 확인할게요.",
   "Your kid or pet": "아이 또는 반려동물",
   "Their name": "이름을 입력하세요",
@@ -212,12 +216,37 @@ const ko: Record<string, string> = {
   "Add a comment… 💬": "댓글 달기… 💬",
   Post: "게시",
 
+  // NotificationBell
+  Notifications: "알림",
+  "Mark all as read": "모두 읽음으로 표시",
+  "No notifications yet": "아직 알림이 없어요",
+
   // Calendar / PhotoLightbox
   "Previous month": "이전 달",
   "Next month": "다음 달",
+  "Jump to month": "월 바로가기",
   "Clear selected date": "선택한 날짜 지우기",
   Close: "닫기",
   "{count} photos — swipe to browse": "사진 {count}장 — 넘겨서 보기",
+
+  // Family members / roles
+  "Family members": "가족 구성원",
+  you: "나",
+  Owner: "소유자",
+  Editor: "편집 가능",
+  "View only": "보기 전용",
+  "View only members can see everything but can't add or edit entries, comments, or kids/pets.":
+    "보기 전용 구성원은 모든 걸 볼 수 있지만 일기, 댓글, 자녀/반려동물을 추가하거나 수정할 수 없어요.",
+  "Only the family owner can permanently delete this family's account.": "가족 소유자만 가족 계정을 영구 삭제할 수 있어요.",
+  "Switch to Free? You'll keep Pro until your current period ends.":
+    "프리 요금제로 전환할까요? 현재 결제 기간이 끝날 때까지는 Pro가 유지돼요.",
+  "Switching to Free at the end of this period.": "이번 결제 기간이 끝나면 프리 요금제로 전환됩니다.",
+  "Resume Pro plan": "Pro 요금제 재개",
+  "Switch to Free": "프리 요금제로 전환",
+  "Blocked in your device settings. Enable notifications for Roun there to turn this back on.":
+    "기기 설정에서 알림이 차단되어 있어요. Roun 알림을 다시 켜려면 기기 설정에서 허용해주세요.",
+  "New entries and comments push to your phone.": "새 일기와 댓글이 폰으로 알림 와요.",
+  "Notifications are off.": "알림이 꺼져 있어요.",
 };
 
 const zh: Record<string, string> = {
@@ -269,6 +298,7 @@ const zh: Record<string, string> = {
   "No milestone": "无里程碑",
   "e.g. First broccoli": "例如：第一次吃西兰花",
   "Remove photo": "删除照片",
+  "📷 Add photos": "📷 添加照片",
   "⏹ Stop recording": "⏹ 停止录音",
   "🎤 Voice memo": "🎤 语音留言",
   "🎥 Video (max 1 min)": "🎥 视频（最长1分钟）",
@@ -302,6 +332,9 @@ const zh: Record<string, string> = {
   "free until {date}": "免费至{date}",
   "free forever": "永久免费",
   "renews {date}": "{date}续订",
+  "Free trial": "免费试用",
+  "ends {date}": "{date}结束",
+  "Then {price} after your trial ends.": "试用结束后自动变为{price}。",
   "Payment failed — update your card to keep your Pro plan.": "支付失败 — 请更新您的卡以保留 Pro 套餐。",
   "Manage billing": "管理账单",
   "Buy +5GB storage": "购买 +5GB 存储空间",
@@ -401,7 +434,7 @@ const zh: Record<string, string> = {
   "Family name (e.g. The Lee Family)": "家庭名称（例如：李氏家族）",
   "Creating family…": "正在创建家庭…",
   "Create family": "创建家庭",
-  "🌱 Welcome to Sprout": "🌱 欢迎使用 Sprout",
+  "🌱 Welcome to Roun": "🌱 欢迎使用 Roun",
   "A few quick things before we start journaling.": "在开始写日记之前，先确认几件小事。",
   "Your kid or pet": "您的孩子或宠物",
   "Their name": "请输入姓名",
@@ -430,12 +463,36 @@ const zh: Record<string, string> = {
   "Add a comment… 💬": "添加评论… 💬",
   Post: "发布",
 
+  // NotificationBell
+  Notifications: "通知",
+  "Mark all as read": "全部标为已读",
+  "No notifications yet": "暂时没有通知",
+
   // Calendar / PhotoLightbox
   "Previous month": "上个月",
   "Next month": "下个月",
+  "Jump to month": "跳转到月份",
   "Clear selected date": "清除选中日期",
   Close: "关闭",
   "{count} photos — swipe to browse": "{count} 张照片 — 滑动浏览",
+
+  // Family members / roles
+  "Family members": "家庭成员",
+  you: "我",
+  Owner: "所有者",
+  Editor: "可编辑",
+  "View only": "仅查看",
+  "View only members can see everything but can't add or edit entries, comments, or kids/pets.":
+    "仅查看成员可以看到所有内容，但无法添加或编辑日记、评论或孩子/宠物。",
+  "Only the family owner can permanently delete this family's account.": "只有家庭所有者可以永久删除此家庭账户。",
+  "Switch to Free? You'll keep Pro until your current period ends.": "切换到免费版？在当前计费周期结束前，您仍可使用 Pro。",
+  "Switching to Free at the end of this period.": "本计费周期结束后将切换到免费版。",
+  "Resume Pro plan": "恢复 Pro 计划",
+  "Switch to Free": "切换到免费版",
+  "Blocked in your device settings. Enable notifications for Roun there to turn this back on.":
+    "已在设备设置中被屏蔽。请在设备设置中为 Roun 开启通知以重新打开。",
+  "New entries and comments push to your phone.": "新日记和评论会推送到您的手机。",
+  "Notifications are off.": "通知已关闭。",
 };
 
 const ja: Record<string, string> = {
@@ -487,6 +544,7 @@ const ja: Record<string, string> = {
   "No milestone": "マイルストーンなし",
   "e.g. First broccoli": "例：はじめてのブロッコリー",
   "Remove photo": "写真を削除",
+  "📷 Add photos": "📷 写真を追加",
   "⏹ Stop recording": "⏹ 録音を停止",
   "🎤 Voice memo": "🎤 ボイスメモ",
   "🎥 Video (max 1 min)": "🎥 動画（最大1分）",
@@ -520,6 +578,9 @@ const ja: Record<string, string> = {
   "free until {date}": "{date}まで無料",
   "free forever": "永久無料",
   "renews {date}": "{date}に更新",
+  "Free trial": "無料トライアル",
+  "ends {date}": "{date}に終了",
+  "Then {price} after your trial ends.": "トライアル終了後は{price}に自動移行します。",
   "Payment failed — update your card to keep your Pro plan.": "支払いに失敗しました — Pro プランを維持するにはカード情報を更新してください。",
   "Manage billing": "請求情報を管理",
   "Buy +5GB storage": "+5GB ストレージを購入",
@@ -619,7 +680,7 @@ const ja: Record<string, string> = {
   "Family name (e.g. The Lee Family)": "家族の名前（例：田中家）",
   "Creating family…": "家族を作成中…",
   "Create family": "家族を作成",
-  "🌱 Welcome to Sprout": "🌱 Sprout へようこそ",
+  "🌱 Welcome to Roun": "🌱 Roun へようこそ",
   "A few quick things before we start journaling.": "日記を始める前に、いくつか確認しましょう。",
   "Your kid or pet": "お子さまやペット",
   "Their name": "名前を入力",
@@ -648,12 +709,37 @@ const ja: Record<string, string> = {
   "Add a comment… 💬": "コメントを追加… 💬",
   Post: "投稿",
 
+  // NotificationBell
+  Notifications: "通知",
+  "Mark all as read": "すべて既読にする",
+  "No notifications yet": "まだ通知はありません",
+
   // Calendar / PhotoLightbox
   "Previous month": "前の月",
   "Next month": "次の月",
+  "Jump to month": "月へ移動",
   "Clear selected date": "選択した日付を解除",
   Close: "閉じる",
   "{count} photos — swipe to browse": "{count}枚の写真 — スワイプして見る",
+
+  // Family members / roles
+  "Family members": "家族メンバー",
+  you: "自分",
+  Owner: "オーナー",
+  Editor: "編集可能",
+  "View only": "閲覧のみ",
+  "View only members can see everything but can't add or edit entries, comments, or kids/pets.":
+    "閲覧のみのメンバーはすべて見られますが、日記やコメント、子ども/ペットの追加・編集はできません。",
+  "Only the family owner can permanently delete this family's account.": "家族アカウントを完全に削除できるのはオーナーのみです。",
+  "Switch to Free? You'll keep Pro until your current period ends.":
+    "無料プランに切り替えますか？現在の請求期間が終わるまではProをご利用いただけます。",
+  "Switching to Free at the end of this period.": "今の請求期間が終わると無料プランに切り替わります。",
+  "Resume Pro plan": "Proプランを再開",
+  "Switch to Free": "無料プランに切り替え",
+  "Blocked in your device settings. Enable notifications for Roun there to turn this back on.":
+    "端末の設定でブロックされています。再度オンにするには端末の設定でRounの通知を許可してください。",
+  "New entries and comments push to your phone.": "新しい日記やコメントがスマホにプッシュされます。",
+  "Notifications are off.": "通知はオフになっています。",
 };
 
 const es: Record<string, string> = {
@@ -705,6 +791,7 @@ const es: Record<string, string> = {
   "No milestone": "Sin hito",
   "e.g. First broccoli": "p. ej. Primer brócoli",
   "Remove photo": "Eliminar foto",
+  "📷 Add photos": "📷 Agregar fotos",
   "⏹ Stop recording": "⏹ Detener grabación",
   "🎤 Voice memo": "🎤 Nota de voz",
   "🎥 Video (max 1 min)": "🎥 Video (máx. 1 min)",
@@ -738,6 +825,9 @@ const es: Record<string, string> = {
   "free until {date}": "gratis hasta el {date}",
   "free forever": "gratis para siempre",
   "renews {date}": "se renueva el {date}",
+  "Free trial": "Prueba gratuita",
+  "ends {date}": "termina el {date}",
+  "Then {price} after your trial ends.": "Cuando termine la prueba, pasarás automáticamente a {price}.",
   "Payment failed — update your card to keep your Pro plan.": "El pago falló — actualiza tu tarjeta para mantener tu plan Pro.",
   "Manage billing": "Gestionar facturación",
   "Buy +5GB storage": "Comprar +5GB de almacenamiento",
@@ -837,7 +927,7 @@ const es: Record<string, string> = {
   "Family name (e.g. The Lee Family)": "Nombre familiar (p. ej. Familia García)",
   "Creating family…": "Creando familia…",
   "Create family": "Crear familia",
-  "🌱 Welcome to Sprout": "🌱 Bienvenido a Sprout",
+  "🌱 Welcome to Roun": "🌱 Bienvenido a Roun",
   "A few quick things before we start journaling.": "Unas cosas rápidas antes de empezar a escribir.",
   "Your kid or pet": "Tu hijo/a o mascota",
   "Their name": "Su nombre",
@@ -866,12 +956,38 @@ const es: Record<string, string> = {
   "Add a comment… 💬": "Añadir un comentario… 💬",
   Post: "Publicar",
 
+  // NotificationBell
+  Notifications: "Notificaciones",
+  "Mark all as read": "Marcar todo como leído",
+  "No notifications yet": "Aún no hay notificaciones",
+
   // Calendar / PhotoLightbox
   "Previous month": "Mes anterior",
   "Next month": "Mes siguiente",
+  "Jump to month": "Ir a un mes",
   "Clear selected date": "Borrar fecha seleccionada",
   Close: "Cerrar",
   "{count} photos — swipe to browse": "{count} fotos — desliza para ver",
+
+  // Family members / roles
+  "Family members": "Miembros de la familia",
+  you: "tú",
+  Owner: "Propietario",
+  Editor: "Editor",
+  "View only": "Solo ver",
+  "View only members can see everything but can't add or edit entries, comments, or kids/pets.":
+    "Los miembros de solo lectura pueden ver todo, pero no pueden añadir ni editar entradas, comentarios ni hijos/mascotas.",
+  "Only the family owner can permanently delete this family's account.":
+    "Solo el propietario de la familia puede eliminar permanentemente esta cuenta familiar.",
+  "Switch to Free? You'll keep Pro until your current period ends.":
+    "¿Cambiar a Gratis? Conservarás Pro hasta que termine tu periodo actual.",
+  "Switching to Free at the end of this period.": "Cambiarás a Gratis al final de este periodo.",
+  "Resume Pro plan": "Reanudar plan Pro",
+  "Switch to Free": "Cambiar a Gratis",
+  "Blocked in your device settings. Enable notifications for Roun there to turn this back on.":
+    "Bloqueadas en la configuración de tu dispositivo. Actívalas para Roun allí para volver a encenderlas.",
+  "New entries and comments push to your phone.": "Las nuevas entradas y comentarios se envían a tu teléfono.",
+  "Notifications are off.": "Las notificaciones están desactivadas.",
 };
 
 const DICTIONARIES: Partial<Record<Locale, Record<string, string>>> = { ko, zh, ja, es };

@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import type { Child, JournalEntryWithPhotos } from "@/db/queries";
 import { subjectEmoji } from "@/lib/milestones";
 import { fill } from "@/lib/i18n";
@@ -10,6 +10,19 @@ import { useSettings } from "../SettingsProvider";
 type SortField = "entryDate" | "createdAt";
 type SortOrder = "latest" | "oldest";
 type Tab = number | "parents";
+
+// Deep-linked from a push/in-app notification — resolves to whichever child/pet (or Parents)
+// the linked entry actually belongs to, not just the first tab.
+function resolveHighlightTab(
+  highlightEntryId: number | undefined,
+  childEntries: JournalEntryWithPhotos[],
+  parentEntries: JournalEntryWithPhotos[],
+): Tab | undefined {
+  if (!highlightEntryId) return undefined;
+  if (parentEntries.some((e) => e.id === highlightEntryId)) return "parents";
+  const linkedChildEntry = childEntries.find((e) => e.id === highlightEntryId);
+  return linkedChildEntry?.childId ?? undefined;
+}
 
 function sortEntries(entries: JournalEntryWithPhotos[], field: SortField, order: SortOrder) {
   const sorted = [...entries].sort((a, b) => {
@@ -43,12 +56,25 @@ export function FeedTabs({
   highlightEntryId?: number;
 }) {
   const { t } = useSettings();
-  const [tab, setTab] = useState<Tab>(() =>
-    highlightEntryId && parentEntries.some((e) => e.id === highlightEntryId) ? "parents" : (kids[0]?.id ?? "parents"),
+  const [tab, setTab] = useState<Tab>(
+    () => resolveHighlightTab(highlightEntryId, childEntries, parentEntries) ?? kids[0]?.id ?? "parents",
   );
   const [sortField, setSortField] = useState<SortField>("entryDate");
   const [sortOrder, setSortOrder] = useState<SortOrder>("latest");
   const [search, setSearch] = useState("");
+
+  // Tapping a notification while already sitting on /feed re-renders this same component
+  // instance with a new highlightEntryId (Next.js reuses it across same-route navigations) —
+  // the useState initializer above only runs once on mount, so without this the tab silently
+  // stays put. Track which highlight we've already applied so this doesn't fight manual
+  // tab-switching on every re-render.
+  const appliedHighlightRef = useRef(highlightEntryId);
+  useEffect(() => {
+    if (highlightEntryId === appliedHighlightRef.current) return;
+    appliedHighlightRef.current = highlightEntryId;
+    const resolved = resolveHighlightTab(highlightEntryId, childEntries, parentEntries);
+    if (resolved !== undefined) setTab(resolved);
+  }, [highlightEntryId, childEntries, parentEntries]);
 
   const entries = tab === "parents" ? parentEntries : childEntries.filter((entry) => entry.childId === tab);
   const searchedEntries = useMemo(() => searchEntries(entries, search), [entries, search]);
@@ -66,8 +92,8 @@ export function FeedTabs({
             onClick={() => setTab(child.id)}
             className={`rounded-full px-4 py-1.5 font-heading text-sm font-semibold transition-transform hover:scale-105 active:scale-95 ${
               tab === child.id
-                ? "bg-emerald-600 text-white shadow-sm shadow-emerald-900/20"
-                : "border border-emerald-100 text-emerald-800 dark:border-emerald-900/40 dark:text-emerald-200"
+                ? "bg-brand-600 text-white shadow-sm shadow-brand-900/20"
+                : "border border-brand-100 text-brand-800 dark:border-brand-900/40 dark:text-brand-200"
             }`}
           >
             {subjectEmoji(child.type)} {child.name}
@@ -78,7 +104,7 @@ export function FeedTabs({
           className={`rounded-full px-4 py-1.5 font-heading text-sm font-semibold transition-transform hover:scale-105 active:scale-95 ${
             tab === "parents"
               ? "bg-rose-500 text-white shadow-sm shadow-rose-900/20"
-              : "border border-emerald-100 text-emerald-800 dark:border-emerald-900/40 dark:text-emerald-200"
+              : "border border-brand-100 text-brand-800 dark:border-brand-900/40 dark:text-brand-200"
           }`}
         >
           {t("💌 Parents")}
@@ -90,14 +116,14 @@ export function FeedTabs({
         value={search}
         onChange={(e) => setSearch(e.target.value)}
         placeholder={t("🔍 Search entries…")}
-        className="rounded-2xl border border-emerald-100 bg-white px-3 py-2 text-sm dark:border-emerald-900/40 dark:bg-zinc-900"
+        className="rounded-2xl border border-brand-100 bg-white px-3 py-2 text-sm dark:border-brand-900/40 dark:bg-zinc-900"
       />
 
       <div className="flex flex-wrap gap-2 text-sm">
         <select
           value={sortField}
           onChange={(e) => setSortField(e.target.value as SortField)}
-          className="rounded-2xl border border-emerald-100 bg-white px-3 py-1.5 text-xs dark:border-emerald-900/40 dark:bg-zinc-900"
+          className="rounded-2xl border border-brand-100 bg-white px-3 py-1.5 text-xs dark:border-brand-900/40 dark:bg-zinc-900"
         >
           <option value="entryDate">{t("📅 Calendar date")}</option>
           <option value="createdAt">{t("⏱️ Uploaded date")}</option>
@@ -105,7 +131,7 @@ export function FeedTabs({
         <select
           value={sortOrder}
           onChange={(e) => setSortOrder(e.target.value as SortOrder)}
-          className="rounded-2xl border border-emerald-100 bg-white px-3 py-1.5 text-xs dark:border-emerald-900/40 dark:bg-zinc-900"
+          className="rounded-2xl border border-brand-100 bg-white px-3 py-1.5 text-xs dark:border-brand-900/40 dark:bg-zinc-900"
         >
           <option value="latest">{t("Latest first")}</option>
           <option value="oldest">{t("Oldest first")}</option>

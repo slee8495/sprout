@@ -102,6 +102,13 @@ export function EntryForm({
     };
   }, [videoPreviewUrl]);
 
+  const filePreviewUrls = useMemo(() => files.map((f) => URL.createObjectURL(f)), [files]);
+  useEffect(() => {
+    return () => {
+      filePreviewUrls.forEach((url) => URL.revokeObjectURL(url));
+    };
+  }, [filePreviewUrls]);
+
   async function handleVideoSelected(file: File | undefined) {
     if (!file) return;
     try {
@@ -213,11 +220,11 @@ export function EntryForm({
     <form
       ref={formRef}
       onSubmit={(e) => e.preventDefault()}
-      className="flex flex-col gap-3 rounded-3xl border border-emerald-200/70 bg-white p-4 shadow-md shadow-emerald-900/5 dark:border-emerald-800/50 dark:bg-zinc-900 dark:shadow-black/40"
+      className="flex flex-col gap-3 rounded-3xl border border-brand-200/70 bg-white p-4 shadow-md shadow-brand-900/5 dark:border-brand-800/50 dark:bg-zinc-900 dark:shadow-black/40"
     >
       {draft ? (
         <div className="flex items-center gap-2">
-          <span className="rounded-full bg-emerald-100 px-3 py-1.5 font-heading text-sm font-semibold text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-200">
+          <span className="rounded-full bg-brand-100 px-3 py-1.5 font-heading text-sm font-semibold text-brand-800 dark:bg-brand-900/40 dark:text-brand-200">
             {childId
               ? `${subjectEmoji(selectedChild?.type ?? "child")} ${selectedChild?.name ?? "Child"}`
               : t("💌 Parents")}
@@ -233,8 +240,8 @@ export function EntryForm({
               onClick={() => setChildId(child.id)}
               className={`rounded-full px-3 py-1.5 font-heading text-sm font-semibold transition-transform hover:scale-105 active:scale-95 ${
                 childId === child.id
-                  ? "bg-emerald-600 text-white shadow-sm shadow-emerald-900/20"
-                  : "border border-emerald-100 text-emerald-800 dark:border-emerald-900/40 dark:text-emerald-200"
+                  ? "bg-brand-600 text-white shadow-sm shadow-brand-900/20"
+                  : "border border-brand-100 text-brand-800 dark:border-brand-900/40 dark:text-brand-200"
               }`}
             >
               {subjectEmoji(child.type)} {child.name}
@@ -246,7 +253,7 @@ export function EntryForm({
             className={`rounded-full px-3 py-1.5 font-heading text-sm font-semibold transition-transform hover:scale-105 active:scale-95 ${
               childId === undefined
                 ? "bg-rose-500 text-white shadow-sm shadow-rose-900/20"
-                : "border border-emerald-100 text-emerald-800 dark:border-emerald-900/40 dark:text-emerald-200"
+                : "border border-brand-100 text-brand-800 dark:border-brand-900/40 dark:text-brand-200"
             }`}
           >
             {t("💌 Parents")}
@@ -259,14 +266,14 @@ export function EntryForm({
           type="date"
           value={entryDate}
           onChange={(e) => setEntryDate(e.target.value)}
-          className="rounded-2xl border border-emerald-100 bg-white px-3 py-2 text-sm dark:border-emerald-900/40 dark:bg-zinc-900"
+          className="rounded-2xl border border-brand-100 bg-white px-3 py-2 text-sm dark:border-brand-900/40 dark:bg-zinc-900"
         />
         <input
           type="text"
           placeholder={t("Title (optional)")}
           value={title}
           onChange={(e) => setTitle(e.target.value)}
-          className="min-w-0 flex-1 rounded-2xl border border-emerald-100 bg-white px-3 py-2 text-sm dark:border-emerald-900/40 dark:bg-zinc-900"
+          className="min-w-0 flex-1 rounded-2xl border border-brand-100 bg-white px-3 py-2 text-sm dark:border-brand-900/40 dark:bg-zinc-900"
         />
       </div>
 
@@ -275,7 +282,7 @@ export function EntryForm({
         value={body}
         onChange={(e) => setBody(e.target.value)}
         rows={4}
-        className="rounded-2xl border border-emerald-100 bg-white px-3 py-2 text-sm dark:border-emerald-900/40 dark:bg-zinc-900"
+        className="rounded-2xl border border-brand-100 bg-white px-3 py-2 text-sm dark:border-brand-900/40 dark:bg-zinc-900"
       />
 
       {childId !== undefined && (
@@ -283,7 +290,7 @@ export function EntryForm({
           <select
             value={milestoneCategory}
             onChange={(e) => setMilestoneCategory(e.target.value)}
-            className="rounded-2xl border border-emerald-100 bg-white px-3 py-2 text-sm dark:border-emerald-900/40 dark:bg-zinc-900"
+            className="rounded-2xl border border-brand-100 bg-white px-3 py-2 text-sm dark:border-brand-900/40 dark:bg-zinc-900"
           >
             <option value="">{t("No milestone")}</option>
             {milestoneCategories.map((c) => (
@@ -298,7 +305,7 @@ export function EntryForm({
               placeholder={t("e.g. First broccoli")}
               value={milestoneLabel}
               onChange={(e) => setMilestoneLabel(e.target.value)}
-              className="min-w-0 flex-1 rounded-2xl border border-emerald-100 bg-white px-3 py-2 text-sm dark:border-emerald-900/40 dark:bg-zinc-900"
+              className="min-w-0 flex-1 rounded-2xl border border-brand-100 bg-white px-3 py-2 text-sm dark:border-brand-900/40 dark:bg-zinc-900"
             />
           )}
         </div>
@@ -323,13 +330,37 @@ export function EntryForm({
         </div>
       )}
 
-      <input
-        type="file"
-        accept="image/*"
-        multiple
-        onChange={(e) => setFiles(Array.from(e.target.files ?? []))}
-        className="text-sm"
-      />
+      {files.length > 0 && (
+        <div className="flex flex-wrap gap-2">
+          {files.map((file, i) => (
+            <div key={`${file.name}-${i}`} className="relative">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={filePreviewUrls[i]} alt="" className="h-24 w-24 rounded-2xl object-cover" />
+              <button
+                type="button"
+                onClick={() => setFiles((prev) => prev.filter((_, j) => j !== i))}
+                className="absolute -right-1.5 -top-1.5 flex h-6 w-6 items-center justify-center rounded-full bg-zinc-900/80 text-xs font-bold text-white shadow-sm hover:bg-rose-600"
+                aria-label={t("Remove photo")}
+              >
+                ×
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
+
+      <label className="flex w-fit items-center gap-2 text-sm">
+        <span className="rounded-full border border-brand-100 px-3 py-1.5 font-heading text-sm font-semibold text-brand-800 dark:border-brand-900/40 dark:text-brand-200">
+          {t("📷 Add photos")}
+        </span>
+        <input
+          type="file"
+          accept="image/*"
+          multiple
+          onChange={(e) => setFiles(Array.from(e.target.files ?? []))}
+          className="hidden"
+        />
+      </label>
 
       {!draft && (
         <div className="flex items-center gap-3">
@@ -339,7 +370,7 @@ export function EntryForm({
             className={`rounded-full px-3 py-1.5 font-heading text-sm font-semibold transition-transform hover:scale-105 active:scale-95 ${
               recording
                 ? "bg-rose-500 text-white shadow-sm shadow-rose-900/20"
-                : "border border-emerald-100 text-emerald-800 dark:border-emerald-900/40 dark:text-emerald-200"
+                : "border border-brand-100 text-brand-800 dark:border-brand-900/40 dark:text-brand-200"
             }`}
           >
             {recording ? t("⏹ Stop recording") : t("🎤 Voice memo")}
@@ -374,7 +405,7 @@ export function EntryForm({
             </div>
           ) : (
             <label className="flex items-center gap-2 text-sm">
-              <span className="rounded-full border border-emerald-100 px-3 py-1.5 font-heading text-sm font-semibold text-emerald-800 dark:border-emerald-900/40 dark:text-emerald-200">
+              <span className="rounded-full border border-brand-100 px-3 py-1.5 font-heading text-sm font-semibold text-brand-800 dark:border-brand-900/40 dark:text-brand-200">
                 {t("🎥 Video (max 1 min)")}
               </span>
               <input
@@ -395,7 +426,7 @@ export function EntryForm({
           type="button"
           onClick={() => handleSave(false)}
           disabled={isPending}
-          className="self-start rounded-full bg-emerald-600 px-6 py-2 font-heading text-sm font-semibold text-white shadow-sm shadow-emerald-900/20 transition-transform hover:scale-105 hover:bg-emerald-700 active:scale-95 disabled:opacity-50 disabled:hover:scale-100"
+          className="self-start rounded-full bg-brand-600 px-6 py-2 font-heading text-sm font-semibold text-white shadow-sm shadow-brand-900/20 transition-transform hover:scale-105 hover:bg-brand-700 active:scale-95 disabled:opacity-50 disabled:hover:scale-100"
         >
           {isPending ? t("Saving…") : draft ? t("Publish") : t("Save entry")}
         </button>
@@ -403,7 +434,7 @@ export function EntryForm({
           type="button"
           onClick={() => handleSave(true)}
           disabled={isPending}
-          className="self-start rounded-full border border-emerald-600 px-6 py-2 font-heading text-sm font-semibold text-emerald-700 transition-transform hover:scale-105 active:scale-95 disabled:opacity-50 disabled:hover:scale-100 dark:text-emerald-300"
+          className="self-start rounded-full border border-brand-600 px-6 py-2 font-heading text-sm font-semibold text-brand-700 transition-transform hover:scale-105 active:scale-95 disabled:opacity-50 disabled:hover:scale-100 dark:text-brand-300"
         >
           {t("Save as draft")}
         </button>

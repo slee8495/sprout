@@ -2,9 +2,16 @@
 
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
-import { createChild, getFamilyBilling, listChildren, updateChild, updateFamilySettings } from "@/db/queries";
-import { dayCountStartEnum, subjectTypeEnum } from "@/db/schema";
-import { requireSession } from "@/lib/session";
+import {
+  createChild,
+  getFamilyBilling,
+  listChildren,
+  updateChild,
+  updateFamilySettings,
+  updateMemberRole,
+} from "@/db/queries";
+import { dayCountStartEnum, subjectTypeEnum, userRoleEnum } from "@/db/schema";
+import { requireEditor, requireOwner } from "@/lib/session";
 import { FREE_CHILD_LIMIT, isPaidStatus } from "@/lib/storage";
 
 const familySettingsSchema = z.object({
@@ -12,7 +19,7 @@ const familySettingsSchema = z.object({
 });
 
 export async function saveFamilySettings(input: z.infer<typeof familySettingsSchema>) {
-  const { familyId } = await requireSession();
+  const { familyId } = await requireEditor();
   const parsed = familySettingsSchema.parse(input);
 
   await updateFamilySettings(familyId, parsed);
@@ -31,7 +38,7 @@ const childSchema = z.object({
 });
 
 export async function addChild(input: z.infer<typeof childSchema>) {
-  const { familyId } = await requireSession();
+  const { familyId } = await requireEditor();
   const parsed = childSchema.parse(input);
 
   const billing = await getFamilyBilling(familyId);
@@ -51,7 +58,7 @@ export async function addChild(input: z.infer<typeof childSchema>) {
 }
 
 export async function editChild(childId: number, input: z.infer<typeof childSchema>) {
-  const { familyId } = await requireSession();
+  const { familyId } = await requireEditor();
   const parsed = childSchema.parse(input);
 
   await updateChild(childId, familyId, parsed);
@@ -59,5 +66,14 @@ export async function editChild(childId: number, input: z.infer<typeof childSche
   revalidatePath("/");
   revalidatePath("/feed");
   revalidatePath("/milestones");
+  revalidatePath("/settings");
+}
+
+export async function changeMemberRole(targetUserId: number, role: (typeof userRoleEnum.enumValues)[number]) {
+  const { familyId, userId } = await requireOwner();
+  if (targetUserId === userId) throw new Error("You can't change your own role.");
+
+  await updateMemberRole(familyId, targetUserId, role);
+
   revalidatePath("/settings");
 }

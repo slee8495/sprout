@@ -38,8 +38,8 @@ export function MilestoneGrid({ entries, kids }: { entries: JournalEntryWithPhot
               }}
               className={`rounded-full px-4 py-1.5 font-heading text-sm font-semibold transition-transform hover:scale-105 active:scale-95 ${
                 selectedChildId === child.id
-                  ? "bg-emerald-600 text-white shadow-sm shadow-emerald-900/20"
-                  : "border border-emerald-100 text-emerald-800 dark:border-emerald-900/40 dark:text-emerald-200"
+                  ? "bg-brand-600 text-white shadow-sm shadow-brand-900/20"
+                  : "border border-brand-100 text-brand-800 dark:border-brand-900/40 dark:text-brand-200"
               }`}
             >
               {subjectEmoji(child.type)} {child.name}
@@ -59,7 +59,7 @@ export function MilestoneGrid({ entries, kids }: { entries: JournalEntryWithPhot
               className={`flex flex-col items-center gap-1 rounded-3xl border p-4 text-center shadow-md transition-transform hover:scale-105 ${
                 hasEntries
                   ? "border-amber-300 bg-amber-100 shadow-amber-900/10 dark:border-amber-800 dark:bg-amber-950/40"
-                  : "border-emerald-100/60 bg-emerald-50/40 opacity-50 shadow-transparent dark:border-emerald-900/30 dark:bg-zinc-900"
+                  : "border-brand-100/60 bg-brand-50/40 opacity-50 shadow-transparent dark:border-brand-900/30 dark:bg-zinc-900"
               }`}
             >
               <span className="text-2xl">{c.emoji}</span>
@@ -86,7 +86,7 @@ export function MilestoneGrid({ entries, kids }: { entries: JournalEntryWithPhot
 function MilestoneDetail({ entry }: { entry: JournalEntryWithPhotos }) {
   const { t } = useSettings();
   return (
-    <div className="rounded-3xl border border-emerald-100/60 bg-white p-4 shadow-md shadow-emerald-900/5 dark:border-emerald-900/40 dark:bg-zinc-900 dark:shadow-black/40">
+    <div className="rounded-3xl border border-brand-100/60 bg-white p-4 shadow-md shadow-brand-900/5 dark:border-brand-900/40 dark:bg-zinc-900 dark:shadow-black/40">
       <div className="mb-2 flex flex-wrap items-center gap-2">
         {entry.author?.name && (
           <span
@@ -104,7 +104,7 @@ function MilestoneDetail({ entry }: { entry: JournalEntryWithPhotos }) {
           {formatEntryDate(entry.entryDate)}
         </span>
         {entry.child?.birthDate && (
-          <span className="rounded-full bg-emerald-50 px-2 py-0.5 text-xs font-semibold text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300">
+          <span className="rounded-full bg-brand-50 px-2 py-0.5 text-xs font-semibold text-brand-700 dark:bg-brand-900/30 dark:text-brand-300">
             {formatDayOfLife(entry.entryDate, entry.child.birthDate, entry.child.dayCountStart)}
           </span>
         )}

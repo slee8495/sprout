@@ -43,3 +43,25 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# capacitor - ios
+ios/App/build/
+ios/App/Pods/
+ios/App/App/public/
+ios/**/xcuserdata/
+ios/**/*.xcworkspace/xcshareddata/swiftpm/*.xcscmblueprint
+ios/**/*.xcworkspace/xcuserdata/
+
+# capacitor - android
+android/local.properties
+android/.gradle/
+android/app/build/
+android/build/
+android/captures/
+android/app/src/main/assets/public/
+android/app/src/main/assets/capacitor.config.json
+*.iml
+.idea/
+
+# android signing key — never commit, keep only locally / in a password manager
+android-signing/

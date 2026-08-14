@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState, useTransition } from "react";
+import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import type { JournalEntryWithPhotos } from "@/db/queries";
@@ -14,14 +14,23 @@ import { PhotoCollage } from "./PhotoCollage";
 import { PhotoLightbox } from "./PhotoLightbox";
 import type { milestoneCategoryEnum } from "@/db/schema";
 import { uploadJournalPhoto } from "@/lib/uploadPhoto";
+import { uploadVoiceMemo } from "@/lib/uploadVoiceMemo";
+import { getVideoDuration, MAX_VIDEO_DURATION_SECONDS, uploadJournalVideo } from "@/lib/uploadVideo";
 import { useSettings } from "./SettingsProvider";
 
 type MilestoneCategory = (typeof milestoneCategoryEnum.enumValues)[number];
 
+const RECORDING_MIME_TYPES = ["audio/webm", "audio/mp4", "audio/ogg"];
+
+function pickRecordingMimeType(): string | undefined {
+  if (typeof MediaRecorder === "undefined") return undefined;
+  return RECORDING_MIME_TYPES.find((type) => MediaRecorder.isTypeSupported(type));
+}
+
 export function EntryCard({ entry, highlighted }: { entry: JournalEntryWithPhotos; highlighted?: boolean }) {
   const router = useRouter();
-  const { timezone, userId, t } = useSettings();
-  const isAuthor = entry.authorId === userId;
+  const { timezone, userId, t, canEdit } = useSettings();
+  const isAuthor = entry.authorId === userId && canEdit;
   const wasEdited = new Date(entry.updatedAt).getTime() > new Date(entry.createdAt).getTime();
   const [showHighlight, setShowHighlight] = useState(highlighted ?? false);
   const [isEditing, setIsEditing] = useState(false);
@@ -39,6 +48,13 @@ export function EntryCard({ entry, highlighted }: { entry: JournalEntryWithPhoto
   const [milestoneLabel, setMilestoneLabel] = useState(entry.milestoneLabel ?? "");
   const [existingPhotos, setExistingPhotos] = useState(entry.photos);
   const [newFiles, setNewFiles] = useState<File[]>([]);
+  const [existingVoiceMemoUrl, setExistingVoiceMemoUrl] = useState(entry.voiceMemoUrl);
+  const [newVoiceMemo, setNewVoiceMemo] = useState<Blob | null>(null);
+  const [recording, setRecording] = useState(false);
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const [existingVideoUrl, setExistingVideoUrl] = useState(entry.videoUrl);
+  const [existingVideoSizeBytes, setExistingVideoSizeBytes] = useState(entry.videoSizeBytes);
+  const [newVideoFile, setNewVideoFile] = useState<File | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
@@ -50,6 +66,69 @@ export function EntryCard({ entry, highlighted }: { entry: JournalEntryWithPhoto
       newFilePreviews.forEach((url) => URL.revokeObjectURL(url));
     };
   }, [newFilePreviews]);
+
+  const newVoiceMemoUrl = useMemo(() => (newVoiceMemo ? URL.createObjectURL(newVoiceMemo) : null), [newVoiceMemo]);
+  useEffect(() => {
+    return () => {
+      if (newVoiceMemoUrl) URL.revokeObjectURL(newVoiceMemoUrl);
+    };
+  }, [newVoiceMemoUrl]);
+
+  const newVideoPreviewUrl = useMemo(() => (newVideoFile ? URL.createObjectURL(newVideoFile) : null), [newVideoFile]);
+  useEffect(() => {
+    return () => {
+      if (newVideoPreviewUrl) URL.revokeObjectURL(newVideoPreviewUrl);
+    };
+  }, [newVideoPreviewUrl]);
+
+  async function startRecording() {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const mimeType = pickRecordingMimeType();
+      const recorder = new MediaRecorder(stream, mimeType ? { mimeType } : undefined);
+      const chunks: BlobPart[] = [];
+
+      recorder.ondataavailable = (e) => {
+        if (e.data.size > 0) chunks.push(e.data);
+      };
+      recorder.onstop = () => {
+        stream.getTracks().forEach((t) => t.stop());
+        setNewVoiceMemo(new Blob(chunks, { type: mimeType || "audio/webm" }));
+      };
+
+      mediaRecorderRef.current = recorder;
+      recorder.start();
+      setRecording(true);
+    } catch {
+      setError(t("Couldn't access the microphone."));
+    }
+  }
+
+  function stopRecording() {
+    mediaRecorderRef.current?.stop();
+    mediaRecorderRef.current = null;
+    setRecording(false);
+  }
+
+  async function handleVideoSelected(file: File | undefined) {
+    if (!file) return;
+    try {
+      const duration = await getVideoDuration(file);
+      if (duration > MAX_VIDEO_DURATION_SECONDS + 1) {
+        setError(
+          fill(t("Videos must be {max}s or shorter (this one is {actual}s)."), {
+            max: MAX_VIDEO_DURATION_SECONDS,
+            actual: Math.round(duration),
+          }),
+        );
+        return;
+      }
+      setError(null);
+      setNewVideoFile(file);
+    } catch {
+      setError(t("Couldn't read that video file."));
+    }
+  }
 
   function handleSave() {
     if (!body.trim()) {
@@ -65,6 +144,16 @@ export function EntryCard({ entry, highlighted }: { entry: JournalEntryWithPhoto
           ...uploaded.map((r) => ({ url: r.url, sizeBytes: r.sizeBytes })),
         ];
 
+        const voiceMemoUrl = newVoiceMemo ? (await uploadVoiceMemo(newVoiceMemo)).url : existingVoiceMemoUrl;
+
+        let videoUrl = existingVideoUrl;
+        let videoSizeBytes = existingVideoSizeBytes;
+        if (newVideoFile) {
+          const uploadedVideo = await uploadJournalVideo(newVideoFile);
+          videoUrl = uploadedVideo.url;
+          videoSizeBytes = uploadedVideo.sizeBytes;
+        }
+
         await updateEntry(entry.id, {
           entryDate,
           title: title.trim() || undefined,
@@ -72,9 +161,14 @@ export function EntryCard({ entry, highlighted }: { entry: JournalEntryWithPhoto
           milestoneCategory: milestoneCategory ? (milestoneCategory as MilestoneCategory) : undefined,
           milestoneLabel: milestoneCategory ? milestoneLabel.trim() || undefined : undefined,
           photos,
+          voiceMemoUrl,
+          videoUrl,
+          videoSizeBytes,
         });
         setIsEditing(false);
         setNewFiles([]);
+        setNewVoiceMemo(null);
+        setNewVideoFile(null);
         router.refresh();
       } catch {
         setError(t("Couldn't save changes — try again."));
@@ -92,33 +186,33 @@ export function EntryCard({ entry, highlighted }: { entry: JournalEntryWithPhoto
 
   if (isEditing) {
     return (
-      <article className="flex flex-col gap-3 rounded-3xl border border-emerald-300/70 bg-white p-4 shadow-md shadow-emerald-900/5 dark:border-emerald-800/60 dark:bg-zinc-900 dark:shadow-black/40">
+      <article className="flex flex-col gap-3 rounded-3xl border border-brand-300/70 bg-white p-4 shadow-md shadow-brand-900/5 dark:border-brand-800/60 dark:bg-zinc-900 dark:shadow-black/40">
         <div className="flex gap-3">
           <input
             type="date"
             value={entryDate}
             onChange={(e) => setEntryDate(e.target.value)}
-            className="rounded-2xl border border-emerald-100 bg-white px-3 py-2 text-sm dark:border-emerald-900/40 dark:bg-zinc-900"
+            className="rounded-2xl border border-brand-100 bg-white px-3 py-2 text-sm dark:border-brand-900/40 dark:bg-zinc-900"
           />
           <input
             type="text"
             placeholder={t("Title (optional)")}
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            className="min-w-0 flex-1 rounded-2xl border border-emerald-100 bg-white px-3 py-2 text-sm dark:border-emerald-900/40 dark:bg-zinc-900"
+            className="min-w-0 flex-1 rounded-2xl border border-brand-100 bg-white px-3 py-2 text-sm dark:border-brand-900/40 dark:bg-zinc-900"
           />
         </div>
         <textarea
           value={body}
           onChange={(e) => setBody(e.target.value)}
           rows={4}
-          className="rounded-2xl border border-emerald-100 bg-white px-3 py-2 text-sm dark:border-emerald-900/40 dark:bg-zinc-900"
+          className="rounded-2xl border border-brand-100 bg-white px-3 py-2 text-sm dark:border-brand-900/40 dark:bg-zinc-900"
         />
         <div className="flex flex-wrap gap-3">
           <select
             value={milestoneCategory}
             onChange={(e) => setMilestoneCategory(e.target.value)}
-            className="rounded-2xl border border-emerald-100 bg-white px-3 py-2 text-sm dark:border-emerald-900/40 dark:bg-zinc-900"
+            className="rounded-2xl border border-brand-100 bg-white px-3 py-2 text-sm dark:border-brand-900/40 dark:bg-zinc-900"
           >
             <option value="">{t("No milestone")}</option>
             {milestoneCategories.map((c) => (
@@ -133,7 +227,7 @@ export function EntryCard({ entry, highlighted }: { entry: JournalEntryWithPhoto
               placeholder={t("e.g. First broccoli")}
               value={milestoneLabel}
               onChange={(e) => setMilestoneLabel(e.target.value)}
-              className="min-w-0 flex-1 rounded-2xl border border-emerald-100 bg-white px-3 py-2 text-sm dark:border-emerald-900/40 dark:bg-zinc-900"
+              className="min-w-0 flex-1 rounded-2xl border border-brand-100 bg-white px-3 py-2 text-sm dark:border-brand-900/40 dark:bg-zinc-900"
             />
           )}
         </div>
@@ -174,26 +268,92 @@ export function EntryCard({ entry, highlighted }: { entry: JournalEntryWithPhoto
             ))}
           </div>
         )}
-        <input
-          type="file"
-          accept="image/*"
-          multiple
-          onChange={(e) => setNewFiles((prev) => [...prev, ...Array.from(e.target.files ?? [])])}
-          className="text-sm"
-        />
+        <label className="flex w-fit items-center gap-2 text-sm">
+          <span className="rounded-full border border-brand-100 px-3 py-1.5 font-heading text-sm font-semibold text-brand-800 dark:border-brand-900/40 dark:text-brand-200">
+            {t("📷 Add photos")}
+          </span>
+          <input
+            type="file"
+            accept="image/*"
+            multiple
+            onChange={(e) => setNewFiles((prev) => [...prev, ...Array.from(e.target.files ?? [])])}
+            className="hidden"
+          />
+        </label>
+
+        <div className="flex items-center gap-3">
+          <button
+            type="button"
+            onClick={() => (recording ? stopRecording() : startRecording())}
+            className={`rounded-full px-3 py-1.5 font-heading text-sm font-semibold transition-transform hover:scale-105 active:scale-95 ${
+              recording
+                ? "bg-rose-500 text-white shadow-sm shadow-rose-900/20"
+                : "border border-brand-100 text-brand-800 dark:border-brand-900/40 dark:text-brand-200"
+            }`}
+          >
+            {recording ? t("⏹ Stop recording") : t("🎤 Voice memo")}
+          </button>
+          {(newVoiceMemoUrl || existingVoiceMemoUrl) && !recording && (
+            <>
+              <audio controls src={newVoiceMemoUrl ?? existingVoiceMemoUrl ?? undefined} className="h-8" />
+              <button
+                type="button"
+                onClick={() => {
+                  setNewVoiceMemo(null);
+                  setExistingVoiceMemoUrl(null);
+                }}
+                className="text-xs text-zinc-500 dark:text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300"
+              >
+                {t("Remove")}
+              </button>
+            </>
+          )}
+        </div>
+
+        <div className="flex flex-col gap-2">
+          {newVideoPreviewUrl || existingVideoUrl ? (
+            <div className="flex items-center gap-3">
+              <video controls src={newVideoPreviewUrl ?? existingVideoUrl ?? undefined} className="h-32 rounded-2xl" />
+              <button
+                type="button"
+                onClick={() => {
+                  setNewVideoFile(null);
+                  setExistingVideoUrl(null);
+                  setExistingVideoSizeBytes(null);
+                }}
+                className="text-xs text-zinc-500 dark:text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300"
+              >
+                {t("Remove")}
+              </button>
+            </div>
+          ) : (
+            <label className="flex w-fit items-center gap-2 text-sm">
+              <span className="rounded-full border border-brand-100 px-3 py-1.5 font-heading text-sm font-semibold text-brand-800 dark:border-brand-900/40 dark:text-brand-200">
+                {t("🎥 Video (max 1 min)")}
+              </span>
+              <input
+                type="file"
+                accept="video/*"
+                onChange={(e) => handleVideoSelected(e.target.files?.[0])}
+                className="hidden"
+              />
+            </label>
+          )}
+        </div>
+
         {error && <p className="text-sm text-rose-600">{error}</p>}
         <div className="flex gap-2">
           <button
             onClick={handleSave}
             disabled={isPending}
-            className="rounded-full bg-emerald-600 px-5 py-2 font-heading text-sm font-semibold text-white shadow-sm shadow-emerald-900/20 transition-transform hover:scale-105 hover:bg-emerald-700 active:scale-95 disabled:opacity-50 disabled:hover:scale-100"
+            className="rounded-full bg-brand-600 px-5 py-2 font-heading text-sm font-semibold text-white shadow-sm shadow-brand-900/20 transition-transform hover:scale-105 hover:bg-brand-700 active:scale-95 disabled:opacity-50 disabled:hover:scale-100"
           >
             {isPending ? t("Saving…") : t("Save")}
           </button>
           <button
             onClick={() => setIsEditing(false)}
             disabled={isPending}
-            className="rounded-full border border-emerald-100 px-5 py-2 font-heading text-sm font-semibold text-emerald-800 transition-transform hover:scale-105 active:scale-95 dark:border-emerald-900/40 dark:text-emerald-200"
+            className="rounded-full border border-brand-100 px-5 py-2 font-heading text-sm font-semibold text-brand-800 transition-transform hover:scale-105 active:scale-95 dark:border-brand-900/40 dark:text-brand-200"
           >
             {t("Cancel")}
           </button>
@@ -205,10 +365,10 @@ export function EntryCard({ entry, highlighted }: { entry: JournalEntryWithPhoto
   return (
     <article
       id={`entry-${entry.id}`}
-      className={`flex flex-col gap-2 rounded-3xl border bg-white p-4 shadow-md shadow-emerald-900/5 transition-colors dark:bg-zinc-900 dark:shadow-black/40 ${
+      className={`flex flex-col gap-2 rounded-3xl border bg-white p-4 shadow-md shadow-brand-900/5 transition-colors dark:bg-zinc-900 dark:shadow-black/40 ${
         showHighlight
           ? "border-amber-400 ring-2 ring-amber-400 dark:border-amber-500 dark:ring-amber-500"
-          : "border-emerald-100/60 dark:border-emerald-900/40"
+          : "border-brand-100/60 dark:border-brand-900/40"
       }`}
     >
       <div className="flex items-center justify-between">
@@ -225,11 +385,11 @@ export function EntryCard({ entry, highlighted }: { entry: JournalEntryWithPhoto
               {subjectEmoji(entry.child.type)} {entry.child.name}
             </span>
           )}
-          <span className="text-xs font-semibold text-emerald-800 dark:text-emerald-200">
+          <span className="text-xs font-semibold text-brand-800 dark:text-brand-200">
             {formatEntryDate(entry.entryDate)}
           </span>
           {entry.child?.birthDate && (
-            <span className="rounded-full bg-emerald-50 px-2 py-0.5 text-xs font-semibold text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300">
+            <span className="rounded-full bg-brand-50 px-2 py-0.5 text-xs font-semibold text-brand-700 dark:bg-brand-900/30 dark:text-brand-300">
               {formatDayOfLife(entry.entryDate, entry.child.birthDate, entry.child.dayCountStart)}
             </span>
           )}
@@ -264,7 +424,7 @@ export function EntryCard({ entry, highlighted }: { entry: JournalEntryWithPhoto
         {fill(t("Uploaded {time}"), { time: formatUploadedAt(entry.createdAt, timezone) })}
         {wasEdited && <span className="italic"> {t("· Edited")}</span>}
       </p>
-      {entry.title && <h2 className="font-heading font-bold text-emerald-950 dark:text-emerald-50">{entry.title}</h2>}
+      {entry.title && <h2 className="font-heading font-bold text-brand-950 dark:text-brand-50">{entry.title}</h2>}
       <p className="whitespace-pre-wrap text-sm text-zinc-800 dark:text-zinc-200">{entry.body}</p>
       {entry.voiceMemoUrl && <audio controls src={entry.voiceMemoUrl} className="h-10 w-full" />}
       {entry.videoUrl && <video controls src={entry.videoUrl} className="w-full rounded-2xl" />}

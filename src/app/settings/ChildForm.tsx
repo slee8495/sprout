@@ -54,14 +54,14 @@ export function ChildForm({
   return (
     <form
       onSubmit={handleSubmit}
-      className="flex flex-col gap-3 rounded-2xl border border-emerald-100 p-3 dark:border-emerald-900/40"
+      className="flex flex-col gap-3 rounded-2xl border border-brand-100 p-3 dark:border-brand-900/40"
     >
       <input
         type="text"
         placeholder={t("Name")}
         value={name}
         onChange={(e) => setName(e.target.value)}
-        className="rounded-2xl border border-emerald-100 bg-white px-3 py-2 text-sm dark:border-emerald-900/40 dark:bg-zinc-900"
+        className="rounded-2xl border border-brand-100 bg-white px-3 py-2 text-sm dark:border-brand-900/40 dark:bg-zinc-900"
       />
       <div className="flex gap-2">
         <button
@@ -69,8 +69,8 @@ export function ChildForm({
           onClick={() => setType("child")}
           className={`flex-1 rounded-2xl border px-3 py-2 text-sm font-semibold transition-transform hover:scale-105 active:scale-95 ${
             type === "child"
-              ? "border-emerald-600 bg-emerald-600 text-white"
-              : "border-emerald-100 text-emerald-800 dark:border-emerald-900/40 dark:text-emerald-200"
+              ? "border-brand-600 bg-brand-600 text-white"
+              : "border-brand-100 text-brand-800 dark:border-brand-900/40 dark:text-brand-200"
           }`}
         >
           {t("👶 Child")}
@@ -80,8 +80,8 @@ export function ChildForm({
           onClick={() => setType("pet")}
           className={`flex-1 rounded-2xl border px-3 py-2 text-sm font-semibold transition-transform hover:scale-105 active:scale-95 ${
             type === "pet"
-              ? "border-emerald-600 bg-emerald-600 text-white"
-              : "border-emerald-100 text-emerald-800 dark:border-emerald-900/40 dark:text-emerald-200"
+              ? "border-brand-600 bg-brand-600 text-white"
+              : "border-brand-100 text-brand-800 dark:border-brand-900/40 dark:text-brand-200"
           }`}
         >
           {t("🐾 Pet")}
@@ -93,7 +93,7 @@ export function ChildForm({
           type="date"
           value={birthDate}
           onChange={(e) => setBirthDate(e.target.value)}
-          className="rounded-2xl border border-emerald-100 bg-white px-3 py-2 text-sm dark:border-emerald-900/40 dark:bg-zinc-900"
+          className="rounded-2xl border border-brand-100 bg-white px-3 py-2 text-sm dark:border-brand-900/40 dark:bg-zinc-900"
         />
       </label>
       <div className="flex flex-col gap-1 text-sm">
@@ -104,8 +104,8 @@ export function ChildForm({
             onClick={() => setDayCountStart("zero")}
             className={`flex-1 rounded-2xl border px-3 py-2 text-sm font-semibold transition-transform hover:scale-105 active:scale-95 ${
               dayCountStart === "zero"
-                ? "border-emerald-600 bg-emerald-600 text-white"
-                : "border-emerald-100 text-emerald-800 dark:border-emerald-900/40 dark:text-emerald-200"
+                ? "border-brand-600 bg-brand-600 text-white"
+                : "border-brand-100 text-brand-800 dark:border-brand-900/40 dark:text-brand-200"
             }`}
           >
             {t("Day 0 (born day = 0)")}
@@ -115,8 +115,8 @@ export function ChildForm({
             onClick={() => setDayCountStart("one")}
             className={`flex-1 rounded-2xl border px-3 py-2 text-sm font-semibold transition-transform hover:scale-105 active:scale-95 ${
               dayCountStart === "one"
-                ? "border-emerald-600 bg-emerald-600 text-white"
-                : "border-emerald-100 text-emerald-800 dark:border-emerald-900/40 dark:text-emerald-200"
+                ? "border-brand-600 bg-brand-600 text-white"
+                : "border-brand-100 text-brand-800 dark:border-brand-900/40 dark:text-brand-200"
             }`}
           >
             {t("Day 1 (born day = 1)")}
@@ -128,7 +128,7 @@ export function ChildForm({
         <button
           type="submit"
           disabled={isPending}
-          className="rounded-full bg-emerald-600 px-5 py-1.5 font-heading text-sm font-semibold text-white shadow-sm shadow-emerald-900/20 transition-transform hover:scale-105 hover:bg-emerald-700 active:scale-95 disabled:opacity-50 disabled:hover:scale-100"
+          className="rounded-full bg-brand-600 px-5 py-1.5 font-heading text-sm font-semibold text-white shadow-sm shadow-brand-900/20 transition-transform hover:scale-105 hover:bg-brand-700 active:scale-95 disabled:opacity-50 disabled:hover:scale-100"
         >
           {isPending ? t("Saving…") : submitLabel}
         </button>
@@ -136,7 +136,7 @@ export function ChildForm({
           <button
             type="button"
             onClick={onCancel}
-            className="rounded-full border border-emerald-100 px-5 py-1.5 font-heading text-sm font-semibold text-emerald-800 transition-transform hover:scale-105 active:scale-95 dark:border-emerald-900/40 dark:text-emerald-200"
+            className="rounded-full border border-brand-100 px-5 py-1.5 font-heading text-sm font-semibold text-brand-800 transition-transform hover:scale-105 active:scale-95 dark:border-brand-900/40 dark:text-brand-200"
           >
             {t("Cancel")}
           </button>

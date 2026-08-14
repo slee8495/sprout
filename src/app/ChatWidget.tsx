@@ -96,11 +96,11 @@ export function ChatWidget() {
     <>
       {open && (
         <div
-          className="fixed bottom-20 right-4 z-20 flex h-[70vh] max-h-[560px] w-[calc(100vw-2rem)] max-w-sm flex-col overflow-hidden rounded-3xl border border-emerald-200 bg-white shadow-xl shadow-emerald-900/10 dark:border-emerald-900 dark:bg-zinc-950 print:hidden"
+          className="fixed bottom-20 right-4 z-20 flex h-[70vh] max-h-[560px] w-[calc(100vw-2rem)] max-w-sm flex-col overflow-hidden rounded-3xl border border-brand-200 bg-white shadow-xl shadow-brand-900/10 dark:border-brand-900 dark:bg-zinc-950 print:hidden"
           style={{ marginBottom: "env(safe-area-inset-bottom)" }}
         >
-          <div className="flex items-center justify-between border-b border-emerald-100 px-4 py-3 dark:border-emerald-900">
-            <span className="font-heading text-sm font-bold text-emerald-800 dark:text-emerald-200">
+          <div className="flex items-center justify-between border-b border-brand-100 px-4 py-3 dark:border-brand-900">
+            <span className="font-heading text-sm font-bold text-brand-800 dark:text-brand-200">
               {t("🌱 Ask about your family")}
             </span>
             <div className="flex items-center gap-3">
@@ -131,8 +131,8 @@ export function ChatWidget() {
                   <div
                     className={`inline-block max-w-[85%] rounded-2xl px-3 py-2 text-sm ${
                       message.role === "user"
-                        ? "bg-emerald-600 text-white"
-                        : "bg-emerald-50 text-zinc-900 dark:bg-zinc-900 dark:text-zinc-100"
+                        ? "bg-brand-600 text-white"
+                        : "bg-brand-50 text-zinc-900 dark:bg-zinc-900 dark:text-zinc-100"
                     }`}
                   >
                     {message.parts.map((part, i) =>
@@ -169,14 +169,14 @@ export function ChatWidget() {
               sendMessage({ text: input });
               setInput("");
             }}
-            className="flex gap-2 border-t border-emerald-100 p-3 dark:border-emerald-900"
+            className="flex gap-2 border-t border-brand-100 p-3 dark:border-brand-900"
           >
             <input
               value={input}
               onChange={(e) => setInput(e.target.value)}
               disabled={status !== "ready"}
               placeholder={recording ? t("Listening…") : transcribing ? t("Transcribing…") : t("Ask a question…")}
-              className="min-w-0 flex-1 rounded-full border border-emerald-100 bg-transparent px-3 py-1.5 text-sm outline-none focus:border-emerald-400 dark:border-emerald-900/40"
+              className="min-w-0 flex-1 rounded-full border border-brand-100 bg-transparent px-3 py-1.5 text-sm outline-none focus:border-brand-400 dark:border-brand-900/40"
             />
             <button
               type="button"
@@ -188,7 +188,7 @@ export function ChatWidget() {
               className={`rounded-full px-3 py-1.5 text-sm transition-transform hover:scale-105 active:scale-95 disabled:opacity-40 ${
                 recording
                   ? "bg-rose-500 text-white"
-                  : "border border-emerald-100 text-emerald-800 dark:border-emerald-900/40 dark:text-emerald-200"
+                  : "border border-brand-100 text-brand-800 dark:border-brand-900/40 dark:text-brand-200"
               }`}
             >
               {recording ? "⏹" : "🎤"}
@@ -196,7 +196,7 @@ export function ChatWidget() {
             <button
               type="submit"
               disabled={status !== "ready"}
-              className="rounded-full bg-emerald-600 px-4 py-1.5 font-heading text-sm font-semibold text-white transition-transform hover:scale-105 active:scale-95 disabled:opacity-40 disabled:hover:scale-100"
+              className="rounded-full bg-brand-600 px-4 py-1.5 font-heading text-sm font-semibold text-white transition-transform hover:scale-105 active:scale-95 disabled:opacity-40 disabled:hover:scale-100"
             >
               {t("Send")}
             </button>
@@ -206,7 +206,7 @@ export function ChatWidget() {
 
       <button
         onClick={() => setOpen((o) => !o)}
-        className="fixed bottom-4 right-4 z-20 flex h-14 w-14 items-center justify-center rounded-full bg-emerald-600 text-2xl text-white shadow-lg shadow-emerald-900/25 transition-transform hover:scale-110 active:scale-95 print:hidden"
+        className="fixed bottom-4 right-4 z-20 flex h-14 w-14 items-center justify-center rounded-full bg-brand-600 text-2xl text-white shadow-lg shadow-brand-900/25 transition-transform hover:scale-110 active:scale-95 print:hidden"
         style={{ marginBottom: "env(safe-area-inset-bottom)" }}
         aria-label={t("Chat")}
       >

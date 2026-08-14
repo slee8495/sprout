@@ -3,11 +3,11 @@
 import { del } from "@vercel/blob";
 import { signOut } from "@/auth";
 import { deleteFamilyAccount, getFamilyBilling, getFamilyDeletionSummary } from "@/db/queries";
-import { requireSession } from "@/lib/session";
+import { requireOwner } from "@/lib/session";
 import { getStripe } from "@/lib/stripe";
 
 export async function deleteAccountAction(confirmedName: string) {
-  const { familyId } = await requireSession();
+  const { familyId } = await requireOwner();
 
   const summary = await getFamilyDeletionSummary(familyId);
   if (confirmedName.trim() !== summary.familyName) {

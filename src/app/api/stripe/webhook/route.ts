@@ -14,7 +14,7 @@ import { getStripe } from "@/lib/stripe";
 
 // Webhooks are called server-to-server by Stripe, not from a user's browser, so there's no
 // request origin to derive the app URL from — this is the app's one fixed production domain.
-const APP_URL = "https://sprout-theta-rosy.vercel.app";
+const APP_URL = "https://roun.sl-studio.dev";
 
 type SubscriptionStatus = (typeof subscriptionStatusEnum.enumValues)[number];
 

@@ -13,3 +13,13 @@ export function formatPrice(price: Stripe.Price): string {
   const interval = price.recurring ? `/${price.recurring.interval}` : "";
   return `$${amount}${interval}`;
 }
+
+export async function getPriceLabel(priceId: string | undefined): Promise<string | null> {
+  if (!priceId) return null;
+  try {
+    const price = await getStripe().prices.retrieve(priceId);
+    return formatPrice(price);
+  } catch {
+    return null;
+  }
+}

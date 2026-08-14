@@ -17,7 +17,7 @@ export function EntryList({
 
   if (entries.length === 0) {
     return (
-      <p className="text-center font-heading text-sm font-semibold text-emerald-800 dark:text-emerald-200">
+      <p className="text-center font-heading text-sm font-semibold text-brand-800 dark:text-brand-200">
         {emptyMessage ?? t("No entries yet — write the first one above 🌱")}
       </p>
     );

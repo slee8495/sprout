@@ -31,6 +31,11 @@ export const subjectTypeEnum = pgEnum("subject_type", ["child", "pet"]);
 
 export const subscriptionStatusEnum = pgEnum("subscription_status", ["free", "active", "past_due", "canceled"]);
 
+// "owner" is whoever created the family (or was promoted to it); only owners can manage other
+// members' roles and delete the family. "viewer" is read-only — no entries, comments, kids/pets,
+// or family settings. "editor" is today's baseline behavior (full read/write, no member management).
+export const userRoleEnum = pgEnum("user_role", ["owner", "editor", "viewer"]);
+
 export const families = pgTable("families", {
   id: serial("id").primaryKey(),
   name: varchar("name", { length: 128 }).notNull(),
@@ -43,6 +48,8 @@ export const families = pgTable("families", {
   stripeSubscriptionId: text("stripe_subscription_id"),
   subscriptionStatus: subscriptionStatusEnum("subscription_status").notNull().default("free"),
   subscriptionRenewsAt: timestamp("subscription_renews_at", { withTimezone: true }),
+  // True only while subscriptionRenewsAt reflects the automatic signup trial, not an admin-granted comp — controls BillingCard copy.
+  isTrial: boolean("is_trial").notNull().default(false),
   storageAddonBytes: bigint("storage_addon_bytes", { mode: "number" }).notNull().default(0),
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
 });
@@ -53,6 +60,7 @@ export const users = pgTable("users", {
   email: varchar("email", { length: 256 }).notNull().unique(),
   name: varchar("name", { length: 128 }),
   imageUrl: text("image_url"),
+  role: userRoleEnum("role").notNull().default("editor"),
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
 });
 
@@ -109,6 +117,21 @@ export const pushSubscriptions = pgTable("push_subscriptions", {
   endpoint: text("endpoint").notNull().unique(),
   p256dh: text("p256dh").notNull(),
   auth: text("auth").notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+});
+
+// In-app notification history — separate from (and always written alongside) the fire-and-forget
+// web push in src/lib/push.ts, so the bell icon has something to show even for members who never
+// enabled push or whose push subscription has since expired.
+export const notifications = pgTable("notifications", {
+  id: serial("id").primaryKey(),
+  familyId: integer("family_id").notNull().references(() => families.id),
+  recipientId: integer("recipient_id").notNull().references(() => users.id),
+  actorId: integer("actor_id").notNull().references(() => users.id),
+  title: varchar("title", { length: 256 }).notNull(),
+  body: text("body").notNull(),
+  url: text("url"),
+  readAt: timestamp("read_at", { withTimezone: true }),
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
 });
 

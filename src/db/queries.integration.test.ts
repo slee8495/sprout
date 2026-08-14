@@ -3,11 +3,15 @@ import {
   createFamilyWithOwner,
   createJournalEntry,
   deleteFamilyAccount,
+  expireComplimentaryAccess,
   getFamilyBilling,
   getFamilyStorageUsage,
   incrementStorageAddon,
+  isFamilyPaid,
   linkOrJoinFamilyMember,
   listJournalEntries,
+  revokeComplimentaryAccess,
+  setComplimentaryAccess,
   updateFamilyBilling,
 } from "./queries";
 
@@ -130,5 +134,78 @@ describe("core flows against a disposable test family", () => {
 
     const usageAfter = await getFamilyStorageUsage(familyId);
     expect(usageAfter - usageBefore).toBe(12_345_678);
+  });
+});
+
+describe("complimentary access and signup trial grants", () => {
+  const suffix = Math.random().toString(36).slice(2, 10);
+  const familyName = `TEST_FAMILY_TRIAL_${suffix}`;
+  let familyId: number;
+
+  beforeAll(async () => {
+    const { family } = await createFamilyWithOwner({
+      familyName,
+      ownerName: "TrialOwner",
+      email: `trial-owner-${suffix}@example.invalid`,
+    });
+    familyId = family.id;
+  });
+
+  afterAll(async () => {
+    await deleteFamilyAccount(familyId);
+  });
+
+  it("grants a signup trial as complimentary access flagged isTrial", async () => {
+    const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
+    await setComplimentaryAccess(familyId, expiresAt, true);
+    const billing = await getFamilyBilling(familyId);
+    expect(billing.subscriptionStatus).toBe("active");
+    expect(billing.isTrial).toBe(true);
+    expect(billing.subscriptionRenewsAt?.getTime()).toBe(expiresAt.getTime());
+  });
+
+  it("expireComplimentaryAccess downgrades an expired trial back to free and clears isTrial", async () => {
+    await setComplimentaryAccess(familyId, new Date(Date.now() - 1000), true);
+    await expireComplimentaryAccess();
+    const billing = await getFamilyBilling(familyId);
+    expect(billing.subscriptionStatus).toBe("free");
+    expect(billing.isTrial).toBe(false);
+    expect(billing.subscriptionRenewsAt).toBeNull();
+  });
+
+  it("revokeComplimentaryAccess clears isTrial along with subscription status", async () => {
+    await setComplimentaryAccess(familyId, null, true);
+    await revokeComplimentaryAccess(familyId);
+    const billing = await getFamilyBilling(familyId);
+    expect(billing.subscriptionStatus).toBe("free");
+    expect(billing.isTrial).toBe(false);
+  });
+});
+
+describe("interstitial ad gate (isFamilyPaid)", () => {
+  const suffix = Math.random().toString(36).slice(2, 10);
+  const familyName = `TEST_FAMILY_ADGATE_${suffix}`;
+  let familyId: number;
+
+  beforeAll(async () => {
+    const { family } = await createFamilyWithOwner({
+      familyName,
+      ownerName: "AdGateOwner",
+      email: `adgate-owner-${suffix}@example.invalid`,
+    });
+    familyId = family.id;
+  });
+
+  afterAll(async () => {
+    await deleteFamilyAccount(familyId);
+  });
+
+  it("is not paid for a free-tier family", async () => {
+    expect(await isFamilyPaid(familyId)).toBe(false);
+  });
+
+  it("is paid once the family has an active subscription", async () => {
+    await updateFamilyBilling(familyId, { subscriptionStatus: "active", stripeCustomerId: `cus_test_${suffix}` });
+    expect(await isFamilyPaid(familyId)).toBe(true);
   });
 });

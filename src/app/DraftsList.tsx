@@ -55,7 +55,7 @@ export function DraftsList({
               <button
                 type="button"
                 onClick={() => onResume(draft)}
-                className="text-xs font-semibold text-emerald-700 hover:text-emerald-800 dark:text-emerald-300"
+                className="text-xs font-semibold text-brand-700 hover:text-brand-800 dark:text-brand-300"
               >
                 {t("Resume")}
               </button>

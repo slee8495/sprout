@@ -50,32 +50,49 @@ export function Calendar({
     setViewYear(y);
   }
 
+  function jumpToMonth(value: string) {
+    if (!value) return;
+    const [y, m] = value.split("-").map(Number);
+    setViewYear(y);
+    setViewMonth(m - 1);
+  }
+
   return (
-    <div className="rounded-3xl border border-emerald-100/60 bg-white p-4 shadow-md shadow-emerald-900/5 dark:border-emerald-900/40 dark:bg-zinc-900 dark:shadow-black/40">
+    <div className="rounded-3xl border border-brand-100/60 bg-white p-4 shadow-md shadow-brand-900/5 dark:border-brand-900/40 dark:bg-zinc-900 dark:shadow-black/40">
       <div className="mb-3 flex items-center justify-between">
         <button
           onClick={() => changeMonth(-1)}
           aria-label={t("Previous month")}
-          className="rounded-full px-2 py-1 text-sm text-emerald-700 transition-transform hover:scale-110 hover:bg-emerald-50 dark:text-emerald-300 dark:hover:bg-emerald-900/30"
+          className="rounded-full px-2 py-1 text-sm text-brand-700 transition-transform hover:scale-110 hover:bg-brand-50 dark:text-brand-300 dark:hover:bg-brand-900/30"
         >
           ‹
         </button>
-        <span className="font-heading text-sm font-semibold">
-          {new Date(viewYear, viewMonth, 1).toLocaleDateString(undefined, {
-            year: "numeric",
-            month: "long",
-          })}
-        </span>
+        <label className="relative cursor-pointer font-heading text-sm font-semibold">
+          <span className="pointer-events-none">
+            📅{" "}
+            {new Date(viewYear, viewMonth, 1).toLocaleDateString(undefined, {
+              year: "numeric",
+              month: "long",
+            })}
+          </span>
+          <input
+            type="month"
+            aria-label={t("Jump to month")}
+            value={`${viewYear}-${String(viewMonth + 1).padStart(2, "0")}`}
+            onChange={(e) => jumpToMonth(e.target.value)}
+            className="absolute inset-0 h-full w-full cursor-pointer opacity-0"
+          />
+        </label>
         <button
           onClick={() => changeMonth(1)}
           aria-label={t("Next month")}
-          className="rounded-full px-2 py-1 text-sm text-emerald-700 transition-transform hover:scale-110 hover:bg-emerald-50 dark:text-emerald-300 dark:hover:bg-emerald-900/30"
+          className="rounded-full px-2 py-1 text-sm text-brand-700 transition-transform hover:scale-110 hover:bg-brand-50 dark:text-brand-300 dark:hover:bg-brand-900/30"
         >
           ›
         </button>
       </div>
 
-      <div className="grid grid-cols-7 gap-1 text-center text-xs font-semibold text-emerald-800/70 dark:text-emerald-200/70">
+      <div className="grid grid-cols-7 gap-1 text-center text-xs font-semibold text-brand-800/70 dark:text-brand-200/70">
         {WEEKDAYS.map((w, i) => (
           <div key={i} className="py-1">
             {w}
@@ -92,15 +109,15 @@ export function Calendar({
               onClick={() => onSelectDate(isSelected ? null : cell.iso)}
               className={`relative rounded-full py-1.5 text-sm transition-transform hover:scale-110 ${
                 isSelected
-                  ? "bg-emerald-600 text-white shadow-sm shadow-emerald-900/20"
+                  ? "bg-brand-600 text-white shadow-sm shadow-brand-900/20"
                   : isToday
                     ? "bg-amber-200 text-amber-900 dark:bg-amber-900/60 dark:text-amber-200"
-                    : "hover:bg-emerald-50 dark:hover:bg-emerald-900/30"
+                    : "hover:bg-brand-50 dark:hover:bg-brand-900/30"
               }`}
             >
               {cell.day}
               {hasEntry && !isSelected && (
-                <span className="absolute bottom-0.5 left-1/2 h-1 w-1 -translate-x-1/2 rounded-full bg-emerald-500" />
+                <span className="absolute bottom-0.5 left-1/2 h-1 w-1 -translate-x-1/2 rounded-full bg-brand-500" />
               )}
             </button>
           );
@@ -110,7 +127,7 @@ export function Calendar({
       {selectedDate && (
         <button
           onClick={() => onSelectDate(null)}
-          className="mt-3 text-xs text-emerald-700/70 hover:text-emerald-900 dark:text-emerald-300/70 dark:hover:text-emerald-200"
+          className="mt-3 text-xs text-brand-700/70 hover:text-brand-900 dark:text-brand-300/70 dark:hover:text-brand-200"
         >
           {t("Clear selected date")}
         </button>

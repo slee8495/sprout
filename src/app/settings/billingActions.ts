@@ -2,6 +2,7 @@
 
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
+import { revalidatePath } from "next/cache";
 import { getFamilyBilling, updateFamilyBilling } from "@/db/queries";
 import { requireSession } from "@/lib/session";
 import { getStripe } from "@/lib/stripe";
@@ -55,6 +56,31 @@ export async function startStorageAddonCheckout() {
 
   if (!session.url) throw new Error("Couldn't start checkout — try again.");
   redirect(session.url);
+}
+
+// In-app equivalent of canceling through the Stripe billing portal — lets a family switch back
+// to Free without depending on that portal's own "cancel subscription" feature being enabled.
+// Cancels at the end of the paid period rather than immediately, so they keep Pro through what
+// they already paid for.
+export async function cancelSubscription() {
+  const { familyId } = await requireSession();
+  const billing = await getFamilyBilling(familyId);
+  if (!billing.stripeSubscriptionId) throw new Error("No active subscription to cancel.");
+
+  await getStripe().subscriptions.update(billing.stripeSubscriptionId, { cancel_at_period_end: true });
+  revalidatePath("/settings");
+}
+
+// Undoes cancelSubscription() before the period end — lets someone switch back to Pro without
+// risking a second, duplicate subscription (starting a fresh checkout while the old subscription
+// is still active-but-pending-cancellation would double-charge).
+export async function resumeSubscription() {
+  const { familyId } = await requireSession();
+  const billing = await getFamilyBilling(familyId);
+  if (!billing.stripeSubscriptionId) throw new Error("No subscription to resume.");
+
+  await getStripe().subscriptions.update(billing.stripeSubscriptionId, { cancel_at_period_end: false });
+  revalidatePath("/settings");
 }
 
 export async function openBillingPortal() {

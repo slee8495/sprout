@@ -5,10 +5,10 @@ const BUTTON_STYLE =
 
 export function welcomeEmail(input: { familyName: string; appUrl: string }): { subject: string; html: string } {
   return {
-    subject: "🌱 Welcome to Sprout",
+    subject: "🌱 Welcome to Roun",
     html: `
       <div style="${WRAPPER_STYLE}">
-        <h1 style="color: #047857;">🌱 Sprout</h1>
+        <h1 style="color: #047857;">🌱 Roun</h1>
         <p><strong>Welcome, ${input.familyName}!</strong> You're all set to start journaling your family's moments.</p>
         <a href="${input.appUrl}" style="${BUTTON_STYLE}">Start journaling</a>
         <p style="margin-top: 24px; font-size: 13px; color: #a1a1aa;">
@@ -24,7 +24,7 @@ export function subscriptionCanceledEmail(input: { appUrl: string }): { subject:
     subject: "Your Pro subscription has ended",
     html: `
       <div style="${WRAPPER_STYLE}">
-        <h1 style="color: #047857;">🌱 Sprout</h1>
+        <h1 style="color: #047857;">🌱 Roun</h1>
         <p>Your Pro subscription has ended and your account is now on the Free plan.</p>
         <p style="font-weight: 600;">Everything you've already written or uploaded stays exactly as it is — nothing is deleted.</p>
         <p>On the Free plan:</p>

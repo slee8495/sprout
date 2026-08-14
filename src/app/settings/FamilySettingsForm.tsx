@@ -53,27 +53,29 @@ export function FamilySettingsForm() {
 
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-6">
-      <section className="flex flex-col gap-3 rounded-3xl border border-emerald-200/70 bg-white p-4 dark:border-emerald-800/50 dark:bg-zinc-900">
-        <h2 className="font-heading text-sm font-semibold text-emerald-800 dark:text-emerald-200">{t("Family")}</h2>
+      {settings.canEdit && (
+        <section className="flex flex-col gap-3 rounded-3xl border border-brand-200/70 bg-white p-4 dark:border-brand-800/50 dark:bg-zinc-900">
+          <h2 className="font-heading text-sm font-semibold text-brand-800 dark:text-brand-200">{t("Family")}</h2>
 
-        <label className="flex flex-col gap-1 text-sm">
-          {t("Timezone")}
-          <select
-            value={timezone}
-            onChange={(e) => setTimezone(e.target.value)}
-            className="rounded-2xl border border-emerald-100 bg-white px-3 py-2 text-sm dark:border-emerald-900/40 dark:bg-zinc-900"
-          >
-            {TIMEZONES.map((tz) => (
-              <option key={tz} value={tz}>
-                {tz}
-              </option>
-            ))}
-          </select>
-        </label>
-      </section>
+          <label className="flex flex-col gap-1 text-sm">
+            {t("Timezone")}
+            <select
+              value={timezone}
+              onChange={(e) => setTimezone(e.target.value)}
+              className="rounded-2xl border border-brand-100 bg-white px-3 py-2 text-sm dark:border-brand-900/40 dark:bg-zinc-900"
+            >
+              {TIMEZONES.map((tz) => (
+                <option key={tz} value={tz}>
+                  {tz}
+                </option>
+              ))}
+            </select>
+          </label>
+        </section>
+      )}
 
-      <section className="flex flex-col gap-3 rounded-3xl border border-emerald-200/70 bg-white p-4 dark:border-emerald-800/50 dark:bg-zinc-900">
-        <h2 className="font-heading text-sm font-semibold text-emerald-800 dark:text-emerald-200">
+      <section className="flex flex-col gap-3 rounded-3xl border border-brand-200/70 bg-white p-4 dark:border-brand-800/50 dark:bg-zinc-900">
+        <h2 className="font-heading text-sm font-semibold text-brand-800 dark:text-brand-200">
           {t("Appearance")}
         </h2>
 
@@ -87,8 +89,8 @@ export function FamilySettingsForm() {
                 onClick={() => settings.setTheme(opt.value)}
                 className={`flex-1 rounded-2xl border px-3 py-2 text-sm font-semibold transition-transform hover:scale-105 active:scale-95 ${
                   settings.theme === opt.value
-                    ? "border-emerald-600 bg-emerald-600 text-white"
-                    : "border-emerald-100 text-emerald-800 dark:border-emerald-900/40 dark:text-emerald-200"
+                    ? "border-brand-600 bg-brand-600 text-white"
+                    : "border-brand-100 text-brand-800 dark:border-brand-900/40 dark:text-brand-200"
                 }`}
               >
                 {t(opt.label)}
@@ -107,8 +109,8 @@ export function FamilySettingsForm() {
                 onClick={() => settings.setFontSize(opt.value)}
                 className={`flex-1 rounded-2xl border px-3 py-2 font-semibold transition-transform hover:scale-105 active:scale-95 ${
                   settings.fontSize === opt.value
-                    ? "border-emerald-600 bg-emerald-600 text-white"
-                    : "border-emerald-100 text-emerald-800 dark:border-emerald-900/40 dark:text-emerald-200"
+                    ? "border-brand-600 bg-brand-600 text-white"
+                    : "border-brand-100 text-brand-800 dark:border-brand-900/40 dark:text-brand-200"
                 } ${opt.value === "sm" ? "text-xs" : opt.value === "lg" ? "text-lg" : "text-sm"}`}
               >
                 {opt.label}
@@ -127,8 +129,8 @@ export function FamilySettingsForm() {
                 onClick={() => settings.setLocale(opt.value)}
                 className={`rounded-2xl border px-3 py-2 text-sm font-semibold transition-transform hover:scale-105 active:scale-95 ${
                   settings.locale === opt.value
-                    ? "border-emerald-600 bg-emerald-600 text-white"
-                    : "border-emerald-100 text-emerald-800 dark:border-emerald-900/40 dark:text-emerald-200"
+                    ? "border-brand-600 bg-brand-600 text-white"
+                    : "border-brand-100 text-brand-800 dark:border-brand-900/40 dark:text-brand-200"
                 }`}
               >
                 {opt.label}
@@ -139,15 +141,17 @@ export function FamilySettingsForm() {
       </section>
 
       {error && <p className="text-sm text-rose-600">{error}</p>}
-      {saved && !error && <p className="text-sm text-emerald-600">{t("Saved.")}</p>}
+      {saved && !error && <p className="text-sm text-brand-600">{t("Saved.")}</p>}
 
-      <button
-        type="submit"
-        disabled={isPending}
-        className="self-start rounded-full bg-emerald-600 px-6 py-2 font-heading text-sm font-semibold text-white shadow-sm shadow-emerald-900/20 transition-transform hover:scale-105 hover:bg-emerald-700 active:scale-95 disabled:opacity-50 disabled:hover:scale-100"
-      >
-        {isPending ? t("Saving…") : t("Save")}
-      </button>
+      {settings.canEdit && (
+        <button
+          type="submit"
+          disabled={isPending}
+          className="self-start rounded-full bg-brand-600 px-6 py-2 font-heading text-sm font-semibold text-white shadow-sm shadow-brand-900/20 transition-transform hover:scale-105 hover:bg-brand-700 active:scale-95 disabled:opacity-50 disabled:hover:scale-100"
+        >
+          {isPending ? t("Saving…") : t("Save")}
+        </button>
+      )}
     </form>
   );
 }

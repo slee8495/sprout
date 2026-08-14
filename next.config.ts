@@ -25,6 +25,20 @@ const nextConfig: NextConfig = {
   outputFileTracingIncludes: {
     "/api/video/transcode": ["./node_modules/ffmpeg-static/**/*", "./node_modules/ffprobe-static/**/*"],
   },
+  // Auth.js's signin/callback redirects were getting Next's default "public, max-age=0,
+  // must-revalidate" Cache-Control, which permits shared/compressing proxies (e.g. Chrome's
+  // mobile Data Saver) to cache and replay the response — including the one-time PKCE cookie —
+  // across requests. That caused "InvalidCheck: pkceCodeVerifier value could not be parsed" for
+  // first-time Google sign-ins on regular mobile Chrome (Incognito disables Data Saver, which is
+  // why it worked there). Forcing no-store/private here stops any proxy from caching auth traffic.
+  async headers() {
+    return [
+      {
+        source: "/api/auth/:path*",
+        headers: [{ key: "Cache-Control", value: "no-store, private" }],
+      },
+    ];
+  },
 };
 
 export default withSentryConfig(nextConfig, {

@@ -1,42 +1,8 @@
 "use client";
 
+import * as Sentry from "@sentry/nextjs";
 import { useEffect, useState, useSyncExternalStore } from "react";
-import { subscribeToPush } from "./actions";
-
-function urlBase64ToUint8Array(base64String: string) {
-  const padding = "=".repeat((4 - (base64String.length % 4)) % 4);
-  const base64 = (base64String + padding).replace(/-/g, "+").replace(/_/g, "/");
-  const rawData = atob(base64);
-  return Uint8Array.from([...rawData].map((char) => char.charCodeAt(0)));
-}
-
-async function registerAndSubscribe() {
-  const vapidPublicKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
-  if (!vapidPublicKey) return;
-
-  const registration = await navigator.serviceWorker.register("/sw.js");
-  await navigator.serviceWorker.ready;
-
-  const existing = await registration.pushManager.getSubscription();
-  const subscription =
-    existing ??
-    (await registration.pushManager.subscribe({
-      userVisibleOnly: true,
-      applicationServerKey: urlBase64ToUint8Array(vapidPublicKey),
-    }));
-
-  const json = subscription.toJSON();
-  if (!json.endpoint || !json.keys?.p256dh || !json.keys?.auth) return;
-
-  await subscribeToPush({
-    endpoint: json.endpoint,
-    keys: { p256dh: json.keys.p256dh, auth: json.keys.auth },
-  });
-}
-
-function isPushSupported() {
-  return typeof window !== "undefined" && "serviceWorker" in navigator && "PushManager" in window && "Notification" in window;
-}
+import { isPushSupported, subscribeToPushNotifications } from "@/lib/webPush";
 
 function getPermissionSnapshot(): NotificationPermission | "unsupported" {
   return isPushSupported() ? Notification.permission : "unsupported";
@@ -50,21 +16,28 @@ function subscribeToNothing() {
   return () => {};
 }
 
+// First-run floating prompt. See settings/NotificationsCard.tsx for turning notifications back
+// off (or on again after a Settings-driven opt-out) once they've been granted once.
 export function PushNotifications() {
   const permission = useSyncExternalStore(subscribeToNothing, getPermissionSnapshot, getServerPermissionSnapshot);
   const [pending, setPending] = useState(false);
+  const [error, setError] = useState(false);
 
   useEffect(() => {
     if (permission === "granted") {
-      registerAndSubscribe().catch(() => {});
+      subscribeToPushNotifications().catch((err) => Sentry.captureException(err));
     }
   }, [permission]);
 
   async function handleEnable() {
     setPending(true);
+    setError(false);
     try {
       const result = await Notification.requestPermission();
-      if (result === "granted") await registerAndSubscribe();
+      if (result === "granted") await subscribeToPushNotifications();
+    } catch (err) {
+      Sentry.captureException(err);
+      setError(true);
     } finally {
       setPending(false);
     }
@@ -73,12 +46,15 @@ export function PushNotifications() {
   if (permission !== "default") return null;
 
   return (
-    <button
-      onClick={handleEnable}
-      disabled={pending}
-      className="fixed bottom-4 left-1/2 z-20 -translate-x-1/2 rounded-full bg-emerald-600 px-4 py-2 font-heading text-sm font-semibold text-white shadow-lg shadow-emerald-900/30 transition-transform hover:scale-105 active:scale-95 disabled:opacity-50 print:hidden"
-    >
-      {pending ? "Enabling…" : "🔔 Enable notifications"}
-    </button>
+    <div className="fixed bottom-4 left-1/2 z-20 flex -translate-x-1/2 flex-col items-center gap-1 print:hidden">
+      <button
+        onClick={handleEnable}
+        disabled={pending}
+        className="rounded-full bg-brand-600 px-4 py-2 font-heading text-sm font-semibold text-white shadow-lg shadow-brand-900/30 transition-transform hover:scale-105 active:scale-95 disabled:opacity-50"
+      >
+        {pending ? "Enabling…" : "🔔 Enable notifications"}
+      </button>
+      {error && <p className="text-xs font-semibold text-rose-600">Couldn&apos;t enable notifications — try again.</p>}
+    </div>
   );
 }

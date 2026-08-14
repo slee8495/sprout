@@ -4,7 +4,7 @@ import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { auth, unstable_update } from "@/auth";
-import { createFamilyWithOwner, isUniqueConstraintError } from "@/db/queries";
+import { createFamilyWithOwner, isUniqueConstraintError, setComplimentaryAccess } from "@/db/queries";
 import { sendEmail } from "@/lib/email";
 import { welcomeEmail } from "@/lib/emailTemplates";
 import { isRateLimited } from "@/lib/rateLimit";
@@ -14,6 +14,8 @@ async function getOrigin() {
   const protocol = host.startsWith("localhost") || host.startsWith("127.0.0.1") ? "http" : "https";
   return `${protocol}://${host}`;
 }
+
+const TRIAL_DAYS = 30;
 
 const signupSchema = z.object({
   familyName: z.string().trim().min(1, "Family name is required.").max(128),
@@ -35,12 +37,18 @@ export async function signup(_prevState: string | undefined, formData: FormData)
   });
   if (!parsed.success) return parsed.error.issues[0]?.message ?? "Invalid input.";
 
+  let familyId: number;
   try {
-    await createFamilyWithOwner({ ...parsed.data, email: session.user.email });
+    ({
+      family: { id: familyId },
+    } = await createFamilyWithOwner({ ...parsed.data, email: session.user.email }));
   } catch (err) {
     if (isUniqueConstraintError(err, "email")) return "That Google account is already linked to a family.";
     throw err;
   }
+
+  const trialEndsAt = new Date(Date.now() + TRIAL_DAYS * 24 * 60 * 60 * 1000);
+  await setComplimentaryAccess(familyId, trialEndsAt, true);
 
   const appUrl = await getOrigin();
   await sendEmail({ to: session.user.email, ...welcomeEmail({ familyName: parsed.data.familyName, appUrl }) }).catch(

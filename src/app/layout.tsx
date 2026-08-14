@@ -4,7 +4,10 @@ import "./globals.css";
 import { auth } from "@/auth";
 import { getFamilySettings } from "@/db/queries";
 import { DEFAULT_TIMEZONE } from "@/lib/date";
+import { AdClickTracker } from "./AdClickTracker";
+import { MobileAuthListener } from "./MobileAuthListener";
 import { NavBar } from "./NavBar";
+import { PushNotifications } from "./PushNotifications";
 import { SettingsProvider } from "./SettingsProvider";
 
 const THEME_INIT_SCRIPT = `
@@ -31,12 +34,12 @@ const nunito = Nunito({
 });
 
 export const metadata: Metadata = {
-  title: "Sprout",
+  title: "Roun",
   description: "A private family journal",
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
-    title: "Sprout",
+    title: "Roun",
   },
 };
 
@@ -66,8 +69,12 @@ export default async function RootLayout({
         <SettingsProvider
           family={{ timezone: family.timezone }}
           userId={session?.user?.id ? Number(session.user.id) : 0}
+          role={session?.user?.role ?? "editor"}
         >
+          <AdClickTracker />
+          <MobileAuthListener />
           <NavBar />
+          {session?.user?.familyId && <PushNotifications />}
           {children}
         </SettingsProvider>
       </body>

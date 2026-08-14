@@ -37,7 +37,7 @@ function FamilyRow({ family }: { family: AdminFamilyRow }) {
   }
 
   return (
-    <div className="flex flex-col gap-2 rounded-3xl border border-emerald-100/60 bg-white p-4 shadow-sm dark:border-emerald-900/40 dark:bg-zinc-900">
+    <div className="flex flex-col gap-2 rounded-3xl border border-brand-100/60 bg-white p-4 shadow-sm dark:border-brand-900/40 dark:bg-zinc-900">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div>
           <p className="font-heading font-semibold">{family.name}</p>
@@ -50,13 +50,13 @@ function FamilyRow({ family }: { family: AdminFamilyRow }) {
             isComplimentary(family)
               ? "bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-200"
               : isRealSubscriber(family)
-                ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-200"
+                ? "bg-brand-100 text-brand-800 dark:bg-brand-900/40 dark:text-brand-200"
                 : "bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400"
           }`}
         >
           {isComplimentary(family)
             ? family.subscriptionRenewsAt
-              ? `complimentary until ${family.subscriptionRenewsAt.toLocaleDateString()}`
+              ? `${family.isTrial ? "trial" : "complimentary"} until ${family.subscriptionRenewsAt.toLocaleDateString()}`
               : "complimentary forever"
             : isRealSubscriber(family)
               ? "real subscriber"
@@ -68,7 +68,7 @@ function FamilyRow({ family }: { family: AdminFamilyRow }) {
         <select
           value={days ?? "forever"}
           onChange={(e) => setDays(e.target.value === "forever" ? null : Number(e.target.value))}
-          className="rounded-2xl border border-emerald-100 bg-white px-2 py-1 text-xs dark:border-emerald-900/40 dark:bg-zinc-900"
+          className="rounded-2xl border border-brand-100 bg-white px-2 py-1 text-xs dark:border-brand-900/40 dark:bg-zinc-900"
         >
           {DURATION_OPTIONS.map((opt) => (
             <option key={opt.label} value={opt.days ?? "forever"}>
@@ -79,7 +79,7 @@ function FamilyRow({ family }: { family: AdminFamilyRow }) {
         <button
           onClick={handleGrant}
           disabled={isPending || isRealSubscriber(family)}
-          className="rounded-full bg-emerald-600 px-3 py-1 text-xs font-semibold text-white disabled:opacity-40"
+          className="rounded-full bg-brand-600 px-3 py-1 text-xs font-semibold text-white disabled:opacity-40"
         >
           Grant free access
         </button>

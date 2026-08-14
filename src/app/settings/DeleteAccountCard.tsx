@@ -10,17 +10,30 @@ export function DeleteAccountCard({
   entries,
   photos,
   members,
+  isOwner,
 }: {
   familyName: string;
   entries: number;
   photos: number;
   members: number;
+  isOwner: boolean;
 }) {
   const { t } = useSettings();
   const [confirmText, setConfirmText] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
   const canDelete = confirmText.trim() === familyName;
+
+  if (!isOwner) {
+    return (
+      <section className="flex flex-col gap-2 rounded-3xl border border-rose-300 bg-rose-50 p-4 dark:border-rose-900/50 dark:bg-rose-950/20">
+        <h2 className="font-heading text-sm font-semibold text-rose-800 dark:text-rose-300">{t("Danger zone")}</h2>
+        <p className="text-sm text-rose-700 dark:text-rose-300">
+          {t("Only the family owner can permanently delete this family's account.")}
+        </p>
+      </section>
+    );
+  }
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();

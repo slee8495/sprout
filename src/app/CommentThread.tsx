@@ -8,7 +8,7 @@ import { useSettings } from "./SettingsProvider";
 
 export function CommentThread({ entry }: { entry: JournalEntryWithPhotos }) {
   const router = useRouter();
-  const { t } = useSettings();
+  const { t, canEdit } = useSettings();
   const [body, setBody] = useState("");
   const [isPending, startTransition] = useTransition();
 
@@ -23,7 +23,7 @@ export function CommentThread({ entry }: { entry: JournalEntryWithPhotos }) {
   }
 
   return (
-    <div className="flex flex-col gap-2 border-t border-dashed border-emerald-100 pt-2 dark:border-emerald-900/40">
+    <div className="flex flex-col gap-2 border-t border-dashed border-brand-100 pt-2 dark:border-brand-900/40">
       {entry.comments.map((comment) => (
         <div key={comment.id} className="text-xs">
           <span className="font-heading font-semibold text-rose-500 dark:text-rose-300">
@@ -32,21 +32,23 @@ export function CommentThread({ entry }: { entry: JournalEntryWithPhotos }) {
           <span className="text-zinc-600 dark:text-zinc-400">{comment.body}</span>
         </div>
       ))}
-      <form onSubmit={handleSubmit} className="flex gap-2">
-        <input
-          value={body}
-          onChange={(e) => setBody(e.target.value)}
-          placeholder={t("Add a comment… 💬")}
-          className="min-w-0 flex-1 rounded-full border border-emerald-100 bg-transparent px-3 py-1 text-xs outline-none focus:border-emerald-400 dark:border-emerald-900/40"
-        />
-        <button
-          type="submit"
-          disabled={isPending || !body.trim()}
-          className="font-heading text-xs font-semibold text-rose-500 disabled:opacity-40 dark:text-rose-300"
-        >
-          {t("Post")}
-        </button>
-      </form>
+      {canEdit && (
+        <form onSubmit={handleSubmit} className="flex gap-2">
+          <input
+            value={body}
+            onChange={(e) => setBody(e.target.value)}
+            placeholder={t("Add a comment… 💬")}
+            className="min-w-0 flex-1 rounded-full border border-brand-100 bg-transparent px-3 py-1 text-xs outline-none focus:border-brand-400 dark:border-brand-900/40"
+          />
+          <button
+            type="submit"
+            disabled={isPending || !body.trim()}
+            className="font-heading text-xs font-semibold text-rose-500 disabled:opacity-40 dark:text-rose-300"
+          >
+            {t("Post")}
+          </button>
+        </form>
+      )}
     </div>
   );
 }

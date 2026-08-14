@@ -11,8 +11,12 @@ type FamilySettings = {
   timezone: string;
 };
 
+export type UserRole = "owner" | "editor" | "viewer";
+
 type SettingsContextValue = FamilySettings & {
   userId: number;
+  role: UserRole;
+  canEdit: boolean;
   theme: Theme;
   setTheme: (theme: Theme) => void;
   fontSize: FontSize;
@@ -52,10 +56,12 @@ function readStoredLocale(): Locale {
 export function SettingsProvider({
   family,
   userId,
+  role,
   children,
 }: {
   family: FamilySettings;
   userId: number;
+  role: UserRole;
   children: React.ReactNode;
 }) {
   const [theme, setThemeState] = useState<Theme>(readStoredTheme);
@@ -100,7 +106,19 @@ export function SettingsProvider({
 
   return (
     <SettingsContext.Provider
-      value={{ ...family, userId, theme, setTheme, fontSize, setFontSize, locale, setLocale, t }}
+      value={{
+        ...family,
+        userId,
+        role,
+        canEdit: role !== "viewer",
+        theme,
+        setTheme,
+        fontSize,
+        setFontSize,
+        locale,
+        setLocale,
+        t,
+      }}
     >
       {children}
     </SettingsContext.Provider>

@@ -18,13 +18,13 @@ export type ChildSummary = {
 
 export function ChildrenCard({ kids }: { kids: ChildSummary[] }) {
   const router = useRouter();
-  const { t } = useSettings();
+  const { t, canEdit } = useSettings();
   const [editingId, setEditingId] = useState<number | null>(null);
   const [adding, setAdding] = useState(false);
 
   return (
-    <section className="flex flex-col gap-3 rounded-3xl border border-emerald-200/70 bg-white p-4 dark:border-emerald-800/50 dark:bg-zinc-900">
-      <h2 className="font-heading text-sm font-semibold text-emerald-800 dark:text-emerald-200">
+    <section className="flex flex-col gap-3 rounded-3xl border border-brand-200/70 bg-white p-4 dark:border-brand-800/50 dark:bg-zinc-900">
+      <h2 className="font-heading text-sm font-semibold text-brand-800 dark:text-brand-200">
         {t("Kids & Pets")}
       </h2>
 
@@ -49,23 +49,25 @@ export function ChildrenCard({ kids }: { kids: ChildSummary[] }) {
         ) : (
           <div
             key={child.id}
-            className="flex items-center justify-between rounded-2xl border border-emerald-100 px-3 py-2 text-sm dark:border-emerald-900/40"
+            className="flex items-center justify-between rounded-2xl border border-brand-100 px-3 py-2 text-sm dark:border-brand-900/40"
           >
-            <span className="font-semibold text-emerald-900 dark:text-emerald-100">
+            <span className="font-semibold text-brand-900 dark:text-brand-100">
               {subjectEmoji(child.type)} {child.name}
             </span>
-            <button
-              type="button"
-              onClick={() => setEditingId(child.id)}
-              className="text-xs text-zinc-500 hover:text-zinc-600 dark:text-zinc-400 dark:hover:text-zinc-300"
-            >
-              {t("Edit")}
-            </button>
+            {canEdit && (
+              <button
+                type="button"
+                onClick={() => setEditingId(child.id)}
+                className="text-xs text-zinc-500 hover:text-zinc-600 dark:text-zinc-400 dark:hover:text-zinc-300"
+              >
+                {t("Edit")}
+              </button>
+            )}
           </div>
         ),
       )}
 
-      {adding ? (
+      {!canEdit ? null : adding ? (
         <ChildForm
           submitLabel={t("Add")}
           onCancel={() => setAdding(false)}
@@ -79,7 +81,7 @@ export function ChildrenCard({ kids }: { kids: ChildSummary[] }) {
         <button
           type="button"
           onClick={() => setAdding(true)}
-          className="self-start rounded-full border border-emerald-600 px-4 py-1.5 font-heading text-sm font-semibold text-emerald-700 transition-transform hover:scale-105 active:scale-95 dark:text-emerald-300"
+          className="self-start rounded-full border border-brand-600 px-4 py-1.5 font-heading text-sm font-semibold text-brand-700 transition-transform hover:scale-105 active:scale-95 dark:text-brand-300"
         >
           {t("+ Add a kid or pet")}
         </button>

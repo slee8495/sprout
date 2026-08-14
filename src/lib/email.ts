@@ -11,7 +11,7 @@ export async function sendEmail(input: { to: string | string[]; subject: string;
   if (!domain) return; // Not configured (e.g. local dev without Resend env vars) — skip silently.
 
   await getResend().emails.send({
-    from: `Sprout <no-reply@${domain}>`,
+    from: `Roun <no-reply@${domain}>`,
     to: input.to,
     subject: input.subject,
     html: input.html,
