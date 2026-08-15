@@ -29,7 +29,7 @@ export function MilestoneTitlePage({
         <div className="flex gap-2">
           {photos.map((photo) => (
             <div key={photo.id} className="relative h-20 w-20 overflow-hidden rounded-lg shadow-sm sm:h-28 sm:w-28">
-              <Image src={photo.url} alt={photo.caption ?? ""} fill sizes="112px" className="object-cover" />
+              <Image src={photo.url} alt={photo.caption ?? ""} fill sizes="112px" className="object-cover object-top" />
             </div>
           ))}
         </div>

@@ -94,7 +94,7 @@ export function AlbumPdfDocument({
   pages: PdfPageData[];
   orientation: "portrait" | "landscape";
 }) {
-  const dates = pages.map((p) => p.date).sort();
+  const dates = pages.flatMap((p) => p.dates).sort();
   const rangeLabel =
     dates.length > 0
       ? dates[0] === dates[dates.length - 1]
@@ -114,7 +114,7 @@ export function AlbumPdfDocument({
         <Page key={i} size="A4" orientation={orientation} style={styles.page}>
           {page.kind === "title" ? (
             <View style={styles.titlePage}>
-              <Text style={styles.titleDate}>{formatEntryDate(page.date)}</Text>
+              <Text style={styles.titleDate}>{formatEntryDate(page.dates[0])}</Text>
               <Text style={styles.titleLabel}>{page.label}</Text>
               {page.photos.length > 0 && (
                 <View style={styles.titlePhotoRow}>

@@ -26,7 +26,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
   const entries = await listJournalEntries(familyId, "child");
   const photoEntries = entries.filter((e) => e.photos.length > 0 && e.children.some((c) => c.id === id));
   const pages = buildAlbumPages(sortAlbumEntries(photoEntries, sortOrder));
-  const pdfPages = await preparePhotosForPdf(pages);
+  const pdfPages = await preparePhotosForPdf(pages, orientation);
 
   const buffer = await renderToBuffer(<AlbumPdfDocument child={child} pages={pdfPages} orientation={orientation} />);
 

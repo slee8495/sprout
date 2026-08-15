@@ -16,7 +16,7 @@ type PageData = AlbumPageData;
 
 type SortOrder = "oldest" | "latest";
 type ViewMode = "scroll" | "pageTurn";
-type Orientation = "portrait" | "landscape";
+type PdfOrientation = "portrait" | "landscape";
 
 export function AlbumView({
   child,
@@ -30,23 +30,25 @@ export function AlbumView({
   const { t } = useSettings();
   const [sortOrder, setSortOrder] = useState<SortOrder>("oldest");
   const [viewMode, setViewMode] = useState<ViewMode>("scroll");
-  const [orientation, setOrientation] = useState<Orientation>("portrait");
+  const [pdfOrientation, setPdfOrientation] = useState<PdfOrientation>("portrait");
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const pageRefs = useRef(new Map<string, HTMLDivElement>());
 
   const sortedEntries = useMemo(() => sortAlbumEntries(entries, sortOrder), [entries, sortOrder]);
 
   const pages = useMemo(() => buildAlbumPages(sortedEntries), [sortedEntries]);
-  // Which pages are the first (of possibly several) for their date, computed fresh per `pages`
-  // identity rather than tracked via a "seen it once" flag on the ref map itself — the latter
-  // goes stale across a scroll/page-turn remount, since unmounted refs report `null` and never
-  // clear their old (now-detached) map entry, permanently blocking re-registration.
-  const isFirstForDate = useMemo(() => {
+  // Which of a page's dates it should claim in the ref map, computed fresh per `pages` identity
+  // rather than tracked via a "seen it once" flag on the ref map itself — the latter goes stale
+  // across a scroll/page-turn remount, since unmounted refs report `null` and never clear their
+  // old (now-detached) map entry, permanently blocking re-registration. A page can span more than
+  // one date (light days get merged together), so this claims every date not already taken by an
+  // earlier page rather than a single boolean.
+  const datesToRegister = useMemo(() => {
     const seen = new Set<string>();
     return pages.map((page) => {
-      const first = !seen.has(page.date);
-      seen.add(page.date);
-      return first;
+      const claim = page.dates.filter((d) => !seen.has(d));
+      claim.forEach((d) => seen.add(d));
+      return claim;
     });
   }, [pages]);
   const entryDates = useMemo(() => new Set(entries.map((e) => e.entryDate)), [entries]);
@@ -126,29 +128,24 @@ export function AlbumView({
             {t("📖 Page turn")}
           </button>
         </div>
-        <div className="flex overflow-hidden rounded-2xl border border-brand-100 dark:border-brand-900/40">
-          <button
-            type="button"
-            onClick={() => setOrientation("portrait")}
-            className={`px-3 py-1.5 font-semibold ${orientation === "portrait" ? "bg-brand-600 text-white" : "text-brand-800 dark:text-brand-200"}`}
-          >
-            {t("Portrait")}
-          </button>
-          <button
-            type="button"
-            onClick={() => setOrientation("landscape")}
-            className={`px-3 py-1.5 font-semibold ${orientation === "landscape" ? "bg-brand-600 text-white" : "text-brand-800 dark:text-brand-200"}`}
-          >
-            {t("Landscape")}
-          </button>
-        </div>
         {pages.length > 0 && (
-          <a
-            href={`/api/library/${child.id}/export?orientation=${orientation}&sort=${sortOrder}`}
-            className="rounded-2xl border border-brand-100 px-3 py-1.5 font-semibold text-brand-800 transition-transform hover:scale-105 active:scale-95 dark:border-brand-900/40 dark:text-brand-200"
-          >
-            {t("⬇️ Download PDF")}
-          </a>
+          <div className="flex items-center gap-1.5 rounded-2xl border border-brand-100 px-2 dark:border-brand-900/40">
+            <select
+              value={pdfOrientation}
+              onChange={(e) => setPdfOrientation(e.target.value as PdfOrientation)}
+              aria-label={t("PDF page format")}
+              className="bg-transparent py-1.5 text-brand-800 dark:text-brand-200"
+            >
+              <option value="portrait">{t("Portrait")}</option>
+              <option value="landscape">{t("Landscape")}</option>
+            </select>
+            <a
+              href={`/api/library/${child.id}/export?orientation=${pdfOrientation}&sort=${sortOrder}`}
+              className="whitespace-nowrap font-semibold text-brand-800 transition-transform hover:scale-105 active:scale-95 dark:text-brand-200"
+            >
+              {t("⬇️ Download PDF")}
+            </a>
+          </div>
         )}
       </div>
 
@@ -164,10 +161,9 @@ export function AlbumView({
             <AlbumPageFrame
               key={i}
               page={page}
-              orientation={orientation}
               coverAnimal={coverAnimal}
               registerRef={pageRefs}
-              isFirstForDate={isFirstForDate[i]}
+              datesToRegister={datesToRegister[i]}
             />
           ))}
         </div>
@@ -177,10 +173,9 @@ export function AlbumView({
             <div key={i} className="w-full shrink-0 snap-start">
               <AlbumPageFrame
                 page={page}
-                orientation={orientation}
                 coverAnimal={coverAnimal}
                 registerRef={pageRefs}
-                isFirstForDate={isFirstForDate[i]}
+                datesToRegister={datesToRegister[i]}
               />
             </div>
           ))}
@@ -192,28 +187,24 @@ export function AlbumView({
 
 function AlbumPageFrame({
   page,
-  orientation,
   coverAnimal,
   registerRef,
-  isFirstForDate,
+  datesToRegister,
 }: {
   page: PageData;
-  orientation: Orientation;
   coverAnimal: string;
   registerRef: React.RefObject<Map<string, HTMLDivElement>>;
-  isFirstForDate: boolean;
+  datesToRegister: string[];
 }) {
   return (
     <div
       ref={(el) => {
-        if (el && isFirstForDate) registerRef.current.set(page.date, el);
+        if (el) for (const date of datesToRegister) registerRef.current.set(date, el);
       }}
-      className={`overflow-hidden rounded-2xl border border-brand-100/60 bg-[#fffaf0] p-3 shadow-md shadow-brand-900/5 dark:border-brand-900/40 dark:bg-zinc-900 dark:shadow-black/40 ${
-        orientation === "portrait" ? "aspect-[3/4]" : "aspect-[4/3]"
-      }`}
+      className="aspect-[3/4] overflow-hidden rounded-2xl border border-brand-100/60 bg-[#fffaf0] p-3 shadow-md shadow-brand-900/5 dark:border-brand-900/40 dark:bg-zinc-900 dark:shadow-black/40"
     >
       {page.kind === "title" ? (
-        <MilestoneTitlePage date={page.date} label={page.label} photos={page.photos} coverAnimal={coverAnimal} />
+        <MilestoneTitlePage date={page.dates[0]} label={page.label} photos={page.photos} coverAnimal={coverAnimal} />
       ) : (
         <CollagePage photos={page.photos} />
       )}
