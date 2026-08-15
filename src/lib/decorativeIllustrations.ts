@@ -19,7 +19,6 @@ const ILLUSTRATION_POOL = [
   "hamster",
   "foal",
   "kitten",
-  "piglet",
   "puppy",
 ] as const;
 
