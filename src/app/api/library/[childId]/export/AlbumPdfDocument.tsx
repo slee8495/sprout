@@ -5,6 +5,7 @@ import type { Child } from "@/db/queries";
 import { illustrationFilenameForAnimal } from "@/lib/animalIllustrations";
 import { getCollageRects } from "@/lib/collage";
 import { coverBackgroundHex } from "@/lib/covers";
+import { decorationForMonth } from "@/lib/decorativeIllustrations";
 import { formatEntryDate } from "@/lib/milestones";
 import { CAPTION_HEIGHT_PT } from "@/lib/pdfLayout";
 import type { PdfPageData } from "@/lib/pdfPhotos";
@@ -16,6 +17,15 @@ function loadIllustration(animal: string | null | undefined): Buffer | null {
   const filename = illustrationFilenameForAnimal(animal);
   if (!filename) return null;
   return fs.readFileSync(path.join(process.cwd(), "public", filename));
+}
+
+const decorationBufferCache = new Map<string, Buffer>();
+function loadDecorationBuffer(pdfFilename: string): Buffer {
+  const cached = decorationBufferCache.get(pdfFilename);
+  if (cached) return cached;
+  const buffer = fs.readFileSync(path.join(process.cwd(), "public", pdfFilename));
+  decorationBufferCache.set(pdfFilename, buffer);
+  return buffer;
 }
 
 Font.register({
@@ -73,6 +83,14 @@ const styles = StyleSheet.create({
     letterSpacing: 1,
     textTransform: "uppercase",
   },
+  disclaimerInline: {
+    marginTop: 4,
+    fontSize: 7,
+    color: "rgba(0,0,0,0.35)",
+    letterSpacing: 1,
+    textTransform: "uppercase",
+    textAlign: "center",
+  },
   page: {
     padding: 24,
     flexDirection: "column",
@@ -119,6 +137,67 @@ const styles = StyleSheet.create({
     fontWeight: 700,
     fontSize: 44,
     textAlign: "center",
+  },
+  monthLabelSmall: {
+    fontFamily: "Playfair Display",
+    fontWeight: 700,
+    fontSize: 32,
+    textAlign: "center",
+  },
+  sideWrap: {
+    flexDirection: "row",
+    width: "100%",
+    height: "100%",
+  },
+  sideImageWrap: {
+    width: "40%",
+    height: "100%",
+  },
+  sideImage: {
+    width: "100%",
+    height: "100%",
+    objectFit: "cover",
+  },
+  sideTextWrap: {
+    flex: 1,
+    flexDirection: "column",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 12,
+    paddingHorizontal: 16,
+  },
+  backdropWrap: {
+    position: "relative",
+    width: "100%",
+    height: "100%",
+  },
+  backdropImage: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    width: "100%",
+    height: "100%",
+    objectFit: "cover",
+  },
+  backdropCaption: {
+    position: "absolute",
+    bottom: 24,
+    left: 0,
+    width: "100%",
+    alignItems: "center",
+  },
+  backdropCard: {
+    backgroundColor: "rgba(255,255,255,0.85)",
+    paddingHorizontal: 24,
+    paddingVertical: 10,
+    borderRadius: 12,
+  },
+  backdropDisclaimer: {
+    marginTop: 6,
+    fontSize: 7,
+    color: "rgba(255,255,255,0.85)",
+    letterSpacing: 1,
+    textTransform: "uppercase",
   },
   collageArea: {
     position: "relative",
@@ -178,20 +257,58 @@ export function AlbumPdfDocument({
 
       {pages.map((page, i) => {
         if (page.kind === "month") {
+          const decoration = decorationForMonth(page.dates[0].slice(0, 7));
+          const decorationBuffer = loadDecorationBuffer(decoration.pdfFilename);
+
+          if (decoration.variant === "backdrop") {
+            return (
+              <Page key={i} size="A4" orientation="landscape" style={styles.backdropWrap}>
+                {/* eslint-disable-next-line jsx-a11y/alt-text */}
+                <Image src={decorationBuffer} style={styles.backdropImage} />
+                <View style={styles.backdropCaption}>
+                  <View style={styles.backdropCard}>
+                    <Text style={styles.monthLabelSmall}>{page.label}</Text>
+                  </View>
+                  <Text style={styles.backdropDisclaimer}>AI-generated illustration</Text>
+                </View>
+              </Page>
+            );
+          }
+
+          if (decoration.variant === "side") {
+            const imageFirst = !decoration.flip;
+            const imageView = (
+              <View key="image" style={styles.sideImageWrap}>
+                {/* eslint-disable-next-line jsx-a11y/alt-text */}
+                <Image src={decorationBuffer} style={styles.sideImage} />
+              </View>
+            );
+            const textView = (
+              <View key="text" style={styles.sideTextWrap}>
+                <View style={styles.rule} />
+                <Text style={styles.monthLabelSmall}>{page.label}</Text>
+                <Text style={styles.disclaimerInline}>AI-generated illustration</Text>
+              </View>
+            );
+            return (
+              <Page key={i} size="A4" orientation="landscape" style={[styles.page, { padding: 0, backgroundColor: coverColor }]}>
+                <View style={styles.sideWrap}>{imageFirst ? [imageView, textView] : [textView, imageView]}</View>
+              </Page>
+            );
+          }
+
           return (
             <Page key={i} size="A4" orientation="landscape" style={[styles.page, { backgroundColor: coverColor }]}>
               <View style={styles.monthPage}>
-                {illustration && (
-                  <View style={styles.monthIllustrationWrap}>
-                    {/* eslint-disable-next-line jsx-a11y/alt-text */}
-                    <Image src={illustration} style={styles.coverIllustration} />
-                  </View>
-                )}
+                <View style={styles.monthIllustrationWrap}>
+                  {/* eslint-disable-next-line jsx-a11y/alt-text */}
+                  <Image src={decorationBuffer} style={styles.coverIllustration} />
+                </View>
                 <Text style={styles.monthEyebrow}>{child.name}</Text>
                 <View style={styles.rule} />
                 <Text style={styles.monthLabel}>{page.label}</Text>
               </View>
-              {illustration && <Text style={styles.disclaimer}>AI-generated illustration</Text>}
+              <Text style={styles.disclaimer}>AI-generated illustration</Text>
             </Page>
           );
         }
