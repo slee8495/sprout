@@ -19,10 +19,16 @@ export function CollagePage({ photos }: { photos: Photo[] }) {
       }
     >
       {photos.slice(0, template.areas.length).map((photo, i) => (
-        <div key={photo.id} className="relative overflow-hidden rounded-lg bg-black/5" style={{ gridArea: template.areas[i] }}>
-          {/* object-top since a vertical phone photo of a kid/pet almost always has the face
-              near the top — plain center-crop on a wide tile chops the head off. */}
-          <Image src={photo.url} alt={photo.caption ?? ""} fill sizes="50vw" className="object-cover object-top" />
+        <div
+          key={photo.id}
+          className="relative overflow-hidden rounded-lg bg-[#f2ece0] dark:bg-zinc-800"
+          style={{ gridArea: template.areas[i] }}
+        >
+          {/* object-contain, not cover — a crop-to-fill heuristic (center, top-biased, even
+              sharp's "attention" saliency guess) reliably cuts someone's face off often enough
+              in real family photos (a baby lower in frame than the adult holding them, etc.)
+              that showing the whole photo with a little matting beats risking that. */}
+          <Image src={photo.url} alt={photo.caption ?? ""} fill sizes="50vw" className="object-contain" />
         </div>
       ))}
     </div>

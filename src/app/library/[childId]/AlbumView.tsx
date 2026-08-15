@@ -11,12 +11,11 @@ import { albumSerif } from "@/lib/fonts";
 import { formatEntryDate, subjectEmoji } from "@/lib/milestones";
 import { useSettings } from "../../SettingsProvider";
 import { CollagePage } from "./CollagePage";
-import { MilestoneTitlePage } from "./MilestoneTitlePage";
 import { MonthDividerPage } from "./MonthDividerPage";
+import { PageCaption } from "./PageCaption";
 
 type PageData = AlbumPageData;
 
-type SortOrder = "oldest" | "latest";
 type ViewMode = "scroll" | "pageTurn";
 type PdfOrientation = "portrait" | "landscape";
 type PdfStatus = "idle" | "loading" | "error";
@@ -31,14 +30,16 @@ export function AlbumView({
   entries: JournalEntryWithPhotos[];
 }) {
   const { t } = useSettings();
-  const [sortOrder, setSortOrder] = useState<SortOrder>("oldest");
   const [viewMode, setViewMode] = useState<ViewMode>("scroll");
   const [pdfOrientation, setPdfOrientation] = useState<PdfOrientation>("portrait");
+  const [pdfFrom, setPdfFrom] = useState("");
+  const [pdfTo, setPdfTo] = useState("");
   const [pdfStatus, setPdfStatus] = useState<PdfStatus>("idle");
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const pageRefs = useRef(new Map<string, HTMLDivElement>());
+  const monthRefs = useRef(new Map<string, HTMLDivElement>());
 
-  const sortedEntries = useMemo(() => sortAlbumEntries(entries, sortOrder), [entries, sortOrder]);
+  const sortedEntries = useMemo(() => sortAlbumEntries(entries), [entries]);
 
   const pages = useMemo(() => buildAlbumPages(sortedEntries), [sortedEntries]);
   // Which of a page's dates it should claim in the ref map, computed fresh per `pages` identity
@@ -71,10 +72,22 @@ export function AlbumView({
     el?.scrollIntoView({ behavior: "smooth", block: viewMode === "scroll" ? "start" : "nearest", inline: "start" });
   }
 
+  // Fires when the calendar itself is navigated to a different month (prev/next arrows, or the
+  // jump-to-month input) — not when a specific date is picked. Scrolls to that month's chapter
+  // page if this album has one; no-ops for months with nothing in them.
+  function jumpToMonth(year: number, month0: number) {
+    const key = `${year}-${String(month0 + 1).padStart(2, "0")}`;
+    const el = monthRefs.current.get(key);
+    el?.scrollIntoView({ behavior: "smooth", block: viewMode === "scroll" ? "start" : "nearest", inline: "start" });
+  }
+
   async function downloadPdf() {
     setPdfStatus("loading");
     try {
-      const res = await fetch(`/api/library/${child.id}/export?orientation=${pdfOrientation}&sort=${sortOrder}`);
+      const params = new URLSearchParams({ orientation: pdfOrientation });
+      if (pdfFrom) params.set("from", pdfFrom);
+      if (pdfTo) params.set("to", pdfTo);
+      const res = await fetch(`/api/library/${child.id}/export?${params}`);
       if (!res.ok) throw new Error("export failed");
       const blob = await res.blob();
       const url = URL.createObjectURL(blob);
@@ -132,14 +145,6 @@ export function AlbumView({
       )}
 
       <div className="flex flex-wrap items-center gap-2 text-xs">
-        <select
-          value={sortOrder}
-          onChange={(e) => setSortOrder(e.target.value as SortOrder)}
-          className="rounded-2xl border border-brand-100 bg-white px-3 py-1.5 dark:border-brand-900/40 dark:bg-zinc-900"
-        >
-          <option value="oldest">{t("Oldest first")}</option>
-          <option value="latest">{t("Latest first")}</option>
-        </select>
         <div className="flex overflow-hidden rounded-2xl border border-brand-100 dark:border-brand-900/40">
           <button
             type="button"
@@ -156,39 +161,60 @@ export function AlbumView({
             {t("📖 Page turn")}
           </button>
         </div>
-        {pages.length > 0 && (
-          <div className="flex items-center gap-1.5 rounded-2xl border border-brand-100 px-2 dark:border-brand-900/40">
-            <select
-              value={pdfOrientation}
-              onChange={(e) => setPdfOrientation(e.target.value as PdfOrientation)}
-              aria-label={t("PDF page format")}
-              disabled={pdfStatus === "loading"}
-              className="bg-transparent py-1.5 text-brand-800 dark:text-brand-200"
-            >
-              <option value="portrait">{t("Portrait")}</option>
-              <option value="landscape">{t("Landscape")}</option>
-            </select>
-            <button
-              type="button"
-              onClick={downloadPdf}
-              disabled={pdfStatus === "loading"}
-              className="flex items-center gap-1.5 whitespace-nowrap py-1.5 font-semibold text-brand-800 transition-transform hover:scale-105 active:scale-95 disabled:hover:scale-100 dark:text-brand-200"
-            >
-              {pdfStatus === "loading" ? (
-                <>
-                  <span className="h-3 w-3 animate-spin rounded-full border-2 border-brand-600 border-t-transparent dark:border-brand-300" />
-                  {t("Preparing PDF…")}
-                </>
-              ) : (
-                t("⬇️ Download PDF")
-              )}
-            </button>
-          </div>
-        )}
       </div>
+
+      {pages.length > 0 && (
+        <div className="flex flex-wrap items-center gap-2 text-xs">
+          <select
+            value={pdfOrientation}
+            onChange={(e) => setPdfOrientation(e.target.value as PdfOrientation)}
+            aria-label={t("PDF page format")}
+            disabled={pdfStatus === "loading"}
+            className="rounded-2xl border border-brand-100 bg-white px-3 py-1.5 text-brand-800 dark:border-brand-900/40 dark:bg-zinc-900 dark:text-brand-200"
+          >
+            <option value="portrait">{t("Portrait")}</option>
+            <option value="landscape">{t("Landscape")}</option>
+          </select>
+          <label className="flex items-center gap-1.5 rounded-2xl border border-brand-100 px-2 py-1.5 text-brand-800 dark:border-brand-900/40 dark:text-brand-200">
+            {t("From")}
+            <input
+              type="date"
+              value={pdfFrom}
+              onChange={(e) => setPdfFrom(e.target.value)}
+              disabled={pdfStatus === "loading"}
+              className="bg-transparent"
+            />
+          </label>
+          <label className="flex items-center gap-1.5 rounded-2xl border border-brand-100 px-2 py-1.5 text-brand-800 dark:border-brand-900/40 dark:text-brand-200">
+            {t("To")}
+            <input
+              type="date"
+              value={pdfTo}
+              onChange={(e) => setPdfTo(e.target.value)}
+              disabled={pdfStatus === "loading"}
+              className="bg-transparent"
+            />
+          </label>
+          <button
+            type="button"
+            onClick={downloadPdf}
+            disabled={pdfStatus === "loading"}
+            className="flex items-center gap-1.5 whitespace-nowrap rounded-2xl border border-brand-100 px-3 py-1.5 font-semibold text-brand-800 transition-transform hover:scale-105 active:scale-95 disabled:hover:scale-100 dark:border-brand-900/40 dark:text-brand-200"
+          >
+            {pdfStatus === "loading" ? (
+              <>
+                <span className="h-3 w-3 animate-spin rounded-full border-2 border-brand-600 border-t-transparent dark:border-brand-300" />
+                {t("Preparing PDF…")}
+              </>
+            ) : (
+              t("⬇️ Download PDF")
+            )}
+          </button>
+        </div>
+      )}
       {pdfStatus === "error" && <p className="text-xs text-rose-600">{t("Couldn't create the PDF — try again.")}</p>}
 
-      <Calendar entryDates={entryDates} selectedDate={selectedDate} onSelectDate={jumpToDate} />
+      <Calendar entryDates={entryDates} selectedDate={selectedDate} onSelectDate={jumpToDate} onMonthChange={jumpToMonth} />
 
       {selectedDate && (
         <div className="flex flex-col gap-2">
@@ -198,8 +224,8 @@ export function AlbumView({
           {selectedDatePhotos.length > 0 ? (
             <div className="grid grid-cols-3 gap-2 sm:grid-cols-4">
               {selectedDatePhotos.map((photo) => (
-                <div key={photo.id} className="relative aspect-square overflow-hidden rounded-xl">
-                  <Image src={photo.url} alt={photo.caption ?? ""} fill sizes="150px" className="object-cover object-top" />
+                <div key={photo.id} className="relative aspect-square overflow-hidden rounded-xl bg-[#f2ece0] dark:bg-zinc-800">
+                  <Image src={photo.url} alt={photo.caption ?? ""} fill sizes="150px" className="object-contain" />
                 </div>
               ))}
             </div>
@@ -221,6 +247,7 @@ export function AlbumView({
               page={page}
               coverBackground={child.coverBackground}
               registerRef={pageRefs}
+              monthRegisterRef={monthRefs}
               datesToRegister={datesToRegister[i]}
             />
           ))}
@@ -233,6 +260,7 @@ export function AlbumView({
                 page={page}
                 coverBackground={child.coverBackground}
                 registerRef={pageRefs}
+                monthRegisterRef={monthRefs}
                 datesToRegister={datesToRegister[i]}
               />
             </div>
@@ -247,26 +275,33 @@ function AlbumPageFrame({
   page,
   coverBackground,
   registerRef,
+  monthRegisterRef,
   datesToRegister,
 }: {
   page: PageData;
   coverBackground: string | null;
   registerRef: React.RefObject<Map<string, HTMLDivElement>>;
+  monthRegisterRef: React.RefObject<Map<string, HTMLDivElement>>;
   datesToRegister: string[];
 }) {
   return (
     <div
       ref={(el) => {
-        if (el) for (const date of datesToRegister) registerRef.current.set(date, el);
+        if (!el) return;
+        if (page.kind === "month") monthRegisterRef.current.set(page.dates[0].slice(0, 7), el);
+        for (const date of datesToRegister) registerRef.current.set(date, el);
       }}
       className="aspect-[3/4] overflow-hidden rounded-2xl border border-brand-100/60 bg-[#fffaf0] p-3 shadow-md shadow-brand-900/5 dark:border-brand-900/40 dark:bg-zinc-900 dark:shadow-black/40"
     >
       {page.kind === "month" ? (
         <MonthDividerPage date={page.dates[0]} coverBackground={coverBackground} />
-      ) : page.kind === "title" ? (
-        <MilestoneTitlePage date={page.dates[0]} label={page.label} photos={page.photos} coverBackground={coverBackground} />
       ) : (
-        <CollagePage photos={page.photos} />
+        <div className="flex h-full w-full flex-col">
+          <PageCaption dates={page.dates} label={page.kind === "title" ? page.label : undefined} />
+          <div className="min-h-0 flex-1">
+            <CollagePage photos={page.photos} />
+          </div>
+        </div>
       )}
     </div>
   );

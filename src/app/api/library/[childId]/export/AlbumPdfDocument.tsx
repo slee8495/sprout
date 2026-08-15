@@ -4,7 +4,7 @@ import type { Child } from "@/db/queries";
 import { getCollageRects } from "@/lib/collage";
 import { coverBackgroundHex } from "@/lib/covers";
 import { formatEntryDate } from "@/lib/milestones";
-import { titlePhotoSizePt, usableAreaPt } from "@/lib/pdfLayout";
+import { CAPTION_HEIGHT_PT } from "@/lib/pdfLayout";
 import type { PdfPageData } from "@/lib/pdfPhotos";
 
 Font.register({
@@ -36,40 +36,31 @@ const styles = StyleSheet.create({
   },
   page: {
     padding: 24,
+    flexDirection: "column",
   },
   rule: {
     width: 40,
     height: 1.5,
     backgroundColor: "rgba(0,0,0,0.28)",
   },
-  titlePage: {
-    flexDirection: "column",
-    alignItems: "center",
+  captionRow: {
+    height: CAPTION_HEIGHT_PT,
+    flexDirection: "row",
+    alignItems: "flex-end",
     justifyContent: "center",
-    height: "100%",
-    gap: 16,
+    gap: 4,
   },
-  titleDate: {
-    fontSize: 10,
-    color: "#5a5a5a",
-    letterSpacing: 3,
+  captionDate: {
+    fontSize: 7,
+    color: "#8a8a8a",
+    letterSpacing: 1.5,
     textTransform: "uppercase",
   },
-  titleLabel: {
+  captionLabel: {
     fontFamily: "Playfair Display",
-    fontWeight: 700,
-    fontSize: 34,
-    textAlign: "center",
-    paddingHorizontal: 24,
-  },
-  titlePhotoRow: {
-    flexDirection: "row",
-    gap: 8,
-    marginTop: 8,
-  },
-  titlePhoto: {
-    borderRadius: 8,
-    objectFit: "cover",
+    fontWeight: 600,
+    fontSize: 9,
+    color: "#4a4a4a",
   },
   monthPage: {
     flexDirection: "column",
@@ -93,7 +84,7 @@ const styles = StyleSheet.create({
   collageArea: {
     position: "relative",
     width: "100%",
-    height: "100%",
+    flex: 1,
   },
   collageTile: {
     position: "absolute",
@@ -107,6 +98,13 @@ const styles = StyleSheet.create({
 });
 
 const GAP = 6;
+
+function formatDateRange(dates: string[]) {
+  const sorted = [...dates].sort();
+  const first = formatEntryDate(sorted[0]);
+  const last = formatEntryDate(sorted[sorted.length - 1]);
+  return first === last ? first : `${first} – ${last}`;
+}
 
 export function AlbumPdfDocument({
   child,
@@ -125,7 +123,6 @@ export function AlbumPdfDocument({
         : `${formatEntryDate(dates[0])} – ${formatEntryDate(dates[dates.length - 1])}`
       : "";
   const coverColor = coverBackgroundHex(child.coverBackground, false);
-  const usable = usableAreaPt(orientation);
 
   return (
     <Document title={`${child.name}'s Album`}>
@@ -148,60 +145,35 @@ export function AlbumPdfDocument({
         }
 
         return (
-          <Page
-            key={i}
-            size="A4"
-            orientation={orientation}
-            style={page.kind === "title" ? [styles.page, { backgroundColor: coverColor }] : styles.page}
-          >
-            {page.kind === "title" ? (
-              <View style={styles.titlePage}>
-                <Text style={styles.titleDate}>{formatEntryDate(page.dates[0])}</Text>
-                <View style={styles.rule} />
-                <Text style={styles.titleLabel}>{page.label}</Text>
-                {page.photos.length > 0 &&
-                  (() => {
-                    const size = titlePhotoSizePt(page.photos.length, usable.width);
-                    return (
-                      <View style={styles.titlePhotoRow}>
-                        {page.photos.map((photo) => (
-                          // eslint-disable-next-line jsx-a11y/alt-text
-                          <Image
-                            key={photo.id}
-                            src={photo.buffer}
-                            style={[styles.titlePhoto, { width: size, height: size }]}
-                          />
-                        ))}
-                      </View>
-                    );
-                  })()}
-              </View>
-            ) : (
-              <View style={styles.collageArea}>
-                {getCollageRects(page.photos.length).map((rect, idx) => {
-                  const photo = page.photos[idx];
-                  if (!photo) return null;
-                  return (
-                    <View
-                      key={photo.id}
-                      style={[
-                        styles.collageTile,
-                        {
-                          left: `${rect.x * 100}%`,
-                          top: `${rect.y * 100}%`,
-                          width: `${rect.width * 100}%`,
-                          height: `${rect.height * 100}%`,
-                          padding: GAP / 2,
-                        },
-                      ]}
-                    >
-                      {/* eslint-disable-next-line jsx-a11y/alt-text */}
-                      <Image src={photo.buffer} style={styles.collageImage} />
-                    </View>
-                  );
-                })}
-              </View>
-            )}
+          <Page key={i} size="A4" orientation={orientation} style={styles.page}>
+            <View style={styles.captionRow}>
+              <Text style={styles.captionDate}>{formatDateRange(page.dates)}</Text>
+              {page.kind === "title" && <Text style={styles.captionLabel}>· {page.label}</Text>}
+            </View>
+            <View style={styles.collageArea}>
+              {getCollageRects(page.photos.length).map((rect, idx) => {
+                const photo = page.photos[idx];
+                if (!photo) return null;
+                return (
+                  <View
+                    key={photo.id}
+                    style={[
+                      styles.collageTile,
+                      {
+                        left: `${rect.x * 100}%`,
+                        top: `${rect.y * 100}%`,
+                        width: `${rect.width * 100}%`,
+                        height: `${rect.height * 100}%`,
+                        padding: GAP / 2,
+                      },
+                    ]}
+                  >
+                    {/* eslint-disable-next-line jsx-a11y/alt-text */}
+                    <Image src={photo.buffer} style={styles.collageImage} />
+                  </View>
+                );
+              })}
+            </View>
           </Page>
         );
       })}

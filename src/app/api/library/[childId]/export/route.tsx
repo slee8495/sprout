@@ -21,11 +21,18 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
 
   const searchParams = request.nextUrl.searchParams;
   const orientation = searchParams.get("orientation") === "landscape" ? "landscape" : "portrait";
-  const sortOrder = searchParams.get("sort") === "latest" ? "latest" : "oldest";
+  const from = searchParams.get("from"); // "YYYY-MM-DD", inclusive
+  const to = searchParams.get("to"); // "YYYY-MM-DD", inclusive
 
   const entries = await listJournalEntries(familyId, "child");
-  const photoEntries = entries.filter((e) => e.photos.length > 0 && e.children.some((c) => c.id === id));
-  const pages = buildAlbumPages(sortAlbumEntries(photoEntries, sortOrder));
+  const photoEntries = entries.filter(
+    (e) =>
+      e.photos.length > 0 &&
+      e.children.some((c) => c.id === id) &&
+      (!from || e.entryDate >= from) &&
+      (!to || e.entryDate <= to),
+  );
+  const pages = buildAlbumPages(sortAlbumEntries(photoEntries));
   const pdfPages = await preparePhotosForPdf(pages, orientation);
 
   const buffer = await renderToBuffer(<AlbumPdfDocument child={child} pages={pdfPages} orientation={orientation} />);

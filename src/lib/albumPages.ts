@@ -71,23 +71,26 @@ export function buildAlbumPages(entries: JournalEntryWithPhotos[]): AlbumPageDat
 
     const dayEntries = byDate.get(date)!;
     const milestoneEntry = dayEntries.find((e) => e.milestoneLabel);
-    let pool: AlbumPhoto[] = dayEntries.flatMap((e) => e.photos);
+    const pool: AlbumPhoto[] = dayEntries.flatMap((e) => e.photos);
+    const dayPhotos = sampleEvenly(pool, MAX_PHOTOS_PER_DAY);
 
     if (milestoneEntry) {
-      // Milestone days always stand alone with their own title page — never merged into a
-      // neighboring light day's page, even if this day itself only had a couple of photos.
+      // Milestone days always stand alone with their own page(s) — never merged into a
+      // neighboring light day's page, even if this day itself only had a couple of photos. The
+      // photos lay out exactly like a regular day (same chunking, same collage templates); only
+      // the first chunk carries the milestone label, as a caption rather than a takeover page.
       flushPending();
-      const accents = sampleEvenly(milestoneEntry.photos, 4);
-      const accentIds = new Set(accents.map((p) => p.id));
-      pool = pool.filter((p) => !accentIds.has(p.id));
-      pages.push({ kind: "title", dates: [date], label: milestoneEntry.milestoneLabel!, photos: accents });
-      for (const group of chunk(sampleEvenly(pool, MAX_PHOTOS_PER_DAY), MAX_COLLAGE_PHOTOS)) {
-        pages.push({ kind: "collage", dates: [date], photos: group });
+      const groups = chunk(dayPhotos, MAX_COLLAGE_PHOTOS);
+      if (groups.length === 0) {
+        pages.push({ kind: "title", dates: [date], label: milestoneEntry.milestoneLabel!, photos: [] });
+      } else {
+        groups.forEach((group, i) => {
+          if (i === 0) pages.push({ kind: "title", dates: [date], label: milestoneEntry.milestoneLabel!, photos: group });
+          else pages.push({ kind: "collage", dates: [date], photos: group });
+        });
       }
       continue;
     }
-
-    const dayPhotos = sampleEvenly(pool, MAX_PHOTOS_PER_DAY);
 
     if (dayPhotos.length >= SPARSE_DAY_THRESHOLD) {
       flushPending();
@@ -106,8 +109,8 @@ export function buildAlbumPages(entries: JournalEntryWithPhotos[]): AlbumPageDat
   return pages;
 }
 
-export function sortAlbumEntries<T extends { entryDate: string }>(entries: T[], order: "oldest" | "latest"): T[] {
-  const sorted = [...entries].sort((a, b) => (a.entryDate < b.entryDate ? -1 : a.entryDate > b.entryDate ? 1 : 0));
-  if (order === "latest") sorted.reverse();
-  return sorted;
+// Always oldest-first — browsing order in both the web album and the PDF is driven by the
+// calendar (jump to whatever date/month you want), not a separate sort toggle.
+export function sortAlbumEntries<T extends { entryDate: string }>(entries: T[]): T[] {
+  return [...entries].sort((a, b) => (a.entryDate < b.entryDate ? -1 : a.entryDate > b.entryDate ? 1 : 0));
 }
