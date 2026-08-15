@@ -4,5 +4,10 @@
       "path": "/api/cron/expire-comps",
       "schedule": "0 9 * * *"
     }
-  ]
+  ],
+  "functions": {
+    "src/app/api/library/[childId]/export/route.tsx": {
+      "memory": 3009
+    }
+  }
 }

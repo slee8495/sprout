@@ -2,6 +2,7 @@ import { renderToBuffer } from "@react-pdf/renderer";
 import { NextResponse, type NextRequest } from "next/server";
 import { getChild, listJournalEntries } from "@/db/queries";
 import { buildAlbumPages, sortAlbumEntries } from "@/lib/albumPages";
+import { preparePhotosForPdf } from "@/lib/pdfPhotos";
 import { requireSession } from "@/lib/session";
 import { AlbumPdfDocument } from "./AlbumPdfDocument";
 
@@ -25,8 +26,9 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
   const entries = await listJournalEntries(familyId, "child");
   const photoEntries = entries.filter((e) => e.photos.length > 0 && e.children.some((c) => c.id === id));
   const pages = buildAlbumPages(sortAlbumEntries(photoEntries, sortOrder));
+  const pdfPages = await preparePhotosForPdf(pages);
 
-  const buffer = await renderToBuffer(<AlbumPdfDocument child={child} pages={pages} orientation={orientation} />);
+  const buffer = await renderToBuffer(<AlbumPdfDocument child={child} pages={pdfPages} orientation={orientation} />);
 
   const filename = `${child.name.replace(/[^a-z0-9]+/gi, "_")}-album.pdf`;
   return new NextResponse(new Uint8Array(buffer), {

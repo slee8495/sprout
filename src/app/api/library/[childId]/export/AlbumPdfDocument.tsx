@@ -1,10 +1,10 @@
 import path from "node:path";
 import { Document, Font, Image, Page, StyleSheet, Text, View } from "@react-pdf/renderer";
 import type { Child } from "@/db/queries";
-import type { AlbumPageData } from "@/lib/albumPages";
 import { getCollageRects } from "@/lib/collage";
 import { coverBackgroundHex } from "@/lib/covers";
 import { formatEntryDate } from "@/lib/milestones";
+import type { PdfPageData } from "@/lib/pdfPhotos";
 
 Font.register({
   family: "Playfair Display",
@@ -91,7 +91,7 @@ export function AlbumPdfDocument({
   orientation,
 }: {
   child: Pick<Child, "name" | "coverBackground">;
-  pages: AlbumPageData[];
+  pages: PdfPageData[];
   orientation: "portrait" | "landscape";
 }) {
   const dates = pages.map((p) => p.date).sort();
@@ -120,7 +120,7 @@ export function AlbumPdfDocument({
                 <View style={styles.titlePhotoRow}>
                   {page.photos.map((photo) => (
                     // eslint-disable-next-line jsx-a11y/alt-text
-                    <Image key={photo.id} src={photo.url} style={styles.titlePhoto} />
+                    <Image key={photo.id} src={photo.buffer} style={styles.titlePhoto} />
                   ))}
                 </View>
               )}
@@ -145,7 +145,7 @@ export function AlbumPdfDocument({
                     ]}
                   >
                     {/* eslint-disable-next-line jsx-a11y/alt-text */}
-                    <Image src={photo.url} style={styles.collageImage} />
+                    <Image src={photo.buffer} style={styles.collageImage} />
                   </View>
                 );
               })}
