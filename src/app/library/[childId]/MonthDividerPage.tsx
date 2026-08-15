@@ -3,7 +3,7 @@ import { decorationForMonth, type DecorativeSize } from "@/lib/decorativeIllustr
 import { formatMonthLabel } from "@/lib/milestones";
 
 const FRAME_PAD_PCT: Record<DecorativeSize, number> = { sm: 8, md: 5, lg: 2 };
-const SIDE_WIDTH_PCT: Record<DecorativeSize, number> = { sm: 50, md: 60, lg: 70 };
+const SIDE_WIDTH_PCT: Record<DecorativeSize, number> = { sm: 45, md: 52, lg: 60 };
 const POSTER_PAD_PCT: Record<DecorativeSize, number> = { sm: 6, md: 3, lg: 0 };
 
 // Tailwind needs this class written literally (not templated from a constant) to pick it up at
@@ -28,9 +28,9 @@ export function MonthDividerPage({ date, monthIndex }: { date: string; monthInde
         <div className="relative shrink-0" style={{ width: `${widthPct}%` }}>
           <Image src={decoration.webPath} alt="" fill sizes="600px" className="object-contain p-2" />
         </div>
-        <div className="flex min-w-0 flex-1 flex-col items-center justify-center gap-3 px-4 text-center">
+        <div className="flex min-w-0 flex-1 flex-col items-center justify-center gap-3 px-2 text-center">
           <span className="h-px w-10 bg-zinc-800/25 dark:bg-zinc-100/25" />
-          <h2 className="w-full break-words font-[family-name:var(--font-album-serif)] text-2xl font-semibold text-zinc-800 sm:text-3xl dark:text-zinc-100">
+          <h2 className="w-full break-words font-[family-name:var(--font-album-serif)] text-lg font-semibold text-zinc-800 sm:text-2xl dark:text-zinc-100">
             {label}
           </h2>
         </div>
