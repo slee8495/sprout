@@ -1,9 +1,11 @@
+import { COVER_BACKGROUNDS, type CoverBackground } from "@/lib/covers";
+
 // The full pool of AI-generated (Nano Banana) watercolor animal portraits, used purely as
 // decoration on month-divider pages — unlike ANIMAL_ILLUSTRATIONS in animalIllustrations.ts,
 // these don't need to match a child's chosen cover animal. Every month chapter page in the album
 // picks one deterministically from its "YYYY-MM" key, so the same month always renders the same
-// pick (stable across re-renders and web/PDF), and different months land on different animals and
-// layouts without needing any randomness or shared state.
+// pick (stable across re-renders and web/PDF), and different months land on different animals,
+// layouts, sizes, positions and colors without needing any randomness or shared state.
 const ILLUSTRATION_POOL = [
   "owl",
   "bunny",
@@ -22,8 +24,16 @@ const ILLUSTRATION_POOL = [
   "puppy",
 ] as const;
 
-export type DecorativeVariant = "medallion" | "side" | "backdrop";
-const VARIANTS: DecorativeVariant[] = ["medallion", "side", "backdrop"];
+export type DecorativeVariant = "medallion" | "side" | "backdrop" | "corner" | "frame";
+const VARIANTS: DecorativeVariant[] = ["medallion", "side", "backdrop", "corner", "frame"];
+
+export type DecorativeSize = "sm" | "md" | "lg";
+const SIZES: DecorativeSize[] = ["sm", "md", "lg"];
+
+export type DecorativeCorner = "tl" | "tr" | "bl" | "br";
+const CORNERS: DecorativeCorner[] = ["tl", "tr", "bl", "br"];
+
+const BACKGROUNDS: CoverBackground[] = COVER_BACKGROUNDS.map((b) => b.value);
 
 function hashString(value: string): number {
   let h = 0;
@@ -31,24 +41,34 @@ function hashString(value: string): number {
   return Math.abs(h);
 }
 
+// Each property is hashed off a differently-salted key so they vary independently — otherwise a
+// single shared hash correlates variant/size/color together and neighboring months would tend to
+// look similar (e.g. always "lg" whenever it's "backdrop").
+function pick<T>(list: T[], seed: string): T {
+  return list[hashString(seed) % list.length];
+}
+
 export type MonthDecoration = {
   name: string;
   webPath: string;
   pdfFilename: string;
   variant: DecorativeVariant;
+  size: DecorativeSize;
+  corner: DecorativeCorner;
   flip: boolean;
+  background: CoverBackground;
 };
 
 export function decorationForMonth(monthKey: string): MonthDecoration {
-  const h = hashString(monthKey);
-  const name = ILLUSTRATION_POOL[h % ILLUSTRATION_POOL.length];
-  const variant = VARIANTS[Math.floor(h / ILLUSTRATION_POOL.length) % VARIANTS.length];
-  const flip = Math.floor(h / (ILLUSTRATION_POOL.length * VARIANTS.length)) % 2 === 0;
+  const name = pick([...ILLUSTRATION_POOL], `${monthKey}|animal`);
   return {
     name,
     webPath: `/animal-illustrations/${name}.webp`,
     pdfFilename: `animal-illustrations/${name}.jpg`,
-    variant,
-    flip,
+    variant: pick(VARIANTS, `${monthKey}|variant`),
+    size: pick(SIZES, `${monthKey}|size`),
+    corner: pick(CORNERS, `${monthKey}|corner`),
+    flip: hashString(`${monthKey}|flip`) % 2 === 0,
+    background: pick(BACKGROUNDS, `${monthKey}|bg`),
   };
 }

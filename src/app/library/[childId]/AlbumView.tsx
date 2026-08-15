@@ -183,14 +183,14 @@ export function AlbumView({
       ) : viewMode === "scroll" ? (
         <div className="flex flex-col gap-8">
           {pages.map((page, i) => (
-            <AlbumPageFrame key={i} page={page} coverBackground={child.coverBackground} />
+            <AlbumPageFrame key={i} page={page} />
           ))}
         </div>
       ) : (
         <div className="flex snap-x snap-mandatory gap-4 overflow-x-auto pb-4">
           {pages.map((page, i) => (
             <div key={i} className="w-full shrink-0 snap-start">
-              <AlbumPageFrame page={page} coverBackground={child.coverBackground} />
+              <AlbumPageFrame page={page} />
             </div>
           ))}
         </div>
@@ -199,11 +199,11 @@ export function AlbumView({
   );
 }
 
-function AlbumPageFrame({ page, coverBackground }: { page: PageData; coverBackground: string | null }) {
+function AlbumPageFrame({ page }: { page: PageData }) {
   return (
     <div className="aspect-[4/3] overflow-hidden rounded-2xl border border-brand-100/60 bg-[#fffaf0] p-3 shadow-md shadow-brand-900/5 dark:border-brand-900/40 dark:bg-zinc-900 dark:shadow-black/40">
       {page.kind === "month" ? (
-        <MonthDividerPage date={page.dates[0]} coverBackground={coverBackground} />
+        <MonthDividerPage date={page.dates[0]} />
       ) : (
         <div className="flex h-full w-full flex-col">
           <PageCaption dates={page.dates} label={page.kind === "title" ? page.label : undefined} />

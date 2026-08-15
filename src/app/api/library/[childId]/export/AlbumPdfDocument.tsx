@@ -5,10 +5,21 @@ import type { Child } from "@/db/queries";
 import { illustrationFilenameForAnimal } from "@/lib/animalIllustrations";
 import { getCollageRects } from "@/lib/collage";
 import { coverBackgroundHex } from "@/lib/covers";
-import { decorationForMonth } from "@/lib/decorativeIllustrations";
+import { decorationForMonth, type DecorativeCorner, type DecorativeSize } from "@/lib/decorativeIllustrations";
 import { formatEntryDate } from "@/lib/milestones";
 import { CAPTION_HEIGHT_PT } from "@/lib/pdfLayout";
 import type { PdfPageData } from "@/lib/pdfPhotos";
+
+const MEDALLION_PT: Record<DecorativeSize, number> = { sm: 72, md: 96, lg: 128 };
+const CORNER_PT: Record<DecorativeSize, number> = { sm: 100, md: 140, lg: 180 };
+const FRAME_PT: Record<DecorativeSize, number> = { sm: 130, md: 170, lg: 210 };
+const SIDE_WIDTH_PCT: Record<DecorativeSize, number> = { sm: 32, md: 40, lg: 50 };
+const CORNER_POSITION: Record<DecorativeCorner, { top?: number; bottom?: number; left?: number; right?: number }> = {
+  tl: { top: 16, left: 16 },
+  tr: { top: 16, right: 16 },
+  bl: { bottom: 16, left: 16 },
+  br: { bottom: 16, right: 16 },
+};
 
 // react-pdf's <Image> only decodes JPEG/PNG, and only from a Buffer/base64/URL — a bare fs path
 // string gets treated as a URL and fails on the server. Read the JPEG copy into a Buffer once per
@@ -184,6 +195,38 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     borderRadius: 12,
   },
+  cornerPage: {
+    position: "relative",
+    height: "100%",
+    width: "100%",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 14,
+  },
+  cornerImageWrap: {
+    position: "absolute",
+    borderRadius: 16,
+    overflow: "hidden",
+  },
+  cornerImage: {
+    width: "100%",
+    height: "100%",
+    objectFit: "cover",
+  },
+  framePhotoOuter: {
+    backgroundColor: "#ffffff",
+    padding: 6,
+    borderRadius: 6,
+  },
+  framePhotoInner: {
+    borderRadius: 3,
+    overflow: "hidden",
+  },
+  frameImage: {
+    width: "100%",
+    height: "100%",
+    objectFit: "cover",
+  },
   collageArea: {
     position: "relative",
     width: "100%",
@@ -245,13 +288,14 @@ export function AlbumPdfDocument({
         if (page.kind === "month") {
           const decoration = decorationForMonth(page.dates[0].slice(0, 7));
           const decorationBuffer = loadDecorationBuffer(decoration.pdfFilename);
+          const monthColor = coverBackgroundHex(decoration.background, false);
 
           if (decoration.variant === "backdrop") {
             return (
               <Page key={i} size="A4" orientation="landscape" style={styles.backdropWrap}>
                 {/* eslint-disable-next-line jsx-a11y/alt-text */}
                 <Image src={decorationBuffer} style={styles.backdropImage} />
-                <View style={styles.backdropCaption}>
+                <View style={[styles.backdropCaption, decoration.flip ? { bottom: undefined, top: 24 } : {}]}>
                   <View style={styles.backdropCard}>
                     <Text style={styles.monthLabelSmall}>{page.label}</Text>
                   </View>
@@ -261,9 +305,10 @@ export function AlbumPdfDocument({
           }
 
           if (decoration.variant === "side") {
+            const widthPct = SIDE_WIDTH_PCT[decoration.size];
             const imageFirst = !decoration.flip;
             const imageView = (
-              <View key="image" style={styles.sideImageWrap}>
+              <View key="image" style={[styles.sideImageWrap, { width: `${widthPct}%` }]}>
                 {/* eslint-disable-next-line jsx-a11y/alt-text */}
                 <Image src={decorationBuffer} style={styles.sideImage} />
               </View>
@@ -275,16 +320,50 @@ export function AlbumPdfDocument({
               </View>
             );
             return (
-              <Page key={i} size="A4" orientation="landscape" style={[styles.page, { padding: 0, backgroundColor: coverColor }]}>
+              <Page key={i} size="A4" orientation="landscape" style={[styles.page, { padding: 0, backgroundColor: monthColor }]}>
                 <View style={styles.sideWrap}>{imageFirst ? [imageView, textView] : [textView, imageView]}</View>
               </Page>
             );
           }
 
+          if (decoration.variant === "corner") {
+            const px = CORNER_PT[decoration.size];
+            return (
+              <Page key={i} size="A4" orientation="landscape" style={[styles.page, { backgroundColor: monthColor }]}>
+                <View style={styles.cornerPage}>
+                  <View style={[styles.cornerImageWrap, { width: px, height: px, ...CORNER_POSITION[decoration.corner] }]}>
+                    {/* eslint-disable-next-line jsx-a11y/alt-text */}
+                    <Image src={decorationBuffer} style={styles.cornerImage} />
+                  </View>
+                  <View style={styles.rule} />
+                  <Text style={styles.monthLabel}>{page.label}</Text>
+                </View>
+              </Page>
+            );
+          }
+
+          if (decoration.variant === "frame") {
+            const px = FRAME_PT[decoration.size];
+            return (
+              <Page key={i} size="A4" orientation="landscape" style={[styles.page, { backgroundColor: monthColor }]}>
+                <View style={styles.monthPage}>
+                  <View style={styles.framePhotoOuter}>
+                    <View style={[styles.framePhotoInner, { width: px, height: px }]}>
+                      {/* eslint-disable-next-line jsx-a11y/alt-text */}
+                      <Image src={decorationBuffer} style={styles.frameImage} />
+                    </View>
+                  </View>
+                  <Text style={styles.monthLabelSmall}>{page.label}</Text>
+                </View>
+              </Page>
+            );
+          }
+
+          const medallionPt = MEDALLION_PT[decoration.size];
           return (
-            <Page key={i} size="A4" orientation="landscape" style={[styles.page, { backgroundColor: coverColor }]}>
+            <Page key={i} size="A4" orientation="landscape" style={[styles.page, { backgroundColor: monthColor }]}>
               <View style={styles.monthPage}>
-                <View style={styles.monthIllustrationWrap}>
+                <View style={[styles.monthIllustrationWrap, { width: medallionPt, height: medallionPt, borderRadius: medallionPt / 2 }]}>
                   {/* eslint-disable-next-line jsx-a11y/alt-text */}
                   <Image src={decorationBuffer} style={styles.coverIllustration} />
                 </View>
