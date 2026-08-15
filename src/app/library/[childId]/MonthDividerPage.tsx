@@ -17,8 +17,8 @@ const MATTE = "bg-[#f2ece0] dark:bg-zinc-800";
 // illustration is shown in full via object-contain — never cropped into the animal's face — and
 // sized to dominate the page rather than sit small in a box. Only the layout, illustration size,
 // and position vary per month (decorationForMonth).
-export function MonthDividerPage({ date }: { date: string }) {
-  const decoration = decorationForMonth(date.slice(0, 7));
+export function MonthDividerPage({ date, monthIndex }: { date: string; monthIndex: number }) {
+  const decoration = decorationForMonth(date.slice(0, 7), monthIndex);
   const label = formatMonthLabel(date);
 
   if (decoration.variant === "side") {

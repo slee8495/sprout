@@ -1,9 +1,11 @@
 // The full pool of AI-generated (Nano Banana) watercolor animal portraits, used purely as
 // decoration on month-divider pages — unlike ANIMAL_ILLUSTRATIONS in animalIllustrations.ts,
 // these don't need to match a child's chosen cover animal. Every month chapter page in the album
-// picks one deterministically from its "YYYY-MM" key, so the same month always renders the same
-// pick (stable across re-renders and web/PDF), and different months land on different animals,
-// sizes and positions without needing any randomness or shared state.
+// picks deterministically from its position among the album's month pages (not from the "YYYY-MM"
+// string itself — a plain hash of adjacent calendar months like "2026-04"/"2026-05" collides often
+// enough in practice that April and May landed on the same animal), so the same month always
+// renders the same pick (stable across re-renders and web/PDF) and, crucially, no two consecutive
+// months ever repeat the same animal or layout.
 // Restricted to the requested "cute" set — no budgie (bird) or foal (horse). No tiger artwork
 // exists in the set, so lion stands in for it. "강아지" (dog) covers both dog portraits.
 const ILLUSTRATION_POOL = [
@@ -44,13 +46,6 @@ function hashString(value: string): number {
   return Math.abs(h);
 }
 
-// Each property is hashed off a differently-salted key so they vary independently — otherwise a
-// single shared hash correlates variant/size together and neighboring months would tend to look
-// similar (e.g. always "lg" whenever it's "side").
-function pick<T>(list: T[], seed: string): T {
-  return list[hashString(seed) % list.length];
-}
-
 export type MonthDecoration = {
   name: string;
   webPath: string;
@@ -60,14 +55,21 @@ export type MonthDecoration = {
   flip: boolean;
 };
 
-export function decorationForMonth(monthKey: string): MonthDecoration {
-  const name = pick([...ILLUSTRATION_POOL], `${monthKey}|animal`);
+// `monthIndex` is the month page's 0-based position among the album's month pages, in
+// chronological order (both AlbumView.tsx and the PDF route compute this the same way from the
+// same `pages` array, so web and PDF stay in sync). Animal and variant cycle by that index — a
+// plain round-robin — which guarantees no immediate repeat; size is offset from variant so the two
+// don't lock into the same pairing every cycle. `flip` stays hashed off the month string since a
+// repeated coin flip isn't a visible "sameness" problem the way a repeated animal is.
+export function decorationForMonth(monthKey: string, monthIndex: number): MonthDecoration {
+  const pool = [...ILLUSTRATION_POOL];
+  const name = pool[monthIndex % pool.length];
   return {
     name,
     webPath: `/animal-illustrations/${name}.webp`,
     pdfFilename: `animal-illustrations/${name}.jpg`,
-    variant: pick(VARIANTS, `${monthKey}|variant`),
-    size: pick(SIZES, `${monthKey}|size`),
+    variant: VARIANTS[monthIndex % VARIANTS.length],
+    size: SIZES[(monthIndex + 1) % SIZES.length],
     flip: hashString(`${monthKey}|flip`) % 2 === 0,
   };
 }

@@ -223,6 +223,9 @@ export function AlbumPdfDocument({
       : "";
   const coverColor = coverBackgroundHex(child.coverBackground, false);
   const illustration = loadIllustration(child.coverAnimal);
+  // Bumped once per month page rendered below — keeps decorationForMonth's animal/layout cycling
+  // in sync with the web view, which computes the same running index over the same `pages` array.
+  let monthIndex = 0;
 
   return (
     <Document title={`${child.name}'s Album`}>
@@ -241,7 +244,7 @@ export function AlbumPdfDocument({
 
       {pages.map((page, i) => {
         if (page.kind === "month") {
-          const decoration = decorationForMonth(page.dates[0].slice(0, 7));
+          const decoration = decorationForMonth(page.dates[0].slice(0, 7), monthIndex++);
           const decorationBuffer = loadDecorationBuffer(decoration.pdfFilename);
 
           if (decoration.variant === "side") {
