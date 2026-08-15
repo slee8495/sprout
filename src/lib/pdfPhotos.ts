@@ -1,30 +1,19 @@
 import sharp from "sharp";
 import type { AlbumPageData, AlbumPhoto } from "@/lib/albumPages";
 import { getCollageRects } from "@/lib/collage";
+import { COLLAGE_GAP_PT, titlePhotoSizePt, usableAreaPt } from "@/lib/pdfLayout";
 
 export type PdfPhoto = { id: number; buffer: Buffer; caption: string | null };
 export type PdfPageData =
   | { kind: "title"; dates: [string]; label: string; photos: PdfPhoto[] }
-  | { kind: "collage"; dates: string[]; photos: PdfPhoto[] };
-
-// Matches AlbumPdfDocument's layout constants — kept in sync manually since react-pdf's
-// StyleSheet values aren't introspectable at this layer.
-const PAGE_PT = { width: 595.28, height: 841.89 }; // A4 portrait, points
-const PAGE_PADDING_PT = 24;
-const COLLAGE_GAP_PT = 6;
-const TITLE_PHOTO_PT = 90;
+  | { kind: "collage"; dates: string[]; photos: PdfPhoto[] }
+  | { kind: "month"; dates: [string]; label: string };
 
 // Scales points up to a real pixel resolution before asking sharp to crop — otherwise we'd be
 // cropping to a ~200px-wide box, which looks soft once printed/zoomed.
 const DPI_SCALE = 3;
 const JPEG_QUALITY = 82;
 const CONCURRENCY = 6;
-
-function usableAreaPt(orientation: "portrait" | "landscape") {
-  const { width, height } =
-    orientation === "landscape" ? { width: PAGE_PT.height, height: PAGE_PT.width } : PAGE_PT;
-  return { width: width - PAGE_PADDING_PT * 2, height: height - PAGE_PADDING_PT * 2 };
-}
 
 // react-pdf's own `objectFit: "cover"` just center-crops, which chops the top off any vertical
 // phone photo forced into a wide tile. Cropping ourselves with sharp's "attention" strategy
@@ -67,10 +56,11 @@ export async function preparePhotosForPdf(
   const tasks: { photo: AlbumPhoto; width: number; height: number }[] = [];
   for (const page of pages) {
     if (page.kind === "title") {
+      const size = titlePhotoSizePt(page.photos.length, usable.width);
       for (const photo of page.photos) {
-        tasks.push({ photo, width: TITLE_PHOTO_PT * DPI_SCALE, height: TITLE_PHOTO_PT * DPI_SCALE });
+        tasks.push({ photo, width: size * DPI_SCALE, height: size * DPI_SCALE });
       }
-    } else {
+    } else if (page.kind === "collage") {
       const rects = getCollageRects(page.photos.length);
       page.photos.forEach((photo, i) => {
         const rect = rects[i];
@@ -84,5 +74,7 @@ export async function preparePhotosForPdf(
   const resized = await mapWithConcurrency(tasks, CONCURRENCY, (t) => smartCropPhoto(t.photo, t.width, t.height));
   const byId = new Map(resized.map((p) => [p.id, p]));
 
-  return pages.map((page) => ({ ...page, photos: page.photos.map((p) => byId.get(p.id)!) }));
+  return pages.map((page) =>
+    page.kind === "month" ? page : { ...page, photos: page.photos.map((p) => byId.get(p.id)!) },
+  );
 }

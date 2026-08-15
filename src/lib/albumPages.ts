@@ -1,14 +1,16 @@
 import type { JournalEntryWithPhotos } from "@/db/queries";
 import { MAX_COLLAGE_PHOTOS } from "@/lib/collage";
+import { formatMonthLabel } from "@/lib/milestones";
 
 export type AlbumPhoto = { id: number; url: string; caption: string | null };
 // `dates` holds every calendar date whose photos ended up on this page — usually one date, but a
 // "collage" page can span a short run of light days that got merged together (see
-// SPARSE_DAY_THRESHOLD below). "title" pages are never merged, so `dates` is always a single date
-// there, kept as an array for a uniform shape.
+// SPARSE_DAY_THRESHOLD below). "title" and "month" pages are never merged, so `dates` is always a
+// single date there, kept as an array for a uniform shape.
 export type AlbumPageData =
   | { kind: "title"; dates: [string]; label: string; photos: AlbumPhoto[] }
-  | { kind: "collage"; dates: string[]; photos: AlbumPhoto[] };
+  | { kind: "collage"; dates: string[]; photos: AlbumPhoto[] }
+  | { kind: "month"; dates: [string]; label: string };
 
 // A day with fewer photos than this doesn't get its own near-empty page — its photos merge into
 // a shared page with neighboring light days instead.
@@ -45,6 +47,7 @@ export function buildAlbumPages(entries: JournalEntryWithPhotos[]): AlbumPageDat
 
   const pages: AlbumPageData[] = [];
   let pending: { dates: string[]; photos: AlbumPhoto[] } | null = null;
+  let currentMonth: string | null = null;
 
   function flushPending() {
     if (!pending) return;
@@ -57,6 +60,15 @@ export function buildAlbumPages(entries: JournalEntryWithPhotos[]): AlbumPageDat
   }
 
   for (const date of order) {
+    const month = date.slice(0, 7); // "YYYY-MM"
+    if (month !== currentMonth) {
+      // A month boundary always closes out any in-progress merged page — a "May" chapter page
+      // should never be followed by leftover April photos.
+      flushPending();
+      currentMonth = month;
+      pages.push({ kind: "month", dates: [date], label: formatMonthLabel(date) });
+    }
+
     const dayEntries = byDate.get(date)!;
     const milestoneEntry = dayEntries.find((e) => e.milestoneLabel);
     let pool: AlbumPhoto[] = dayEntries.flatMap((e) => e.photos);
