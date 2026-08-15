@@ -20,7 +20,6 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
   if (!child) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
   const searchParams = request.nextUrl.searchParams;
-  const orientation = searchParams.get("orientation") === "landscape" ? "landscape" : "portrait";
   const from = searchParams.get("from"); // "YYYY-MM-DD", inclusive
   const to = searchParams.get("to"); // "YYYY-MM-DD", inclusive
 
@@ -33,9 +32,9 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
       (!to || e.entryDate <= to),
   );
   const pages = buildAlbumPages(sortAlbumEntries(photoEntries));
-  const pdfPages = await preparePhotosForPdf(pages, orientation);
+  const pdfPages = await preparePhotosForPdf(pages);
 
-  const buffer = await renderToBuffer(<AlbumPdfDocument child={child} pages={pdfPages} orientation={orientation} />);
+  const buffer = await renderToBuffer(<AlbumPdfDocument child={child} pages={pdfPages} />);
 
   const filename = `${child.name.replace(/[^a-z0-9]+/gi, "_")}-album.pdf`;
   return new NextResponse(new Uint8Array(buffer), {

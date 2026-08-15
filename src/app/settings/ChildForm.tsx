@@ -2,8 +2,10 @@
 
 import { useState, useTransition, type CSSProperties } from "react";
 import type { DayCountStart } from "@/lib/date";
+import { illustrationForAnimal } from "@/lib/animalIllustrations";
 import { coverBackgroundHex, COVER_ANIMALS, COVER_BACKGROUNDS, type CoverBackground } from "@/lib/covers";
 import { subjectEmoji, type SubjectType } from "@/lib/milestones";
+import { CoverArt } from "../CoverArt";
 import { useSettings } from "../SettingsProvider";
 
 export type ChildFormValues = {
@@ -134,7 +136,7 @@ export function ChildForm({
         {t("Album cover")}
         <div className="flex items-center gap-3">
           <span
-            className="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-[var(--cover-light)] text-3xl dark:bg-[var(--cover-dark)]"
+            className="relative flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-[var(--cover-light)] text-3xl dark:bg-[var(--cover-dark)]"
             style={
               {
                 "--cover-light": coverBackgroundHex(coverBackground, false),
@@ -142,7 +144,7 @@ export function ChildForm({
               } as CSSProperties
             }
           >
-            {coverAnimal || subjectEmoji(type)}
+            <CoverArt animal={coverAnimal} fallbackEmoji={subjectEmoji(type)} sizes="64px" />
           </span>
           <div className="flex flex-1 flex-wrap gap-1.5">
             {COVER_BACKGROUNDS.map((bg) => (
@@ -165,16 +167,21 @@ export function ChildForm({
               key={animal}
               type="button"
               onClick={() => setCoverAnimal(animal)}
-              className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border text-lg transition-transform hover:scale-110 active:scale-95 ${
+              className={`relative flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-xl border text-lg transition-transform hover:scale-110 active:scale-95 ${
                 coverAnimal === animal
                   ? "border-brand-600 bg-brand-50 dark:bg-brand-900/30"
                   : "border-brand-100 dark:border-brand-900/40"
               }`}
             >
-              {animal}
+              <CoverArt animal={animal} fallbackEmoji={animal} sizes="36px" />
             </button>
           ))}
         </div>
+        {COVER_ANIMALS.some((a) => illustrationForAnimal(a)) && (
+          <p className="text-[11px] text-zinc-400 dark:text-zinc-500">
+            {t("🎨 Some covers use AI-generated illustrations, not photos of your child or pet.")}
+          </p>
+        )}
       </div>
       {error && <p className="text-sm text-rose-600">{error}</p>}
       <div className="flex gap-2">

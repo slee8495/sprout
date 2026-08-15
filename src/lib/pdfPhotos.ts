@@ -51,11 +51,8 @@ async function mapWithConcurrency<T, R>(items: T[], limit: number, fn: (item: T)
   return results;
 }
 
-export async function preparePhotosForPdf(
-  pages: AlbumPageData[],
-  orientation: "portrait" | "landscape",
-): Promise<PdfPageData[]> {
-  const area = collageAreaPt(orientation);
+export async function preparePhotosForPdf(pages: AlbumPageData[]): Promise<PdfPageData[]> {
+  const area = collageAreaPt();
 
   const tasks: { photo: AlbumPhoto; width: number; height: number }[] = [];
   for (const page of pages) {

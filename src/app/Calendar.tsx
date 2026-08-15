@@ -16,15 +16,10 @@ export function Calendar({
   entryDates,
   selectedDate,
   onSelectDate,
-  onMonthChange,
 }: {
   entryDates: Set<string>;
   selectedDate: string | null;
   onSelectDate: (date: string | null) => void;
-  // Fires only in response to the user navigating months (prev/next or the jump-to-month
-  // input) — never on mount — so a parent can scroll to that month's content without hijacking
-  // the initial page load. `month` is 0-indexed to match the rest of this component's state.
-  onMonthChange?: (year: number, month: number) => void;
 }) {
   const { timezone, t } = useSettings();
   const todayISO = todayInTimezone(timezone).iso;
@@ -53,7 +48,6 @@ export function Calendar({
     }
     setViewMonth(m);
     setViewYear(y);
-    onMonthChange?.(y, m);
   }
 
   function jumpToMonth(value: string) {
@@ -61,7 +55,6 @@ export function Calendar({
     const [y, m] = value.split("-").map(Number);
     setViewYear(y);
     setViewMonth(m - 1);
-    onMonthChange?.(y, m - 1);
   }
 
   return (

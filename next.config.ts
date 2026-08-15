@@ -27,7 +27,9 @@ const nextConfig: NextConfig = {
     // Same class of issue as above — the album PDF export reads these via a runtime
     // path.join(process.cwd(), ...) string (for react-pdf's Font.register), not an
     // import/require, so the tracer wouldn't otherwise bundle them into the function.
-    "/api/library/[childId]/export": ["./public/fonts/**/*"],
+    // Same for the AI-generated animal cover illustrations — read via fs + path.join for the
+    // cover page and month dividers, not imported.
+    "/api/library/[childId]/export": ["./public/fonts/**/*", "./public/animal-illustrations/**/*.jpg"],
   },
   // Auth.js's signin/callback redirects were getting Next's default "public, max-age=0,
   // must-revalidate" Cache-Control, which permits shared/compressing proxies (e.g. Chrome's

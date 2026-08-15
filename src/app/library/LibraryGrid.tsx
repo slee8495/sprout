@@ -6,6 +6,7 @@ import type { Child, JournalEntryWithPhotos } from "@/db/queries";
 import { coverBackgroundHex } from "@/lib/covers";
 import { fill } from "@/lib/i18n";
 import { subjectEmoji } from "@/lib/milestones";
+import { CoverArt } from "../CoverArt";
 import { useSettings } from "../SettingsProvider";
 
 export function LibraryGrid({ kids, photoEntries }: { kids: Child[]; photoEntries: JournalEntryWithPhotos[] }) {
@@ -29,7 +30,7 @@ export function LibraryGrid({ kids, photoEntries }: { kids: Child[]; photoEntrie
             className="flex flex-col gap-2 rounded-3xl border border-brand-100/60 bg-white p-3 shadow-md shadow-brand-900/5 transition-transform hover:scale-[1.03] active:scale-95 dark:border-brand-900/40 dark:bg-zinc-900 dark:shadow-black/40"
           >
             <div
-              className="flex aspect-[3/4] w-full items-center justify-center rounded-2xl bg-[var(--cover-light)] text-5xl shadow-inner dark:bg-[var(--cover-dark)]"
+              className="relative flex aspect-[3/4] w-full items-center justify-center overflow-hidden rounded-2xl bg-[var(--cover-light)] text-5xl shadow-inner dark:bg-[var(--cover-dark)]"
               style={
                 {
                   "--cover-light": coverBackgroundHex(kid.coverBackground, false),
@@ -37,7 +38,7 @@ export function LibraryGrid({ kids, photoEntries }: { kids: Child[]; photoEntrie
                 } as CSSProperties
               }
             >
-              {kid.coverAnimal || subjectEmoji(kid.type)}
+              <CoverArt animal={kid.coverAnimal} fallbackEmoji={subjectEmoji(kid.type)} sizes="220px" />
             </div>
             <div>
               <h2 className="font-heading text-sm font-bold text-brand-900 dark:text-brand-100">{kid.name}</h2>

@@ -1,11 +1,22 @@
+import fs from "node:fs";
 import path from "node:path";
 import { Document, Font, Image, Page, StyleSheet, Text, View } from "@react-pdf/renderer";
 import type { Child } from "@/db/queries";
+import { illustrationFilenameForAnimal } from "@/lib/animalIllustrations";
 import { getCollageRects } from "@/lib/collage";
 import { coverBackgroundHex } from "@/lib/covers";
 import { formatEntryDate } from "@/lib/milestones";
 import { CAPTION_HEIGHT_PT } from "@/lib/pdfLayout";
 import type { PdfPageData } from "@/lib/pdfPhotos";
+
+// react-pdf's <Image> only decodes JPEG/PNG, and only from a Buffer/base64/URL — a bare fs path
+// string gets treated as a URL and fails on the server. Read the JPEG copy into a Buffer once per
+// animal so the cover page and every month divider can reuse it without re-reading the file.
+function loadIllustration(animal: string | null | undefined): Buffer | null {
+  const filename = illustrationFilenameForAnimal(animal);
+  if (!filename) return null;
+  return fs.readFileSync(path.join(process.cwd(), "public", filename));
+}
 
 Font.register({
   family: "Playfair Display",
@@ -32,6 +43,34 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: "#6b6b6b",
     letterSpacing: 2,
+    textTransform: "uppercase",
+  },
+  coverIllustrationWrap: {
+    width: 150,
+    height: 150,
+    borderRadius: 75,
+    overflow: "hidden",
+  },
+  coverIllustration: {
+    width: "100%",
+    height: "100%",
+    objectFit: "cover",
+  },
+  monthIllustrationWrap: {
+    width: 90,
+    height: 90,
+    borderRadius: 45,
+    overflow: "hidden",
+  },
+  disclaimer: {
+    position: "absolute",
+    bottom: 16,
+    left: 0,
+    width: "100%",
+    textAlign: "center",
+    fontSize: 7,
+    color: "rgba(0,0,0,0.35)",
+    letterSpacing: 1,
     textTransform: "uppercase",
   },
   page: {
@@ -109,11 +148,9 @@ function formatDateRange(dates: string[]) {
 export function AlbumPdfDocument({
   child,
   pages,
-  orientation,
 }: {
-  child: Pick<Child, "name" | "coverBackground">;
+  child: Pick<Child, "name" | "coverBackground" | "coverAnimal">;
   pages: PdfPageData[];
-  orientation: "portrait" | "landscape";
 }) {
   const dates = pages.flatMap((p) => p.dates).sort();
   const rangeLabel =
@@ -123,29 +160,44 @@ export function AlbumPdfDocument({
         : `${formatEntryDate(dates[0])} – ${formatEntryDate(dates[dates.length - 1])}`
       : "";
   const coverColor = coverBackgroundHex(child.coverBackground, false);
+  const illustration = loadIllustration(child.coverAnimal);
 
   return (
     <Document title={`${child.name}'s Album`}>
-      <Page size="A4" orientation={orientation} style={[styles.coverPage, { backgroundColor: coverColor }]}>
+      <Page size="A4" orientation="landscape" style={[styles.coverPage, { backgroundColor: coverColor }]}>
+        {illustration && (
+          <View style={styles.coverIllustrationWrap}>
+            {/* eslint-disable-next-line jsx-a11y/alt-text */}
+            <Image src={illustration} style={styles.coverIllustration} />
+          </View>
+        )}
         <Text style={styles.coverTitle}>{child.name}</Text>
         {rangeLabel && <Text style={styles.coverSubtitle}>{rangeLabel}</Text>}
+        {illustration && <Text style={styles.disclaimer}>AI-generated illustration</Text>}
       </Page>
 
       {pages.map((page, i) => {
         if (page.kind === "month") {
           return (
-            <Page key={i} size="A4" orientation={orientation} style={[styles.page, { backgroundColor: coverColor }]}>
+            <Page key={i} size="A4" orientation="landscape" style={[styles.page, { backgroundColor: coverColor }]}>
               <View style={styles.monthPage}>
+                {illustration && (
+                  <View style={styles.monthIllustrationWrap}>
+                    {/* eslint-disable-next-line jsx-a11y/alt-text */}
+                    <Image src={illustration} style={styles.coverIllustration} />
+                  </View>
+                )}
                 <Text style={styles.monthEyebrow}>{child.name}</Text>
                 <View style={styles.rule} />
                 <Text style={styles.monthLabel}>{page.label}</Text>
               </View>
+              {illustration && <Text style={styles.disclaimer}>AI-generated illustration</Text>}
             </Page>
           );
         }
 
         return (
-          <Page key={i} size="A4" orientation={orientation} style={styles.page}>
+          <Page key={i} size="A4" orientation="landscape" style={styles.page}>
             <View style={styles.captionRow}>
               <Text style={styles.captionDate}>{formatDateRange(page.dates)}</Text>
               {page.kind === "title" && <Text style={styles.captionLabel}>· {page.label}</Text>}
