@@ -25,6 +25,7 @@ export type DraftEntryData = {
   milestoneCategory: string | null;
   milestoneLabel: string | null;
   photos: { id: number; url: string; sizeBytes: number | null }[];
+  visibility: "everyone" | "inner";
 };
 
 const RECORDING_MIME_TYPES = ["audio/webm", "audio/mp4", "audio/ogg"];
@@ -57,6 +58,9 @@ export function EntryForm({
   );
   const [title, setTitle] = useState(draft?.title ?? "");
   const [body, setBody] = useState(draft?.body ?? "");
+  // Defaults to restricted for a fresh "Parents" post (no child tagged) and open otherwise —
+  // fully overridable either direction, so a "just us" baby post is just as easy to mark.
+  const [justUs, setJustUs] = useState(draft ? draft.visibility === "inner" : childIds.length === 0);
   const [milestoneCategory, setMilestoneCategory] = useState(draft?.milestoneCategory ?? "");
   const [milestoneLabel, setMilestoneLabel] = useState(draft?.milestoneLabel ?? "");
   const [existingPhotos, setExistingPhotos] = useState(draft?.photos ?? []);
@@ -75,7 +79,9 @@ export function EntryForm({
   if (key !== prevKey) {
     setPrevKey(key);
     setEntryDate(draft?.entryDate ?? initialDate ?? todayInTimezone(timezone).iso);
-    setChildIds(draft ? draft.childIds : defaultChildId !== undefined ? [defaultChildId] : kids[0] ? [kids[0].id] : []);
+    const nextChildIds = draft ? draft.childIds : defaultChildId !== undefined ? [defaultChildId] : kids[0] ? [kids[0].id] : [];
+    setChildIds(nextChildIds);
+    setJustUs(draft ? draft.visibility === "inner" : nextChildIds.length === 0);
     setTitle(draft?.title ?? "");
     setBody(draft?.body ?? "");
     setMilestoneCategory(draft?.milestoneCategory ?? "");
@@ -188,6 +194,7 @@ export function EntryForm({
           milestoneLabel: milestoneCategory ? milestoneLabel.trim() || undefined : undefined,
           photos: photoList,
           isDraft,
+          visibility: (justUs ? "inner" : "everyone") as "everyone" | "inner",
         };
 
         if (draft) {
@@ -276,6 +283,14 @@ export function EntryForm({
           </button>
         </div>
       )}
+
+      <label className="flex w-fit items-center gap-2 text-sm">
+        <input type="checkbox" checked={justUs} onChange={(e) => setJustUs(e.target.checked)} className="h-4 w-4" />
+        <span className="font-heading font-semibold text-brand-800 dark:text-brand-200">{t("🔒 Just us")}</span>
+        <span className="text-xs text-zinc-500 dark:text-zinc-400">
+          {t("Hidden from extended family members")}
+        </span>
+      </label>
 
       <div className="flex gap-3">
         <input

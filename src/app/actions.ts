@@ -18,7 +18,7 @@ import {
   savePushSubscription,
   updateJournalEntry,
 } from "@/db/queries";
-import { audienceEnum, milestoneCategoryEnum } from "@/db/schema";
+import { audienceEnum, entryVisibilityEnum, milestoneCategoryEnum } from "@/db/schema";
 import { requireEditor, requireSession } from "@/lib/session";
 import { notifyFamily } from "@/lib/push";
 
@@ -33,6 +33,9 @@ function subjectLabel(children: { name: string }[]) {
 
 const entrySchema = z.object({
   audience: z.enum(audienceEnum.enumValues).default("child"),
+  // "inner" hides this entry from any family member set to the "extended" visibility tier in
+  // Settings (e.g. grandparents) — lets parents post freely without worrying who else can see it.
+  visibility: z.enum(entryVisibilityEnum.enumValues).default("everyone"),
   childIds: z.array(z.number()).default([]),
   entryDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
   title: z.string().max(256).optional(),
@@ -63,6 +66,7 @@ export async function createEntry(input: z.infer<typeof entrySchema>) {
     familyId,
     authorId: userId,
     audience: parsed.audience,
+    visibility: parsed.visibility,
     childIds: parsed.audience === "child" ? parsed.childIds : undefined,
     entryDate: parsed.entryDate,
     title: parsed.title,
@@ -87,10 +91,13 @@ export async function createEntry(input: z.infer<typeof entrySchema>) {
     body: preview,
     url: `/feed?entry=${entry.id}`,
   };
-  await Promise.all([notifyFamily(familyId, userId, payload), createNotificationsForFamily(familyId, userId, payload)]);
+  await Promise.all([
+    notifyFamily(familyId, userId, payload, parsed.visibility),
+    createNotificationsForFamily(familyId, userId, payload, parsed.visibility),
+  ]);
 }
 
-const updateEntrySchema = entrySchema.omit({ audience: true, childIds: true, isDraft: true }).extend({
+const updateEntrySchema = entrySchema.omit({ audience: true, childIds: true, isDraft: true, visibility: true }).extend({
   voiceMemoUrl: z.string().url().nullable().optional(),
   videoUrl: z.string().url().nullable().optional(),
   videoSizeBytes: z.number().nullable().optional(),
@@ -133,7 +140,10 @@ export async function updateDraft(entryId: number, input: z.infer<typeof draftUp
     body: preview,
     url: `/feed?entry=${entry.id}`,
   };
-  await Promise.all([notifyFamily(familyId, userId, payload), createNotificationsForFamily(familyId, userId, payload)]);
+  await Promise.all([
+    notifyFamily(familyId, userId, payload, parsed.visibility),
+    createNotificationsForFamily(familyId, userId, payload, parsed.visibility),
+  ]);
 }
 
 export async function deleteEntry(entryId: number) {
@@ -163,7 +173,10 @@ export async function addComment(input: z.infer<typeof commentSchema>) {
     body: parsed.body.slice(0, 120),
     url: `/feed?entry=${parsed.entryId}`,
   };
-  await Promise.all([notifyFamily(familyId, userId, payload), createNotificationsForFamily(familyId, userId, payload)]);
+  await Promise.all([
+    notifyFamily(familyId, userId, payload, comment.visibility),
+    createNotificationsForFamily(familyId, userId, payload, comment.visibility),
+  ]);
 }
 
 const pushSubscriptionSchema = z.object({

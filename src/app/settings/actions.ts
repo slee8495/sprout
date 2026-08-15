@@ -9,8 +9,9 @@ import {
   updateChild,
   updateFamilySettings,
   updateMemberRole,
+  updateMemberTier,
 } from "@/db/queries";
-import { dayCountStartEnum, subjectTypeEnum, userRoleEnum } from "@/db/schema";
+import { dayCountStartEnum, memberTierEnum, subjectTypeEnum, userRoleEnum } from "@/db/schema";
 import { requireEditor, requireOwner } from "@/lib/session";
 import { FREE_CHILD_LIMIT, isPaidStatus } from "@/lib/storage";
 
@@ -78,4 +79,16 @@ export async function changeMemberRole(targetUserId: number, role: (typeof userR
   await updateMemberRole(familyId, targetUserId, role);
 
   revalidatePath("/settings");
+}
+
+export async function changeMemberTier(targetUserId: number, tier: (typeof memberTierEnum.enumValues)[number]) {
+  const { familyId, userId } = await requireOwner();
+  if (targetUserId === userId) throw new Error("You can't change your own visibility tier.");
+
+  await updateMemberTier(familyId, targetUserId, tier);
+
+  revalidatePath("/settings");
+  revalidatePath("/");
+  revalidatePath("/feed");
+  revalidatePath("/milestones");
 }

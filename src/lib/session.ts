@@ -10,6 +10,7 @@ export async function requireSession() {
     familyId: session.user.familyId,
     name: session.user.name,
     role: session.user.role ?? "editor",
+    tier: session.user.tier ?? "inner",
   };
 }
 

@@ -4,12 +4,12 @@ import { requireSession } from "@/lib/session";
 import { MilestoneGrid } from "./MilestoneGrid";
 
 export default async function MilestonesPage() {
-  const { familyId } = await requireSession();
+  const { familyId, tier } = await requireSession();
 
   const kids = await listChildren(familyId);
   if (kids.length === 0) redirect("/onboarding");
 
-  const entries = await listMilestoneEntries(familyId);
+  const entries = await listMilestoneEntries(familyId, tier);
 
   return (
     <div className="mx-auto flex w-full max-w-2xl flex-1 flex-col gap-6 p-4 pb-24">

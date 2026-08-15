@@ -5,12 +5,12 @@ import { T } from "../T";
 import { LibraryGrid } from "./LibraryGrid";
 
 export default async function LibraryPage() {
-  const { familyId } = await requireSession();
+  const { familyId, tier } = await requireSession();
 
   const kids = await listChildren(familyId);
   if (kids.length === 0) redirect("/onboarding");
 
-  const entries = await listJournalEntries(familyId, "child");
+  const entries = await listJournalEntries(familyId, "child", tier);
   // Albums are photo albums — text/voice/video-only entries don't get a page.
   const photoEntries = entries.filter((entry) => entry.photos.length > 0);
 

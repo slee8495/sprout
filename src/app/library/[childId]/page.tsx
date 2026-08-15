@@ -5,13 +5,13 @@ import { AlbumView } from "./AlbumView";
 
 export default async function AlbumPage({ params }: { params: Promise<{ childId: string }> }) {
   const { childId } = await params;
-  const { familyId } = await requireSession();
+  const { familyId, tier } = await requireSession();
   const id = Number(childId);
 
   const [child, kids, entries] = await Promise.all([
     getChild(id, familyId),
     listChildren(familyId),
-    listJournalEntries(familyId, "child"),
+    listJournalEntries(familyId, "child", tier),
   ]);
   if (!child) notFound();
 

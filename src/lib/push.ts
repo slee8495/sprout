@@ -14,10 +14,11 @@ export async function notifyFamily(
   familyId: number,
   excludeUserId: number,
   payload: { title: string; body: string; url?: string },
+  visibility?: "everyone" | "inner",
 ) {
   if (!vapidPublicKey || !vapidPrivateKey || !vapidSubject) return;
 
-  const subscriptions = await listOtherFamilyPushSubscriptions(familyId, excludeUserId);
+  const subscriptions = await listOtherFamilyPushSubscriptions(familyId, excludeUserId, visibility);
   const json = JSON.stringify(payload);
 
   await Promise.all(

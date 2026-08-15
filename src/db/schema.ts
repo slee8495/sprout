@@ -37,6 +37,17 @@ export const subscriptionStatusEnum = pgEnum("subscription_status", ["free", "ac
 // or family settings. "editor" is today's baseline behavior (full read/write, no member management).
 export const userRoleEnum = pgEnum("user_role", ["owner", "editor", "viewer"]);
 
+// Visibility tier, separate from userRoleEnum's read/write permission: "extended" members (e.g.
+// grandparents) can be excluded from specific entries regardless of their read/write role.
+// "inner" is the default so every existing/newly-joined member keeps seeing everything until an
+// owner deliberately downgrades someone in Settings.
+export const memberTierEnum = pgEnum("member_tier", ["inner", "extended"]);
+
+// Per-entry visibility gate: "inner" hides the entry from any family member whose tier is
+// "extended". Defaults to "everyone" so existing behavior is unchanged unless an author opts an
+// entry into being restricted.
+export const entryVisibilityEnum = pgEnum("entry_visibility", ["everyone", "inner"]);
+
 export const families = pgTable("families", {
   id: serial("id").primaryKey(),
   name: varchar("name", { length: 128 }).notNull(),
@@ -62,6 +73,7 @@ export const users = pgTable("users", {
   name: varchar("name", { length: 128 }),
   imageUrl: text("image_url"),
   role: userRoleEnum("role").notNull().default("editor"),
+  tier: memberTierEnum("tier").notNull().default("inner"),
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
 });
 
@@ -89,6 +101,7 @@ export const journalEntries = pgTable("journal_entries", {
   // is fully wired up, and it gets dropped in a later, separate migration.
   childId: integer("child_id").references(() => children.id),
   audience: audienceEnum("audience").notNull().default("child"),
+  visibility: entryVisibilityEnum("visibility").notNull().default("everyone"),
   entryDate: date("entry_date").notNull(),
   title: varchar("title", { length: 256 }),
   body: text("body").notNull(),

@@ -74,6 +74,7 @@ export const { handlers, auth, signIn, signOut, unstable_update } = NextAuth({
         token.id = dbUser ? String(dbUser.id) : undefined;
         token.familyId = dbUser?.familyId;
         token.role = dbUser?.role;
+        token.tier = dbUser?.tier;
       }
       return token;
     },
@@ -82,6 +83,7 @@ export const { handlers, auth, signIn, signOut, unstable_update } = NextAuth({
         session.user.id = (token.id as string | undefined) ?? "";
         session.user.familyId = token.familyId as number | undefined;
         session.user.role = token.role as "owner" | "editor" | "viewer" | undefined;
+        session.user.tier = token.tier as "inner" | "extended" | undefined;
       }
       return session;
     },

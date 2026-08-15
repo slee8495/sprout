@@ -50,6 +50,9 @@ export async function GET(request: Request) {
         listJournalEntries(family.id, "child"),
       ]);
 
+      const innerEmails = family.members.filter((m) => m.tier !== "extended").map((m) => m.email);
+      const extendedEmails = family.members.filter((m) => m.tier === "extended").map((m) => m.email);
+
       for (const child of children) {
         const photoEntries = entries.filter(
           (e) => e.photos.length > 0 && e.children.some((c) => c.id === child.id) && e.entryDate >= from && e.entryDate <= to,
@@ -58,18 +61,37 @@ export async function GET(request: Request) {
           skipped++;
           continue;
         }
-
-        const pages = buildAlbumPages(sortAlbumEntries(photoEntries));
-        const pdfPages = await preparePhotosForPdf(pages);
-        const buffer = await renderToBuffer(<AlbumPdfDocument child={child} pages={pdfPages} />);
         const filename = `${child.name.replace(/[^a-z0-9]+/gi, "_")}-${from.slice(0, 7)}.pdf`;
 
-        await sendEmail({
-          to: family.members.map((m) => m.email),
-          ...monthlyAlbumEmail({ childName: child.name, monthLabel, appUrl: APP_URL }),
-          attachments: [{ filename, content: buffer }],
-        });
-        sent++;
+        // "Inner" members get everything; "extended" members only get entries not marked 🔒 Just
+        // us — two separate PDFs/sends when both groups exist, so a restricted entry never rides
+        // along in an attachment that reaches an extended-tier inbox.
+        if (innerEmails.length) {
+          const pages = buildAlbumPages(sortAlbumEntries(photoEntries));
+          const pdfPages = await preparePhotosForPdf(pages);
+          const buffer = await renderToBuffer(<AlbumPdfDocument child={child} pages={pdfPages} />);
+          await sendEmail({
+            to: innerEmails,
+            ...monthlyAlbumEmail({ childName: child.name, monthLabel, appUrl: APP_URL }),
+            attachments: [{ filename, content: buffer }],
+          });
+          sent++;
+        }
+
+        if (extendedEmails.length) {
+          const everyoneEntries = photoEntries.filter((e) => e.visibility === "everyone");
+          if (everyoneEntries.length) {
+            const pages = buildAlbumPages(sortAlbumEntries(everyoneEntries));
+            const pdfPages = await preparePhotosForPdf(pages);
+            const buffer = await renderToBuffer(<AlbumPdfDocument child={child} pages={pdfPages} />);
+            await sendEmail({
+              to: extendedEmails,
+              ...monthlyAlbumEmail({ childName: child.name, monthLabel, appUrl: APP_URL }),
+              attachments: [{ filename, content: buffer }],
+            });
+            sent++;
+          }
+        }
       }
     } catch {
       // One family's failure (a bad photo URL, a Resend hiccup) shouldn't stop the rest of the run.

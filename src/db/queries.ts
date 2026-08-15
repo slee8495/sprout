@@ -6,9 +6,11 @@ import {
   children,
   comments,
   dayCountStartEnum,
+  entryVisibilityEnum,
   families,
   journalEntries,
   journalEntryChildren,
+  memberTierEnum,
   milestoneCategoryEnum,
   notifications,
   photos,
@@ -150,7 +152,7 @@ export async function createFamilyWithOwner(input: { familyName: string; ownerNa
 export function listFamilyMembers(familyId: number) {
   return db.query.users.findMany({
     where: eq(users.familyId, familyId),
-    columns: { id: true, name: true, email: true, role: true },
+    columns: { id: true, name: true, email: true, role: true, tier: true },
     orderBy: [users.id],
   });
 }
@@ -159,6 +161,16 @@ export async function updateMemberRole(familyId: number, targetUserId: number, r
   const [updated] = await db
     .update(users)
     .set({ role })
+    .where(and(eq(users.id, targetUserId), eq(users.familyId, familyId)))
+    .returning();
+  if (!updated) throw new Error("Couldn't find that family member.");
+  return updated;
+}
+
+export async function updateMemberTier(familyId: number, targetUserId: number, tier: (typeof memberTierEnum.enumValues)[number]) {
+  const [updated] = await db
+    .update(users)
+    .set({ tier })
     .where(and(eq(users.id, targetUserId), eq(users.familyId, familyId)))
     .returning();
   if (!updated) throw new Error("Couldn't find that family member.");
@@ -182,13 +194,22 @@ export async function linkOrJoinFamilyMember(input: { familyId: number; name: st
 }
 
 type Audience = (typeof audienceEnum.enumValues)[number];
+type EntryVisibility = (typeof entryVisibilityEnum.enumValues)[number];
+export type MemberTier = (typeof memberTierEnum.enumValues)[number];
 
-export async function listJournalEntries(familyId: number, audience?: Audience) {
+// `viewerTier: "extended"` drops any "inner"-visibility entry — leave undefined/"inner" to see
+// everything. Every call site that lists entries for a specific logged-in viewer must pass this.
+function visibilityFilter(viewerTier?: MemberTier) {
+  return viewerTier === "extended" ? eq(journalEntries.visibility, "everyone") : undefined;
+}
+
+export async function listJournalEntries(familyId: number, audience?: Audience, viewerTier?: MemberTier) {
   const rows = await db.query.journalEntries.findMany({
     where: and(
       eq(journalEntries.familyId, familyId),
       eq(journalEntries.isDraft, false),
       audience ? eq(journalEntries.audience, audience) : undefined,
+      visibilityFilter(viewerTier),
     ),
     orderBy: [desc(journalEntries.entryDate), desc(journalEntries.id)],
     with: {
@@ -248,7 +269,7 @@ export async function createComment(input: {
 }) {
   const entry = await db.query.journalEntries.findFirst({
     where: and(eq(journalEntries.id, input.entryId), eq(journalEntries.familyId, input.familyId)),
-    columns: { id: true, audience: true },
+    columns: { id: true, audience: true, visibility: true },
     with: { entryChildren: { with: { child: true } } },
   });
   if (!entry) throw new Error("Entry not found");
@@ -257,7 +278,12 @@ export async function createComment(input: {
     .insert(comments)
     .values({ entryId: input.entryId, authorId: input.authorId, body: input.body })
     .returning();
-  return { ...comment, audience: entry.audience, children: entry.entryChildren.map((ec) => ec.child) };
+  return {
+    ...comment,
+    audience: entry.audience,
+    visibility: entry.visibility,
+    children: entry.entryChildren.map((ec) => ec.child),
+  };
 }
 
 export type PhotoInput = { url: string; sizeBytes?: number };
@@ -266,6 +292,7 @@ export async function createJournalEntry(input: {
   familyId: number;
   authorId: number;
   audience: Audience;
+  visibility?: EntryVisibility;
   childIds?: number[];
   entryDate: string;
   title?: string;
@@ -284,6 +311,7 @@ export async function createJournalEntry(input: {
       familyId: input.familyId,
       authorId: input.authorId,
       audience: input.audience,
+      visibility: input.visibility ?? "everyone",
       entryDate: input.entryDate,
       title: input.title || null,
       body: input.body,
@@ -326,6 +354,10 @@ export async function updateJournalEntry(
     videoUrl?: string | null;
     videoSizeBytes?: number | null;
     isDraft?: boolean;
+    // Omitted (undefined) leaves the entry's current visibility untouched — distinct from every
+    // other field here, since not every caller (e.g. EntryCard's inline edit) offers a control
+    // for it yet and an accidental reset back to "everyone" would silently un-restrict a post.
+    visibility?: EntryVisibility;
   },
 ) {
   return db.transaction(async (tx) => {
@@ -340,6 +372,7 @@ export async function updateJournalEntry(
         updatedAt: new Date(),
         ...(patch.isDraft !== undefined ? { isDraft: patch.isDraft } : {}),
         ...(patch.voiceMemoUrl !== undefined ? { voiceMemoUrl: patch.voiceMemoUrl } : {}),
+        ...(patch.visibility !== undefined ? { visibility: patch.visibility } : {}),
         ...(patch.videoUrl !== undefined
           ? { videoUrl: patch.videoUrl, videoSizeBytes: patch.videoSizeBytes ?? null }
           : {}),
@@ -384,12 +417,19 @@ export async function deleteJournalEntry(entryId: number, familyId: number, auth
   return true;
 }
 
-export async function getOnThisDayEntries(familyId: number, month: number, day: number, audience?: Audience) {
+export async function getOnThisDayEntries(
+  familyId: number,
+  month: number,
+  day: number,
+  audience?: Audience,
+  viewerTier?: MemberTier,
+) {
   const rows = await db.query.journalEntries.findMany({
     where: and(
       eq(journalEntries.familyId, familyId),
       eq(journalEntries.isDraft, false),
       audience ? eq(journalEntries.audience, audience) : undefined,
+      visibilityFilter(viewerTier),
       sql`extract(month from ${journalEntries.entryDate}) = ${month}`,
       sql`extract(day from ${journalEntries.entryDate}) = ${day}`,
       sql`extract(year from ${journalEntries.entryDate}) < extract(year from current_date)`,
@@ -510,11 +550,18 @@ export async function createNotificationsForFamily(
   familyId: number,
   actorId: number,
   payload: { title: string; body: string; url?: string },
+  visibility?: EntryVisibility,
 ) {
   const members = await db
     .select({ id: users.id })
     .from(users)
-    .where(and(eq(users.familyId, familyId), ne(users.id, actorId)));
+    .where(
+      and(
+        eq(users.familyId, familyId),
+        ne(users.id, actorId),
+        visibility === "inner" ? ne(users.tier, "extended") : undefined,
+      ),
+    );
   if (members.length === 0) return;
 
   await db.insert(notifications).values(
@@ -559,7 +606,11 @@ export async function markAllNotificationsRead(userId: number) {
     .where(and(eq(notifications.recipientId, userId), isNull(notifications.readAt)));
 }
 
-export async function listOtherFamilyPushSubscriptions(familyId: number, excludeUserId: number) {
+export async function listOtherFamilyPushSubscriptions(
+  familyId: number,
+  excludeUserId: number,
+  visibility?: EntryVisibility,
+) {
   return db
     .select({
       id: pushSubscriptions.id,
@@ -569,7 +620,13 @@ export async function listOtherFamilyPushSubscriptions(familyId: number, exclude
     })
     .from(pushSubscriptions)
     .innerJoin(users, eq(users.id, pushSubscriptions.userId))
-    .where(and(eq(users.familyId, familyId), ne(pushSubscriptions.userId, excludeUserId)));
+    .where(
+      and(
+        eq(users.familyId, familyId),
+        ne(pushSubscriptions.userId, excludeUserId),
+        visibility === "inner" ? ne(users.tier, "extended") : undefined,
+      ),
+    );
 }
 
 export async function getFamilyDeletionSummary(familyId: number) {
@@ -638,13 +695,14 @@ export async function deleteFamilyAccount(familyId: number): Promise<string[]> {
   });
 }
 
-export async function listMilestoneEntries(familyId: number) {
+export async function listMilestoneEntries(familyId: number, viewerTier?: MemberTier) {
   const rows = await db.query.journalEntries.findMany({
     where: and(
       eq(journalEntries.familyId, familyId),
       eq(journalEntries.isDraft, false),
       eq(journalEntries.audience, "child"),
       isNotNull(journalEntries.milestoneCategory),
+      visibilityFilter(viewerTier),
     ),
     orderBy: [desc(journalEntries.entryDate)],
     with: {
@@ -660,13 +718,13 @@ export async function listMilestoneEntries(familyId: number) {
 export async function listAllFamiliesForAdmin() {
   const [familyRows, userRows] = await Promise.all([
     db.select().from(families).orderBy(desc(families.createdAt)),
-    db.select({ familyId: users.familyId, email: users.email, name: users.name }).from(users),
+    db.select({ familyId: users.familyId, email: users.email, name: users.name, tier: users.tier }).from(users),
   ]);
 
-  const membersByFamily = new Map<number, { email: string; name: string | null }[]>();
+  const membersByFamily = new Map<number, { email: string; name: string | null; tier: MemberTier }[]>();
   for (const u of userRows) {
     const list = membersByFamily.get(u.familyId) ?? [];
-    list.push({ email: u.email, name: u.name });
+    list.push({ email: u.email, name: u.name, tier: u.tier });
     membersByFamily.set(u.familyId, list);
   }
 

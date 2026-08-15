@@ -13,7 +13,7 @@ export const maxDuration = 300;
 
 export async function GET(request: NextRequest, { params }: { params: Promise<{ childId: string }> }) {
   const { childId } = await params;
-  const { familyId } = await requireSession();
+  const { familyId, tier } = await requireSession();
   const id = Number(childId);
 
   const child = await getChild(id, familyId);
@@ -23,7 +23,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
   const from = searchParams.get("from"); // "YYYY-MM-DD", inclusive
   const to = searchParams.get("to"); // "YYYY-MM-DD", inclusive
 
-  const entries = await listJournalEntries(familyId, "child");
+  const entries = await listJournalEntries(familyId, "child", tier);
   const photoEntries = entries.filter(
     (e) =>
       e.photos.length > 0 &&

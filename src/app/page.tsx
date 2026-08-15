@@ -12,14 +12,15 @@ export default async function Home() {
 
   const userId = Number(session.user.id);
   const familyId = session.user.familyId;
+  const tier = session.user.tier ?? "inner";
   const [settings, kids] = await Promise.all([getFamilySettings(familyId), listChildren(familyId)]);
   if (kids.length === 0) redirect("/onboarding");
 
   const today = todayInTimezone(settings.timezone);
   const [onThisDayEntries, childEntries, parentEntries, drafts] = await Promise.all([
-    getOnThisDayEntries(familyId, today.month, today.day, "child"),
-    listJournalEntries(familyId, "child"),
-    listJournalEntries(familyId, "parents"),
+    getOnThisDayEntries(familyId, today.month, today.day, "child", tier),
+    listJournalEntries(familyId, "child", tier),
+    listJournalEntries(familyId, "parents", tier),
     listMyDrafts(familyId, userId),
   ]);
 

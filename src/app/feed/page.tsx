@@ -8,14 +8,14 @@ export default async function FeedPage({
 }: {
   searchParams: Promise<{ entry?: string }>;
 }) {
-  const { familyId } = await requireSession();
+  const { familyId, tier } = await requireSession();
 
   const kids = await listChildren(familyId);
   if (kids.length === 0) redirect("/onboarding");
 
   const [childEntries, parentEntries, { entry }] = await Promise.all([
-    listJournalEntries(familyId, "child"),
-    listJournalEntries(familyId, "parents"),
+    listJournalEntries(familyId, "child", tier),
+    listJournalEntries(familyId, "parents", tier),
     searchParams,
   ]);
   const highlightEntryId = entry ? Number(entry) : undefined;

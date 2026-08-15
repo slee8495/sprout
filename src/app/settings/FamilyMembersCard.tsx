@@ -3,19 +3,25 @@
 import { useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { useSettings } from "../SettingsProvider";
-import { changeMemberRole } from "./actions";
+import { changeMemberRole, changeMemberTier } from "./actions";
 
 export type FamilyMember = {
   id: number;
   name: string | null;
   email: string;
   role: "owner" | "editor" | "viewer";
+  tier: "inner" | "extended";
 };
 
 const ROLE_OPTIONS: { value: FamilyMember["role"]; label: string }[] = [
   { value: "owner", label: "Owner" },
   { value: "editor", label: "Editor" },
   { value: "viewer", label: "View only" },
+];
+
+const TIER_OPTIONS: { value: FamilyMember["tier"]; label: string }[] = [
+  { value: "inner", label: "Full access" },
+  { value: "extended", label: "Extended (limited)" },
 ];
 
 function roleBadgeClasses(role: FamilyMember["role"]) {
@@ -36,6 +42,13 @@ export function FamilyMembersCard({ members, isOwner, userId }: { members: Famil
     });
   }
 
+  function handleTierChange(memberId: number, tier: FamilyMember["tier"]) {
+    startTransition(async () => {
+      await changeMemberTier(memberId, tier);
+      router.refresh();
+    });
+  }
+
   return (
     <section className="flex flex-col gap-3 rounded-3xl border border-brand-200/70 bg-white p-4 dark:border-brand-800/50 dark:bg-zinc-900">
       <h2 className="font-heading text-sm font-semibold text-brand-800 dark:text-brand-200">{t("Family members")}</h2>
@@ -44,33 +57,53 @@ export function FamilyMembersCard({ members, isOwner, userId }: { members: Famil
         {members.map((member) => (
           <div
             key={member.id}
-            className="flex items-center justify-between gap-2 rounded-2xl border border-brand-100 px-3 py-2 text-sm dark:border-brand-900/40"
+            className="flex flex-col gap-2 rounded-2xl border border-brand-100 px-3 py-2 text-sm dark:border-brand-900/40"
           >
-            <div className="min-w-0">
-              <p className="truncate font-semibold text-brand-900 dark:text-brand-100">
-                {member.name ?? member.email}
-                {member.id === userId && <span className="ml-1 font-normal text-zinc-500 dark:text-zinc-400">({t("you")})</span>}
-              </p>
-              <p className="truncate text-xs text-zinc-500 dark:text-zinc-400">{member.email}</p>
+            <div className="flex items-center justify-between gap-2">
+              <div className="min-w-0">
+                <p className="truncate font-semibold text-brand-900 dark:text-brand-100">
+                  {member.name ?? member.email}
+                  {member.id === userId && <span className="ml-1 font-normal text-zinc-500 dark:text-zinc-400">({t("you")})</span>}
+                </p>
+                <p className="truncate text-xs text-zinc-500 dark:text-zinc-400">{member.email}</p>
+              </div>
+
+              {isOwner && member.id !== userId ? (
+                <select
+                  value={member.role}
+                  disabled={isPending}
+                  onChange={(e) => handleRoleChange(member.id, e.target.value as FamilyMember["role"])}
+                  className="shrink-0 rounded-full border border-brand-200 bg-white px-2 py-1 text-xs font-semibold text-brand-800 disabled:opacity-50 dark:border-brand-800/50 dark:bg-zinc-900 dark:text-brand-200"
+                >
+                  {ROLE_OPTIONS.map((opt) => (
+                    <option key={opt.value} value={opt.value}>
+                      {t(opt.label)}
+                    </option>
+                  ))}
+                </select>
+              ) : (
+                <span className={`shrink-0 rounded-full px-2.5 py-0.5 text-xs font-semibold ${roleBadgeClasses(member.role)}`}>
+                  {t(ROLE_OPTIONS.find((opt) => opt.value === member.role)?.label ?? member.role)}
+                </span>
+              )}
             </div>
 
-            {isOwner && member.id !== userId ? (
-              <select
-                value={member.role}
-                disabled={isPending}
-                onChange={(e) => handleRoleChange(member.id, e.target.value as FamilyMember["role"])}
-                className="shrink-0 rounded-full border border-brand-200 bg-white px-2 py-1 text-xs font-semibold text-brand-800 disabled:opacity-50 dark:border-brand-800/50 dark:bg-zinc-900 dark:text-brand-200"
-              >
-                {ROLE_OPTIONS.map((opt) => (
-                  <option key={opt.value} value={opt.value}>
-                    {t(opt.label)}
-                  </option>
-                ))}
-              </select>
-            ) : (
-              <span className={`shrink-0 rounded-full px-2.5 py-0.5 text-xs font-semibold ${roleBadgeClasses(member.role)}`}>
-                {t(ROLE_OPTIONS.find((opt) => opt.value === member.role)?.label ?? member.role)}
-              </span>
+            {isOwner && member.id !== userId && (
+              <label className="flex items-center gap-2 text-xs text-zinc-500 dark:text-zinc-400">
+                {t("Sees:")}
+                <select
+                  value={member.tier}
+                  disabled={isPending}
+                  onChange={(e) => handleTierChange(member.id, e.target.value as FamilyMember["tier"])}
+                  className="rounded-full border border-brand-200 bg-white px-2 py-1 text-xs font-semibold text-brand-800 disabled:opacity-50 dark:border-brand-800/50 dark:bg-zinc-900 dark:text-brand-200"
+                >
+                  {TIER_OPTIONS.map((opt) => (
+                    <option key={opt.value} value={opt.value}>
+                      {t(opt.label)}
+                    </option>
+                  ))}
+                </select>
+              </label>
             )}
           </div>
         ))}
@@ -79,6 +112,8 @@ export function FamilyMembersCard({ members, isOwner, userId }: { members: Famil
       {isOwner && (
         <p className="text-xs text-zinc-500 dark:text-zinc-400">
           {t("View only members can see everything but can't add or edit entries, comments, or kids/pets.")}
+          {" "}
+          {t('"Extended" members never see entries marked 🔒 Just us.')}
         </p>
       )}
     </section>
