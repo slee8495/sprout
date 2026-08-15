@@ -19,6 +19,26 @@ export function welcomeEmail(input: { familyName: string; appUrl: string }): { s
   };
 }
 
+export function monthlyAlbumEmail(input: {
+  childName: string;
+  monthLabel: string;
+  appUrl: string;
+}): { subject: string; html: string } {
+  return {
+    subject: `📖 ${input.childName}'s ${input.monthLabel} album is ready`,
+    html: `
+      <div style="${WRAPPER_STYLE}">
+        <h1 style="color: #047857;">🌱 Roun</h1>
+        <p><strong>${input.childName}'s ${input.monthLabel} album</strong> is attached as a PDF — every photo you kept last month, laid out and ready to save or print.</p>
+        <a href="${input.appUrl}/library" style="${BUTTON_STYLE}">Open the album</a>
+        <p style="margin-top: 24px; font-size: 13px; color: #a1a1aa;">
+          You'll get one of these on the 1st of every month for each child/pet with photos from the month before.
+        </p>
+      </div>
+    `,
+  };
+}
+
 export function subscriptionCanceledEmail(input: { appUrl: string }): { subject: string; html: string } {
   return {
     subject: "Your Pro subscription has ended",

@@ -3,10 +3,17 @@
     {
       "path": "/api/cron/expire-comps",
       "schedule": "0 9 * * *"
+    },
+    {
+      "path": "/api/cron/monthly-album",
+      "schedule": "0 9 1 * *"
     }
   ],
   "functions": {
     "src/app/api/library/[childId]/export/route.tsx": {
+      "memory": 3009
+    },
+    "src/app/api/cron/monthly-album/route.tsx": {
       "memory": 3009
     }
   }

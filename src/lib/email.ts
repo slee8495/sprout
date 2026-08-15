@@ -6,7 +6,12 @@ function getResend(): Resend {
   return (resendClient ??= new Resend(process.env.RESEND_API_KEY));
 }
 
-export async function sendEmail(input: { to: string | string[]; subject: string; html: string }) {
+export async function sendEmail(input: {
+  to: string | string[];
+  subject: string;
+  html: string;
+  attachments?: { filename: string; content: Buffer }[];
+}) {
   const domain = process.env.RESEND_EMAIL_DOMAIN;
   if (!domain) return; // Not configured (e.g. local dev without Resend env vars) — skip silently.
 
@@ -15,5 +20,6 @@ export async function sendEmail(input: { to: string | string[]; subject: string;
     to: input.to,
     subject: input.subject,
     html: input.html,
+    attachments: input.attachments,
   });
 }
