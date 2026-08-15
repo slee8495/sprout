@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useMemo, useRef, useState, type CSSProperties } from "react";
 import type { Child, JournalEntryWithPhotos } from "@/db/queries";
 import { Calendar } from "../../Calendar";
-import { MAX_COLLAGE_PHOTOS } from "@/lib/collage";
+import { buildAlbumPages, sortAlbumEntries, type AlbumPageData } from "@/lib/albumPages";
 import { coverBackgroundHex } from "@/lib/covers";
 import { albumSerif } from "@/lib/fonts";
 import { subjectEmoji } from "@/lib/milestones";
@@ -12,41 +12,7 @@ import { useSettings } from "../../SettingsProvider";
 import { CollagePage } from "./CollagePage";
 import { MilestoneTitlePage } from "./MilestoneTitlePage";
 
-type Photo = { id: number; url: string; caption: string | null };
-type PageData =
-  | { kind: "title"; date: string; label: string; photos: Photo[] }
-  | { kind: "collage"; date: string; photos: Photo[] };
-
-function buildPages(entries: JournalEntryWithPhotos[]): PageData[] {
-  const byDate = new Map<string, JournalEntryWithPhotos[]>();
-  const order: string[] = [];
-  for (const entry of entries) {
-    if (!byDate.has(entry.entryDate)) {
-      byDate.set(entry.entryDate, []);
-      order.push(entry.entryDate);
-    }
-    byDate.get(entry.entryDate)!.push(entry);
-  }
-
-  const pages: PageData[] = [];
-  for (const date of order) {
-    const dayEntries = byDate.get(date)!;
-    const milestoneEntry = dayEntries.find((e) => e.milestoneLabel);
-    let pool: Photo[] = dayEntries.flatMap((e) => e.photos);
-
-    if (milestoneEntry) {
-      const accents = milestoneEntry.photos.slice(0, 4);
-      const accentIds = new Set(accents.map((p) => p.id));
-      pool = pool.filter((p) => !accentIds.has(p.id));
-      pages.push({ kind: "title", date, label: milestoneEntry.milestoneLabel!, photos: accents });
-    }
-
-    for (let i = 0; i < pool.length; i += MAX_COLLAGE_PHOTOS) {
-      pages.push({ kind: "collage", date, photos: pool.slice(i, i + MAX_COLLAGE_PHOTOS) });
-    }
-  }
-  return pages;
-}
+type PageData = AlbumPageData;
 
 type SortOrder = "oldest" | "latest";
 type ViewMode = "scroll" | "pageTurn";
@@ -68,13 +34,9 @@ export function AlbumView({
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const pageRefs = useRef(new Map<string, HTMLDivElement>());
 
-  const sortedEntries = useMemo(() => {
-    const sorted = [...entries].sort((a, b) => (a.entryDate < b.entryDate ? -1 : a.entryDate > b.entryDate ? 1 : 0));
-    if (sortOrder === "latest") sorted.reverse();
-    return sorted;
-  }, [entries, sortOrder]);
+  const sortedEntries = useMemo(() => sortAlbumEntries(entries, sortOrder), [entries, sortOrder]);
 
-  const pages = useMemo(() => buildPages(sortedEntries), [sortedEntries]);
+  const pages = useMemo(() => buildAlbumPages(sortedEntries), [sortedEntries]);
   // Which pages are the first (of possibly several) for their date, computed fresh per `pages`
   // identity rather than tracked via a "seen it once" flag on the ref map itself — the latter
   // goes stale across a scroll/page-turn remount, since unmounted refs report `null` and never
@@ -180,6 +142,14 @@ export function AlbumView({
             {t("Landscape")}
           </button>
         </div>
+        {pages.length > 0 && (
+          <a
+            href={`/api/library/${child.id}/export?orientation=${orientation}&sort=${sortOrder}`}
+            className="rounded-2xl border border-brand-100 px-3 py-1.5 font-semibold text-brand-800 transition-transform hover:scale-105 active:scale-95 dark:border-brand-900/40 dark:text-brand-200"
+          >
+            {t("⬇️ Download PDF")}
+          </a>
+        )}
       </div>
 
       <Calendar entryDates={entryDates} selectedDate={selectedDate} onSelectDate={jumpToDate} />
