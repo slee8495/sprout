@@ -75,6 +75,18 @@ export function AlbumView({
   }, [entries, sortOrder]);
 
   const pages = useMemo(() => buildPages(sortedEntries), [sortedEntries]);
+  // Which pages are the first (of possibly several) for their date, computed fresh per `pages`
+  // identity rather than tracked via a "seen it once" flag on the ref map itself — the latter
+  // goes stale across a scroll/page-turn remount, since unmounted refs report `null` and never
+  // clear their old (now-detached) map entry, permanently blocking re-registration.
+  const isFirstForDate = useMemo(() => {
+    const seen = new Set<string>();
+    return pages.map((page) => {
+      const first = !seen.has(page.date);
+      seen.add(page.date);
+      return first;
+    });
+  }, [pages]);
   const entryDates = useMemo(() => new Set(entries.map((e) => e.entryDate)), [entries]);
   const coverAnimal = child.coverAnimal || subjectEmoji(child.type);
 
@@ -179,14 +191,27 @@ export function AlbumView({
       ) : viewMode === "scroll" ? (
         <div className="flex flex-col gap-8">
           {pages.map((page, i) => (
-            <AlbumPageFrame key={i} page={page} orientation={orientation} coverAnimal={coverAnimal} registerRef={pageRefs} />
+            <AlbumPageFrame
+              key={i}
+              page={page}
+              orientation={orientation}
+              coverAnimal={coverAnimal}
+              registerRef={pageRefs}
+              isFirstForDate={isFirstForDate[i]}
+            />
           ))}
         </div>
       ) : (
         <div className="flex snap-x snap-mandatory gap-4 overflow-x-auto pb-4">
           {pages.map((page, i) => (
             <div key={i} className="w-full shrink-0 snap-start">
-              <AlbumPageFrame page={page} orientation={orientation} coverAnimal={coverAnimal} registerRef={pageRefs} />
+              <AlbumPageFrame
+                page={page}
+                orientation={orientation}
+                coverAnimal={coverAnimal}
+                registerRef={pageRefs}
+                isFirstForDate={isFirstForDate[i]}
+              />
             </div>
           ))}
         </div>
@@ -200,16 +225,18 @@ function AlbumPageFrame({
   orientation,
   coverAnimal,
   registerRef,
+  isFirstForDate,
 }: {
   page: PageData;
   orientation: Orientation;
   coverAnimal: string;
   registerRef: React.RefObject<Map<string, HTMLDivElement>>;
+  isFirstForDate: boolean;
 }) {
   return (
     <div
       ref={(el) => {
-        if (el && !registerRef.current.has(page.date)) registerRef.current.set(page.date, el);
+        if (el && isFirstForDate) registerRef.current.set(page.date, el);
       }}
       className={`overflow-hidden rounded-2xl border border-brand-100/60 bg-[#fffaf0] p-3 shadow-md shadow-brand-900/5 dark:border-brand-900/40 dark:bg-zinc-900 dark:shadow-black/40 ${
         orientation === "portrait" ? "aspect-[3/4]" : "aspect-[4/3]"
