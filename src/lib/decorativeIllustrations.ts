@@ -4,9 +4,8 @@
 // picks one deterministically from its "YYYY-MM" key, so the same month always renders the same
 // pick (stable across re-renders and web/PDF), and different months land on different animals,
 // sizes and positions without needing any randomness or shared state.
-// Restricted to the requested "cute" set — no budgie (bird) or foal (horse), and no tiger since
-// there's no tiger artwork in the set (only lion, which wasn't asked for either, so it's left out
-// too). "강아지" (dog) covers both dog portraits.
+// Restricted to the requested "cute" set — no budgie (bird) or foal (horse). No tiger artwork
+// exists in the set, so lion stands in for it. "강아지" (dog) covers both dog portraits.
 const ILLUSTRATION_POOL = [
   "owl",
   "bunny",
@@ -20,6 +19,7 @@ const ILLUSTRATION_POOL = [
   "hamster",
   "panda",
   "sheep",
+  "lion",
 ] as const;
 
 // Every month page shares this exact background — same matte tone the photo collage tiles use

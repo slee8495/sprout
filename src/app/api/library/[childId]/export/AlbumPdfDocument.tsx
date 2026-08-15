@@ -10,9 +10,9 @@ import { formatEntryDate } from "@/lib/milestones";
 import { CAPTION_HEIGHT_PT } from "@/lib/pdfLayout";
 import type { PdfPageData } from "@/lib/pdfPhotos";
 
-const FRAME_PT: Record<DecorativeSize, number> = { sm: 150, md: 190, lg: 230 };
-const SIDE_WIDTH_PCT: Record<DecorativeSize, number> = { sm: 32, md: 40, lg: 48 };
-const POSTER_PAD_PCT: Record<DecorativeSize, number> = { sm: 14, md: 8, lg: 3 };
+const FRAME_PAD_PCT: Record<DecorativeSize, number> = { sm: 8, md: 5, lg: 2 };
+const SIDE_WIDTH_PCT: Record<DecorativeSize, number> = { sm: 50, md: 60, lg: 70 };
+const POSTER_PAD_PCT: Record<DecorativeSize, number> = { sm: 6, md: 3, lg: 0 };
 
 // react-pdf's <Image> only decodes JPEG/PNG, and only from a Buffer/base64/URL — a bare fs path
 // string gets treated as a URL and fails on the server. Read the JPEG copy into a Buffer once per
@@ -109,13 +109,6 @@ const styles = StyleSheet.create({
     fontSize: 9,
     color: "#4a4a4a",
   },
-  monthPage: {
-    flexDirection: "column",
-    alignItems: "center",
-    justifyContent: "center",
-    height: "100%",
-    gap: 14,
-  },
   monthLabelSmall: {
     fontFamily: "Playfair Display",
     fontWeight: 700,
@@ -131,7 +124,7 @@ const styles = StyleSheet.create({
   sideImageWrap: {
     width: "40%",
     height: "100%",
-    padding: 10,
+    padding: 6,
   },
   sideImage: {
     width: "100%",
@@ -171,10 +164,18 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     borderRadius: 12,
   },
-  framePhotoOuter: {
+  framePage: {
+    flexDirection: "column",
+    width: "100%",
+    height: "100%",
+    backgroundColor: DECORATION_MATTE,
+    gap: 10,
+  },
+  framePhotoBox: {
+    flex: 1,
     backgroundColor: "#ffffff",
-    padding: 8,
     borderRadius: 6,
+    padding: 10,
   },
   frameImage: {
     width: "100%",
@@ -282,15 +283,13 @@ export function AlbumPdfDocument({
             );
           }
 
-          const px = FRAME_PT[decoration.size];
+          const framePad = FRAME_PAD_PCT[decoration.size];
           return (
-            <Page key={i} size="A4" orientation="landscape" style={[styles.page, { backgroundColor: DECORATION_MATTE }]}>
-              <View style={styles.monthPage}>
-                <View style={styles.framePhotoOuter}>
-                  <View style={{ width: px, height: px }}>
-                    {/* eslint-disable-next-line jsx-a11y/alt-text */}
-                    <Image src={decorationBuffer} style={styles.frameImage} />
-                  </View>
+            <Page key={i} size="A4" orientation="landscape" style={{ padding: 0 }}>
+              <View style={[styles.framePage, { padding: `${framePad}%` }]}>
+                <View style={styles.framePhotoBox}>
+                  {/* eslint-disable-next-line jsx-a11y/alt-text */}
+                  <Image src={decorationBuffer} style={styles.frameImage} />
                 </View>
                 <Text style={styles.monthLabelSmall}>{page.label}</Text>
               </View>

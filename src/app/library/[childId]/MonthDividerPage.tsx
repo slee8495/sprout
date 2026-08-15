@@ -2,9 +2,9 @@ import Image from "next/image";
 import { decorationForMonth, type DecorativeSize } from "@/lib/decorativeIllustrations";
 import { formatMonthLabel } from "@/lib/milestones";
 
-const FRAME_PX: Record<DecorativeSize, number> = { sm: 150, md: 190, lg: 230 };
-const SIDE_WIDTH_PCT: Record<DecorativeSize, number> = { sm: 32, md: 40, lg: 48 };
-const POSTER_PAD_PCT: Record<DecorativeSize, number> = { sm: 14, md: 8, lg: 3 };
+const FRAME_PAD_PCT: Record<DecorativeSize, number> = { sm: 8, md: 5, lg: 2 };
+const SIDE_WIDTH_PCT: Record<DecorativeSize, number> = { sm: 50, md: 60, lg: 70 };
+const POSTER_PAD_PCT: Record<DecorativeSize, number> = { sm: 6, md: 3, lg: 0 };
 
 // Tailwind needs this class written literally (not templated from a constant) to pick it up at
 // build time — matches CollagePage.tsx's tile matting exactly, so the illustration's own
@@ -14,8 +14,9 @@ const MATTE = "bg-[#f2ece0] dark:bg-zinc-800";
 // The AI-illustration disclosure lives once, up top on the album screen (AlbumView's header) —
 // not repeated on every month divider page. Every page shares the exact same background (the same
 // matte tone the photo collage tiles use) so there's never a color seam within a page, and every
-// illustration is shown in full via object-contain — never cropped into the animal's face. Only
-// the layout, illustration size, and position vary per month (decorationForMonth).
+// illustration is shown in full via object-contain — never cropped into the animal's face — and
+// sized to dominate the page rather than sit small in a box. Only the layout, illustration size,
+// and position vary per month (decorationForMonth).
 export function MonthDividerPage({ date }: { date: string }) {
   const decoration = decorationForMonth(date.slice(0, 7));
   const label = formatMonthLabel(date);
@@ -25,7 +26,7 @@ export function MonthDividerPage({ date }: { date: string }) {
     return (
       <div className={`flex h-full w-full items-stretch ${MATTE} ${decoration.flip ? "flex-row-reverse" : "flex-row"}`}>
         <div className="relative shrink-0" style={{ width: `${widthPct}%` }}>
-          <Image src={decoration.webPath} alt="" fill sizes="400px" className="object-contain p-3" />
+          <Image src={decoration.webPath} alt="" fill sizes="600px" className="object-contain p-2" />
         </div>
         <div className="flex flex-1 flex-col items-center justify-center gap-3 px-4 text-center">
           <span className="h-px w-10 bg-zinc-800/25 dark:bg-zinc-100/25" />
@@ -42,7 +43,7 @@ export function MonthDividerPage({ date }: { date: string }) {
     return (
       <div className={`relative flex h-full w-full flex-col items-center justify-end ${MATTE}`} style={{ padding: `${padPct}%` }}>
         <div className="relative w-full flex-1">
-          <Image src={decoration.webPath} alt="" fill sizes="700px" className="object-contain" />
+          <Image src={decoration.webPath} alt="" fill sizes="800px" className="object-contain" />
         </div>
         <div
           className={`relative z-10 rounded-2xl bg-white/90 px-6 py-3 shadow-md dark:bg-zinc-900/85 ${decoration.flip ? "order-first mb-3" : "mt-3"}`}
@@ -55,15 +56,13 @@ export function MonthDividerPage({ date }: { date: string }) {
     );
   }
 
-  const framePx = FRAME_PX[decoration.size];
+  const padPct = FRAME_PAD_PCT[decoration.size];
   return (
-    <div className={`flex h-full w-full flex-col items-center justify-center gap-4 ${MATTE} px-6 text-center`}>
-      <div className="shrink-0 rounded-lg bg-white p-2 shadow-md shadow-black/10 dark:bg-zinc-900">
-        <div className="relative" style={{ width: framePx, height: framePx }}>
-          <Image src={decoration.webPath} alt="" fill sizes={`${framePx}px`} className="object-contain" />
-        </div>
+    <div className={`flex h-full w-full flex-col gap-3 ${MATTE}`} style={{ padding: `${padPct}%` }}>
+      <div className="relative min-h-0 flex-1 rounded-lg bg-white p-3 shadow-md shadow-black/10 dark:bg-zinc-900">
+        <Image src={decoration.webPath} alt="" fill sizes="800px" className="object-contain p-2" />
       </div>
-      <h2 className="font-[family-name:var(--font-album-serif)] text-3xl font-semibold text-zinc-800 sm:text-4xl dark:text-zinc-100">
+      <h2 className="shrink-0 text-center font-[family-name:var(--font-album-serif)] text-2xl font-semibold text-zinc-800 sm:text-3xl dark:text-zinc-100">
         {label}
       </h2>
     </div>
