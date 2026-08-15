@@ -28,9 +28,9 @@ export function MonthDividerPage({ date, monthIndex }: { date: string; monthInde
         <div className="relative shrink-0" style={{ width: `${widthPct}%` }}>
           <Image src={decoration.webPath} alt="" fill sizes="600px" className="object-contain p-2" />
         </div>
-        <div className="flex flex-1 flex-col items-center justify-center gap-3 px-4 text-center">
+        <div className="flex min-w-0 flex-1 flex-col items-center justify-center gap-3 px-4 text-center">
           <span className="h-px w-10 bg-zinc-800/25 dark:bg-zinc-100/25" />
-          <h2 className="font-[family-name:var(--font-album-serif)] text-3xl font-semibold text-zinc-800 sm:text-4xl dark:text-zinc-100">
+          <h2 className="w-full break-words font-[family-name:var(--font-album-serif)] text-2xl font-semibold text-zinc-800 sm:text-3xl dark:text-zinc-100">
             {label}
           </h2>
         </div>
