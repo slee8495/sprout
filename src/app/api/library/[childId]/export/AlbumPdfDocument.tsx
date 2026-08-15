@@ -5,21 +5,14 @@ import type { Child } from "@/db/queries";
 import { illustrationFilenameForAnimal } from "@/lib/animalIllustrations";
 import { getCollageRects } from "@/lib/collage";
 import { coverBackgroundHex } from "@/lib/covers";
-import { decorationForMonth, type DecorativeCorner, type DecorativeSize } from "@/lib/decorativeIllustrations";
+import { decorationForMonth, DECORATION_MATTE, type DecorativeSize } from "@/lib/decorativeIllustrations";
 import { formatEntryDate } from "@/lib/milestones";
 import { CAPTION_HEIGHT_PT } from "@/lib/pdfLayout";
 import type { PdfPageData } from "@/lib/pdfPhotos";
 
-const MEDALLION_PT: Record<DecorativeSize, number> = { sm: 72, md: 96, lg: 128 };
-const CORNER_PT: Record<DecorativeSize, number> = { sm: 100, md: 140, lg: 180 };
-const FRAME_PT: Record<DecorativeSize, number> = { sm: 130, md: 170, lg: 210 };
-const SIDE_WIDTH_PCT: Record<DecorativeSize, number> = { sm: 32, md: 40, lg: 50 };
-const CORNER_POSITION: Record<DecorativeCorner, { top?: number; bottom?: number; left?: number; right?: number }> = {
-  tl: { top: 16, left: 16 },
-  tr: { top: 16, right: 16 },
-  bl: { bottom: 16, left: 16 },
-  br: { bottom: 16, right: 16 },
-};
+const FRAME_PT: Record<DecorativeSize, number> = { sm: 150, md: 190, lg: 230 };
+const SIDE_WIDTH_PCT: Record<DecorativeSize, number> = { sm: 32, md: 40, lg: 48 };
+const POSTER_PAD_PCT: Record<DecorativeSize, number> = { sm: 14, md: 8, lg: 3 };
 
 // react-pdf's <Image> only decodes JPEG/PNG, and only from a Buffer/base64/URL — a bare fs path
 // string gets treated as a URL and fails on the server. Read the JPEG copy into a Buffer once per
@@ -77,12 +70,6 @@ const styles = StyleSheet.create({
     height: "100%",
     objectFit: "cover",
   },
-  monthIllustrationWrap: {
-    width: 90,
-    height: 90,
-    borderRadius: 45,
-    overflow: "hidden",
-  },
   disclaimer: {
     position: "absolute",
     bottom: 16,
@@ -129,18 +116,6 @@ const styles = StyleSheet.create({
     height: "100%",
     gap: 14,
   },
-  monthEyebrow: {
-    fontSize: 10,
-    color: "#5a5a5a",
-    letterSpacing: 4,
-    textTransform: "uppercase",
-  },
-  monthLabel: {
-    fontFamily: "Playfair Display",
-    fontWeight: 700,
-    fontSize: 44,
-    textAlign: "center",
-  },
   monthLabelSmall: {
     fontFamily: "Playfair Display",
     fontWeight: 700,
@@ -151,15 +126,17 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     width: "100%",
     height: "100%",
+    backgroundColor: DECORATION_MATTE,
   },
   sideImageWrap: {
     width: "40%",
     height: "100%",
+    padding: 10,
   },
   sideImage: {
     width: "100%",
     height: "100%",
-    objectFit: "cover",
+    objectFit: "contain",
   },
   sideTextWrap: {
     flex: 1,
@@ -169,63 +146,40 @@ const styles = StyleSheet.create({
     gap: 12,
     paddingHorizontal: 16,
   },
-  backdropWrap: {
+  posterWrap: {
     position: "relative",
     width: "100%",
     height: "100%",
+    backgroundColor: DECORATION_MATTE,
+    flexDirection: "column",
+    alignItems: "center",
+    justifyContent: "flex-end",
   },
-  backdropImage: {
-    position: "absolute",
-    top: 0,
-    left: 0,
+  posterImageWrap: {
+    position: "relative",
+    width: "100%",
+    flex: 1,
+  },
+  posterImage: {
     width: "100%",
     height: "100%",
-    objectFit: "cover",
+    objectFit: "contain",
   },
-  backdropCaption: {
-    position: "absolute",
-    bottom: 24,
-    left: 0,
-    width: "100%",
-    alignItems: "center",
-  },
-  backdropCard: {
-    backgroundColor: "rgba(255,255,255,0.85)",
+  posterCard: {
+    backgroundColor: "rgba(255,255,255,0.9)",
     paddingHorizontal: 24,
     paddingVertical: 10,
     borderRadius: 12,
   },
-  cornerPage: {
-    position: "relative",
-    height: "100%",
-    width: "100%",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: 14,
-  },
-  cornerImageWrap: {
-    position: "absolute",
-    borderRadius: 16,
-    overflow: "hidden",
-  },
-  cornerImage: {
-    width: "100%",
-    height: "100%",
-    objectFit: "cover",
-  },
   framePhotoOuter: {
     backgroundColor: "#ffffff",
-    padding: 6,
+    padding: 8,
     borderRadius: 6,
-  },
-  framePhotoInner: {
-    borderRadius: 3,
-    overflow: "hidden",
   },
   frameImage: {
     width: "100%",
     height: "100%",
-    objectFit: "cover",
+    objectFit: "contain",
   },
   collageArea: {
     position: "relative",
@@ -288,21 +242,6 @@ export function AlbumPdfDocument({
         if (page.kind === "month") {
           const decoration = decorationForMonth(page.dates[0].slice(0, 7));
           const decorationBuffer = loadDecorationBuffer(decoration.pdfFilename);
-          const monthColor = coverBackgroundHex(decoration.background, false);
-
-          if (decoration.variant === "backdrop") {
-            return (
-              <Page key={i} size="A4" orientation="landscape" style={styles.backdropWrap}>
-                {/* eslint-disable-next-line jsx-a11y/alt-text */}
-                <Image src={decorationBuffer} style={styles.backdropImage} />
-                <View style={[styles.backdropCaption, decoration.flip ? { bottom: undefined, top: 24 } : {}]}>
-                  <View style={styles.backdropCard}>
-                    <Text style={styles.monthLabelSmall}>{page.label}</Text>
-                  </View>
-                </View>
-              </Page>
-            );
-          }
 
           if (decoration.variant === "side") {
             const widthPct = SIDE_WIDTH_PCT[decoration.size];
@@ -320,56 +259,40 @@ export function AlbumPdfDocument({
               </View>
             );
             return (
-              <Page key={i} size="A4" orientation="landscape" style={[styles.page, { padding: 0, backgroundColor: monthColor }]}>
+              <Page key={i} size="A4" orientation="landscape" style={{ padding: 0 }}>
                 <View style={styles.sideWrap}>{imageFirst ? [imageView, textView] : [textView, imageView]}</View>
               </Page>
             );
           }
 
-          if (decoration.variant === "corner") {
-            const px = CORNER_PT[decoration.size];
+          if (decoration.variant === "poster") {
+            const padPct = POSTER_PAD_PCT[decoration.size];
             return (
-              <Page key={i} size="A4" orientation="landscape" style={[styles.page, { backgroundColor: monthColor }]}>
-                <View style={styles.cornerPage}>
-                  <View style={[styles.cornerImageWrap, { width: px, height: px, ...CORNER_POSITION[decoration.corner] }]}>
+              <Page key={i} size="A4" orientation="landscape" style={{ padding: 0 }}>
+                <View style={[styles.posterWrap, { padding: `${padPct}%` }]}>
+                  <View style={styles.posterImageWrap}>
                     {/* eslint-disable-next-line jsx-a11y/alt-text */}
-                    <Image src={decorationBuffer} style={styles.cornerImage} />
+                    <Image src={decorationBuffer} style={styles.posterImage} />
                   </View>
-                  <View style={styles.rule} />
-                  <Text style={styles.monthLabel}>{page.label}</Text>
+                  <View style={[styles.posterCard, { marginTop: 12 }]}>
+                    <Text style={styles.monthLabelSmall}>{page.label}</Text>
+                  </View>
                 </View>
               </Page>
             );
           }
 
-          if (decoration.variant === "frame") {
-            const px = FRAME_PT[decoration.size];
-            return (
-              <Page key={i} size="A4" orientation="landscape" style={[styles.page, { backgroundColor: monthColor }]}>
-                <View style={styles.monthPage}>
-                  <View style={styles.framePhotoOuter}>
-                    <View style={[styles.framePhotoInner, { width: px, height: px }]}>
-                      {/* eslint-disable-next-line jsx-a11y/alt-text */}
-                      <Image src={decorationBuffer} style={styles.frameImage} />
-                    </View>
-                  </View>
-                  <Text style={styles.monthLabelSmall}>{page.label}</Text>
-                </View>
-              </Page>
-            );
-          }
-
-          const medallionPt = MEDALLION_PT[decoration.size];
+          const px = FRAME_PT[decoration.size];
           return (
-            <Page key={i} size="A4" orientation="landscape" style={[styles.page, { backgroundColor: monthColor }]}>
+            <Page key={i} size="A4" orientation="landscape" style={[styles.page, { backgroundColor: DECORATION_MATTE }]}>
               <View style={styles.monthPage}>
-                <View style={[styles.monthIllustrationWrap, { width: medallionPt, height: medallionPt, borderRadius: medallionPt / 2 }]}>
-                  {/* eslint-disable-next-line jsx-a11y/alt-text */}
-                  <Image src={decorationBuffer} style={styles.coverIllustration} />
+                <View style={styles.framePhotoOuter}>
+                  <View style={{ width: px, height: px }}>
+                    {/* eslint-disable-next-line jsx-a11y/alt-text */}
+                    <Image src={decorationBuffer} style={styles.frameImage} />
+                  </View>
                 </View>
-                <Text style={styles.monthEyebrow}>{child.name}</Text>
-                <View style={styles.rule} />
-                <Text style={styles.monthLabel}>{page.label}</Text>
+                <Text style={styles.monthLabelSmall}>{page.label}</Text>
               </View>
             </Page>
           );

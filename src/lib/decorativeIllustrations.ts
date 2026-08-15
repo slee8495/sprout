@@ -1,39 +1,42 @@
-import { COVER_BACKGROUNDS, type CoverBackground } from "@/lib/covers";
-
 // The full pool of AI-generated (Nano Banana) watercolor animal portraits, used purely as
 // decoration on month-divider pages — unlike ANIMAL_ILLUSTRATIONS in animalIllustrations.ts,
 // these don't need to match a child's chosen cover animal. Every month chapter page in the album
 // picks one deterministically from its "YYYY-MM" key, so the same month always renders the same
 // pick (stable across re-renders and web/PDF), and different months land on different animals,
-// layouts, sizes, positions and colors without needing any randomness or shared state.
+// sizes and positions without needing any randomness or shared state.
+// Restricted to the requested "cute" set — no budgie (bird) or foal (horse), and no tiger since
+// there's no tiger artwork in the set (only lion, which wasn't asked for either, so it's left out
+// too). "강아지" (dog) covers both dog portraits.
 const ILLUSTRATION_POOL = [
   "owl",
   "bunny",
   "giraffe",
   "deer",
   "koala",
-  "panda",
   "elephant",
-  "lion",
   "frenchie",
-  "budgie",
-  "sheep",
-  "hamster",
-  "foal",
-  "kitten",
   "puppy",
+  "kitten",
+  "hamster",
+  "panda",
+  "sheep",
 ] as const;
 
-export type DecorativeVariant = "medallion" | "side" | "backdrop" | "corner" | "frame";
-const VARIANTS: DecorativeVariant[] = ["medallion", "side", "backdrop", "corner", "frame"];
+// Every month page shares this exact background — same matte tone the photo collage tiles use
+// (CollagePage.tsx / MATTE_COLOR in pdfPhotos.ts) — and every illustration is shown with
+// object-contain, never cropped. A page mixing several different tints, or cropping into an
+// animal's face, was the actual complaint; a single consistent color plus "always show the whole
+// picture" fixes both at once.
+export const DECORATION_MATTE = "#f2ece0";
+
+// Three variants, none of which ever crop the illustration: a portrait box, a left/right split,
+// and a big centered "poster" — they differ in the illustration's size and position, not its
+// color or whether it gets cut off.
+export type DecorativeVariant = "frame" | "side" | "poster";
+const VARIANTS: DecorativeVariant[] = ["frame", "side", "poster"];
 
 export type DecorativeSize = "sm" | "md" | "lg";
 const SIZES: DecorativeSize[] = ["sm", "md", "lg"];
-
-export type DecorativeCorner = "tl" | "tr" | "bl" | "br";
-const CORNERS: DecorativeCorner[] = ["tl", "tr", "bl", "br"];
-
-const BACKGROUNDS: CoverBackground[] = COVER_BACKGROUNDS.map((b) => b.value);
 
 function hashString(value: string): number {
   let h = 0;
@@ -42,8 +45,8 @@ function hashString(value: string): number {
 }
 
 // Each property is hashed off a differently-salted key so they vary independently — otherwise a
-// single shared hash correlates variant/size/color together and neighboring months would tend to
-// look similar (e.g. always "lg" whenever it's "backdrop").
+// single shared hash correlates variant/size together and neighboring months would tend to look
+// similar (e.g. always "lg" whenever it's "side").
 function pick<T>(list: T[], seed: string): T {
   return list[hashString(seed) % list.length];
 }
@@ -54,9 +57,7 @@ export type MonthDecoration = {
   pdfFilename: string;
   variant: DecorativeVariant;
   size: DecorativeSize;
-  corner: DecorativeCorner;
   flip: boolean;
-  background: CoverBackground;
 };
 
 export function decorationForMonth(monthKey: string): MonthDecoration {
@@ -67,8 +68,6 @@ export function decorationForMonth(monthKey: string): MonthDecoration {
     pdfFilename: `animal-illustrations/${name}.jpg`,
     variant: pick(VARIANTS, `${monthKey}|variant`),
     size: pick(SIZES, `${monthKey}|size`),
-    corner: pick(CORNERS, `${monthKey}|corner`),
     flip: hashString(`${monthKey}|flip`) % 2 === 0,
-    background: pick(BACKGROUNDS, `${monthKey}|bg`),
   };
 }
