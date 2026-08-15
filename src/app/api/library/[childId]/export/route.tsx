@@ -6,7 +6,9 @@ import { requireSession } from "@/lib/session";
 import { AlbumPdfDocument } from "./AlbumPdfDocument";
 
 export const runtime = "nodejs";
-export const maxDuration = 60;
+// react-pdf fetches every photo over the network before embedding it, so a big album (100+
+// photos) needs real headroom — 60s was enough for a small test album but timed out for one.
+export const maxDuration = 300;
 
 export async function GET(request: NextRequest, { params }: { params: Promise<{ childId: string }> }) {
   const { childId } = await params;
