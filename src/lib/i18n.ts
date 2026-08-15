@@ -118,7 +118,7 @@ const ko: Record<string, string> = {
   "Couldn't create the PDF — try again.": "PDF를 만들지 못했어요 — 다시 시도해주세요.",
   "📜 Scroll": "📜 스크롤",
   "📖 Page turn": "📖 페이지 넘김",
-  "🎨 AI-generated illustration": "🎨 AI로 생성한 일러스트",
+  "🎨 Some illustrations in this album are AI-generated.": "🎨 이 앨범의 일부 일러스트는 AI로 생성됐어요.",
   "🎨 Some covers use AI-generated illustrations, not photos of your child or pet.":
     "🎨 일부 커버는 실제 사진이 아닌 AI로 생성한 일러스트예요.",
   Name: "이름",
@@ -394,7 +394,7 @@ const zh: Record<string, string> = {
   "Couldn't create the PDF — try again.": "无法生成 PDF — 请重试。",
   "📜 Scroll": "📜 滚动",
   "📖 Page turn": "📖 翻页",
-  "🎨 AI-generated illustration": "🎨 AI 生成的插画",
+  "🎨 Some illustrations in this album are AI-generated.": "🎨 本相册中的部分插画由 AI 生成。",
   "🎨 Some covers use AI-generated illustrations, not photos of your child or pet.":
     "🎨 部分封面使用 AI 生成的插画，并非实际照片。",
   Name: "姓名",
@@ -669,7 +669,7 @@ const ja: Record<string, string> = {
   "Couldn't create the PDF — try again.": "PDFを作成できませんでした — もう一度お試しください。",
   "📜 Scroll": "📜 スクロール",
   "📖 Page turn": "📖 ページめくり",
-  "🎨 AI-generated illustration": "🎨 AI生成イラスト",
+  "🎨 Some illustrations in this album are AI-generated.": "🎨 このアルバムの一部のイラストはAI生成です。",
   "🎨 Some covers use AI-generated illustrations, not photos of your child or pet.":
     "🎨 一部の表紙は実際の写真ではなくAI生成イラストです。",
   Name: "名前",
@@ -945,7 +945,7 @@ const es: Record<string, string> = {
   "Couldn't create the PDF — try again.": "No se pudo crear el PDF — intenta de nuevo.",
   "📜 Scroll": "📜 Desplazar",
   "📖 Page turn": "📖 Pasar página",
-  "🎨 AI-generated illustration": "🎨 Ilustración generada por IA",
+  "🎨 Some illustrations in this album are AI-generated.": "🎨 Algunas ilustraciones de este álbum son generadas por IA.",
   "🎨 Some covers use AI-generated illustrations, not photos of your child or pet.":
     "🎨 Algunas portadas usan ilustraciones generadas por IA, no fotos reales.",
   Name: "Nombre",

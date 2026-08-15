@@ -3,10 +3,10 @@ import type { CSSProperties } from "react";
 import { decorationForMonth } from "@/lib/decorativeIllustrations";
 import { coverBackgroundHex } from "@/lib/covers";
 import { formatMonthLabel } from "@/lib/milestones";
-import { useSettings } from "../../SettingsProvider";
 
+// The AI-generated-illustration disclosure lives once, up top on the album screen
+// (AlbumView's header) — not repeated on every month divider page.
 export function MonthDividerPage({ date, coverBackground }: { date: string; coverBackground: string | null }) {
-  const { t } = useSettings();
   const decoration = decorationForMonth(date.slice(0, 7));
   const label = formatMonthLabel(date);
   const bgVars = {
@@ -24,9 +24,6 @@ export function MonthDividerPage({ date, coverBackground }: { date: string; cove
               {label}
             </h2>
           </div>
-          <p className="mt-1 text-[9px] tracking-wide text-white/90 uppercase [text-shadow:0_1px_2px_rgba(0,0,0,0.4)]">
-            {t("🎨 AI-generated illustration")}
-          </p>
         </div>
       </div>
     );
@@ -46,9 +43,6 @@ export function MonthDividerPage({ date, coverBackground }: { date: string; cove
           <h2 className="font-[family-name:var(--font-album-serif)] text-3xl font-semibold text-zinc-800 sm:text-4xl dark:text-zinc-100">
             {label}
           </h2>
-          <p className="text-[9px] tracking-wide text-zinc-800/40 uppercase dark:text-zinc-100/40">
-            {t("🎨 AI-generated illustration")}
-          </p>
         </div>
       </div>
     );
@@ -56,7 +50,7 @@ export function MonthDividerPage({ date, coverBackground }: { date: string; cove
 
   return (
     <div
-      className="relative flex h-full w-full flex-col items-center justify-center gap-4 overflow-hidden bg-[var(--cover-light)] px-6 text-center dark:bg-[var(--cover-dark)]"
+      className="flex h-full w-full flex-col items-center justify-center gap-4 overflow-hidden bg-[var(--cover-light)] px-6 text-center dark:bg-[var(--cover-dark)]"
       style={bgVars}
     >
       <div className="relative h-24 w-24 shrink-0 overflow-hidden rounded-full shadow-md shadow-black/10 ring-4 ring-white/60 dark:ring-white/10">
@@ -66,9 +60,6 @@ export function MonthDividerPage({ date, coverBackground }: { date: string; cove
       <h2 className="font-[family-name:var(--font-album-serif)] text-4xl font-semibold text-zinc-800 sm:text-5xl dark:text-zinc-100">
         {label}
       </h2>
-      <p className="absolute bottom-3 text-[9px] tracking-wide text-zinc-800/40 uppercase dark:text-zinc-100/40">
-        {t("🎨 AI-generated illustration")}
-      </p>
     </div>
   );
 }

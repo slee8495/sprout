@@ -83,14 +83,6 @@ const styles = StyleSheet.create({
     letterSpacing: 1,
     textTransform: "uppercase",
   },
-  disclaimerInline: {
-    marginTop: 4,
-    fontSize: 7,
-    color: "rgba(0,0,0,0.35)",
-    letterSpacing: 1,
-    textTransform: "uppercase",
-    textAlign: "center",
-  },
   page: {
     padding: 24,
     flexDirection: "column",
@@ -192,13 +184,6 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     borderRadius: 12,
   },
-  backdropDisclaimer: {
-    marginTop: 6,
-    fontSize: 7,
-    color: "rgba(255,255,255,0.85)",
-    letterSpacing: 1,
-    textTransform: "uppercase",
-  },
   collageArea: {
     position: "relative",
     width: "100%",
@@ -252,7 +237,8 @@ export function AlbumPdfDocument({
         )}
         <Text style={styles.coverTitle}>{child.name}</Text>
         {rangeLabel && <Text style={styles.coverSubtitle}>{rangeLabel}</Text>}
-        {illustration && <Text style={styles.disclaimer}>AI-generated illustration</Text>}
+        {/* Disclosed once here for the whole album — not repeated on every month page. */}
+        <Text style={styles.disclaimer}>Some illustrations in this album are AI-generated.</Text>
       </Page>
 
       {pages.map((page, i) => {
@@ -269,7 +255,6 @@ export function AlbumPdfDocument({
                   <View style={styles.backdropCard}>
                     <Text style={styles.monthLabelSmall}>{page.label}</Text>
                   </View>
-                  <Text style={styles.backdropDisclaimer}>AI-generated illustration</Text>
                 </View>
               </Page>
             );
@@ -287,7 +272,6 @@ export function AlbumPdfDocument({
               <View key="text" style={styles.sideTextWrap}>
                 <View style={styles.rule} />
                 <Text style={styles.monthLabelSmall}>{page.label}</Text>
-                <Text style={styles.disclaimerInline}>AI-generated illustration</Text>
               </View>
             );
             return (
@@ -308,7 +292,6 @@ export function AlbumPdfDocument({
                 <View style={styles.rule} />
                 <Text style={styles.monthLabel}>{page.label}</Text>
               </View>
-              <Text style={styles.disclaimer}>AI-generated illustration</Text>
             </Page>
           );
         }
