@@ -118,9 +118,7 @@ const ko: Record<string, string> = {
   "Couldn't create the PDF — try again.": "PDF를 만들지 못했어요 — 다시 시도해주세요.",
   "📜 Scroll": "📜 스크롤",
   "📖 Page turn": "📖 페이지 넘김",
-  "🎨 Some illustrations in this album are AI-generated.": "🎨 이 앨범의 일부 일러스트는 AI로 생성됐어요.",
-  "🎨 Some covers use AI-generated illustrations, not photos of your child or pet.":
-    "🎨 일부 커버는 실제 사진이 아닌 AI로 생성한 일러스트예요.",
+  "🎨 All illustrations used in this app are AI-generated.": "🎨 이 앱에 사용된 모든 일러스트는 AI로 생성됐어요.",
   Name: "이름",
   "👶 Child": "👶 아이",
   "🐾 Pet": "🐾 반려동물",
@@ -394,9 +392,7 @@ const zh: Record<string, string> = {
   "Couldn't create the PDF — try again.": "无法生成 PDF — 请重试。",
   "📜 Scroll": "📜 滚动",
   "📖 Page turn": "📖 翻页",
-  "🎨 Some illustrations in this album are AI-generated.": "🎨 本相册中的部分插画由 AI 生成。",
-  "🎨 Some covers use AI-generated illustrations, not photos of your child or pet.":
-    "🎨 部分封面使用 AI 生成的插画，并非实际照片。",
+  "🎨 All illustrations used in this app are AI-generated.": "🎨 本应用中使用的所有插画均由 AI 生成。",
   Name: "姓名",
   "👶 Child": "👶 孩子",
   "🐾 Pet": "🐾 宠物",
@@ -669,9 +665,7 @@ const ja: Record<string, string> = {
   "Couldn't create the PDF — try again.": "PDFを作成できませんでした — もう一度お試しください。",
   "📜 Scroll": "📜 スクロール",
   "📖 Page turn": "📖 ページめくり",
-  "🎨 Some illustrations in this album are AI-generated.": "🎨 このアルバムの一部のイラストはAI生成です。",
-  "🎨 Some covers use AI-generated illustrations, not photos of your child or pet.":
-    "🎨 一部の表紙は実際の写真ではなくAI生成イラストです。",
+  "🎨 All illustrations used in this app are AI-generated.": "🎨 このアプリで使用されているイラストはすべてAI生成です。",
   Name: "名前",
   "👶 Child": "👶 子供",
   "🐾 Pet": "🐾 ペット",
@@ -945,9 +939,7 @@ const es: Record<string, string> = {
   "Couldn't create the PDF — try again.": "No se pudo crear el PDF — intenta de nuevo.",
   "📜 Scroll": "📜 Desplazar",
   "📖 Page turn": "📖 Pasar página",
-  "🎨 Some illustrations in this album are AI-generated.": "🎨 Algunas ilustraciones de este álbum son generadas por IA.",
-  "🎨 Some covers use AI-generated illustrations, not photos of your child or pet.":
-    "🎨 Algunas portadas usan ilustraciones generadas por IA, no fotos reales.",
+  "🎨 All illustrations used in this app are AI-generated.": "🎨 Todas las ilustraciones usadas en esta app son generadas por IA.",
   Name: "Nombre",
   "👶 Child": "👶 Hijo/a",
   "🐾 Pet": "🐾 Mascota",

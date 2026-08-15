@@ -238,7 +238,7 @@ export function AlbumPdfDocument({
         <Text style={styles.coverTitle}>{child.name}</Text>
         {rangeLabel && <Text style={styles.coverSubtitle}>{rangeLabel}</Text>}
         {/* Disclosed once here for the whole album — not repeated on every month page. */}
-        <Text style={styles.disclaimer}>Some illustrations in this album are AI-generated.</Text>
+        <Text style={styles.disclaimer}>All illustrations used in this app are AI-generated.</Text>
       </Page>
 
       {pages.map((page, i) => {

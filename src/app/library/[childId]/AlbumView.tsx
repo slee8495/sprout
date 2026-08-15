@@ -90,7 +90,7 @@ export function AlbumView({
         <div className="flex flex-col">
           <h1 className="font-heading text-2xl font-bold text-brand-700 dark:text-brand-300">{child.name}</h1>
           <p className="text-[10px] text-zinc-400 dark:text-zinc-500">
-            {t("🎨 Some illustrations in this album are AI-generated.")}
+            {t("🎨 All illustrations used in this app are AI-generated.")}
           </p>
         </div>
       </header>

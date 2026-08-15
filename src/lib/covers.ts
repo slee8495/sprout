@@ -1,3 +1,5 @@
+import { ANIMAL_ILLUSTRATIONS } from "@/lib/animalIllustrations";
+
 // Album cover options (Library feature): an animal emoji on a pastel background panel.
 // Independent of the app-wide color theme in SettingsProvider — each kid/pet picks their own,
 // stored as `coverAnimal`/`coverBackground` on the `children` row. The five background keys
@@ -15,41 +17,9 @@ export const COVER_BACKGROUNDS = [
 
 export type CoverBackground = (typeof COVER_BACKGROUNDS)[number]["value"];
 
-export const COVER_ANIMALS = [
-  "🐰",
-  "🦊",
-  "🐻",
-  "🐼",
-  "🐨",
-  "🐯",
-  "🦁",
-  "🦒",
-  "🦌",
-  "🐘",
-  "🐮",
-  "🐷",
-  "🐸",
-  "🐵",
-  "🐔",
-  "🐧",
-  "🦉",
-  "🦆",
-  "🐺",
-  "🦄",
-  "🐴",
-  "🐗",
-  "🐭",
-  "🐹",
-  "🦔",
-  "🐢",
-  "🐙",
-  "🦕",
-  "🐳",
-  "🐬",
-  "🐝",
-  "🦋",
-  "🐿️",
-] as const;
+// Every option here has a real hand-picked illustration (see animalIllustrations.ts) — the cover
+// picker only offers animals we actually have artwork for, never a bare emoji placeholder.
+export const COVER_ANIMALS = Object.keys(ANIMAL_ILLUSTRATIONS);
 
 export function coverBackgroundHex(value: string | null | undefined, dark: boolean) {
   const match = COVER_BACKGROUNDS.find((b) => b.value === value);

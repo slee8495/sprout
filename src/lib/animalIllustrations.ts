@@ -1,7 +1,7 @@
-// Hand-picked AI-generated (Nano Banana) watercolor portraits for a handful of the COVER_ANIMALS
-// emoji — used wherever a cover would otherwise just show the bare emoji, so covers for these
-// animals look like a little keepsake print instead of a plain glyph. Any emoji without an entry
-// here just falls back to the emoji, same as before.
+// Hand-picked AI-generated (Nano Banana) watercolor portraits, one per emoji. This is the
+// complete set of animals with real artwork — COVER_ANIMALS (covers.ts) is derived directly from
+// these keys, so the cover picker only ever offers animals that render as a real illustration,
+// never a bare emoji.
 export const ANIMAL_ILLUSTRATIONS: Record<string, string> = {
   "🦉": "/animal-illustrations/owl.webp",
   "🐰": "/animal-illustrations/bunny.webp",
@@ -11,6 +11,13 @@ export const ANIMAL_ILLUSTRATIONS: Record<string, string> = {
   "🐼": "/animal-illustrations/panda.webp",
   "🐘": "/animal-illustrations/elephant.webp",
   "🦁": "/animal-illustrations/lion.webp",
+  "🐶": "/animal-illustrations/frenchie.webp",
+  "🐕": "/animal-illustrations/puppy.webp",
+  "🐱": "/animal-illustrations/kitten.webp",
+  "🐑": "/animal-illustrations/sheep.webp",
+  "🐹": "/animal-illustrations/hamster.webp",
+  "🐴": "/animal-illustrations/foal.webp",
+  "🐦": "/animal-illustrations/budgie.webp",
 };
 
 export function illustrationForAnimal(animal: string | null | undefined): string | null {

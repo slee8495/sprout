@@ -2,7 +2,6 @@
 
 import { useState, useTransition, type CSSProperties } from "react";
 import type { DayCountStart } from "@/lib/date";
-import { illustrationForAnimal } from "@/lib/animalIllustrations";
 import { coverBackgroundHex, COVER_ANIMALS, COVER_BACKGROUNDS, type CoverBackground } from "@/lib/covers";
 import { subjectEmoji, type SubjectType } from "@/lib/milestones";
 import { CoverArt } from "../CoverArt";
@@ -177,11 +176,9 @@ export function ChildForm({
             </button>
           ))}
         </div>
-        {COVER_ANIMALS.some((a) => illustrationForAnimal(a)) && (
-          <p className="text-[11px] text-zinc-400 dark:text-zinc-500">
-            {t("🎨 Some covers use AI-generated illustrations, not photos of your child or pet.")}
-          </p>
-        )}
+        <p className="text-[11px] text-zinc-400 dark:text-zinc-500">
+          {t("🎨 All illustrations used in this app are AI-generated.")}
+        </p>
       </div>
       {error && <p className="text-sm text-rose-600">{error}</p>}
       <div className="flex gap-2">
