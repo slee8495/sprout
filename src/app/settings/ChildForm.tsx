@@ -1,8 +1,9 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState, useTransition, type CSSProperties } from "react";
 import type { DayCountStart } from "@/lib/date";
-import type { SubjectType } from "@/lib/milestones";
+import { coverBackgroundHex, COVER_ANIMALS, COVER_BACKGROUNDS, type CoverBackground } from "@/lib/covers";
+import { subjectEmoji, type SubjectType } from "@/lib/milestones";
 import { useSettings } from "../SettingsProvider";
 
 export type ChildFormValues = {
@@ -10,6 +11,8 @@ export type ChildFormValues = {
   type: SubjectType;
   birthDate: string;
   dayCountStart: DayCountStart;
+  coverAnimal?: string;
+  coverBackground?: string;
 };
 
 export function ChildForm({
@@ -28,6 +31,10 @@ export function ChildForm({
   const [type, setType] = useState<SubjectType>(initial?.type ?? "child");
   const [birthDate, setBirthDate] = useState(initial?.birthDate ?? "");
   const [dayCountStart, setDayCountStart] = useState<DayCountStart>(initial?.dayCountStart ?? "zero");
+  const [coverAnimal, setCoverAnimal] = useState(initial?.coverAnimal ?? "");
+  const [coverBackground, setCoverBackground] = useState<CoverBackground>(
+    (initial?.coverBackground as CoverBackground) ?? COVER_BACKGROUNDS[0].value,
+  );
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
 
@@ -44,7 +51,7 @@ export function ChildForm({
     setError(null);
     startTransition(async () => {
       try {
-        await onSubmit({ name: name.trim(), type, birthDate, dayCountStart });
+        await onSubmit({ name: name.trim(), type, birthDate, dayCountStart, coverAnimal, coverBackground });
       } catch (err) {
         setError(err instanceof Error ? err.message : t("Couldn't save — try again."));
       }
@@ -121,6 +128,52 @@ export function ChildForm({
           >
             {t("Day 1 (born day = 1)")}
           </button>
+        </div>
+      </div>
+      <div className="flex flex-col gap-2 text-sm">
+        {t("Album cover")}
+        <div className="flex items-center gap-3">
+          <span
+            className="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-[var(--cover-light)] text-3xl dark:bg-[var(--cover-dark)]"
+            style={
+              {
+                "--cover-light": coverBackgroundHex(coverBackground, false),
+                "--cover-dark": coverBackgroundHex(coverBackground, true),
+              } as CSSProperties
+            }
+          >
+            {coverAnimal || subjectEmoji(type)}
+          </span>
+          <div className="flex flex-1 flex-wrap gap-1.5">
+            {COVER_BACKGROUNDS.map((bg) => (
+              <button
+                key={bg.value}
+                type="button"
+                onClick={() => setCoverBackground(bg.value)}
+                aria-label={t(bg.label)}
+                className={`h-6 w-6 shrink-0 rounded-full border transition-transform hover:scale-110 active:scale-95 ${
+                  coverBackground === bg.value ? "border-brand-700 ring-2 ring-brand-600 ring-offset-1" : "border-black/10"
+                }`}
+                style={{ backgroundColor: bg.light }}
+              />
+            ))}
+          </div>
+        </div>
+        <div className="flex flex-wrap gap-1.5">
+          {COVER_ANIMALS.map((animal) => (
+            <button
+              key={animal}
+              type="button"
+              onClick={() => setCoverAnimal(animal)}
+              className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border text-lg transition-transform hover:scale-110 active:scale-95 ${
+                coverAnimal === animal
+                  ? "border-brand-600 bg-brand-50 dark:bg-brand-900/30"
+                  : "border-brand-100 dark:border-brand-900/40"
+              }`}
+            >
+              {animal}
+            </button>
+          ))}
         </div>
       </div>
       {error && <p className="text-sm text-rose-600">{error}</p>}

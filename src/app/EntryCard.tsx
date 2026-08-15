@@ -58,7 +58,7 @@ export function EntryCard({ entry, highlighted }: { entry: JournalEntryWithPhoto
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
-  const milestoneCategories = getMilestoneCategories(entry.child?.type ?? "child");
+  const milestoneCategories = getMilestoneCategories(entry.children[0]?.type ?? "child");
 
   const newFilePreviews = useMemo(() => newFiles.map((f) => URL.createObjectURL(f)), [newFiles]);
   useEffect(() => {
@@ -380,19 +380,21 @@ export function EntryCard({ entry, highlighted }: { entry: JournalEntryWithPhoto
               {entry.author.name}
             </span>
           )}
-          {entry.child && (
-            <span className="rounded-full bg-violet-100 px-2.5 py-0.5 font-heading text-xs font-semibold text-violet-800 dark:bg-violet-900/50 dark:text-violet-200">
-              {subjectEmoji(entry.child.type)} {entry.child.name}
+          {entry.children.map((child) => (
+            <span key={child.id} className="flex items-center gap-1">
+              <span className="rounded-full bg-violet-100 px-2.5 py-0.5 font-heading text-xs font-semibold text-violet-800 dark:bg-violet-900/50 dark:text-violet-200">
+                {subjectEmoji(child.type)} {child.name}
+              </span>
+              {child.birthDate && (
+                <span className="rounded-full bg-brand-50 px-2 py-0.5 text-xs font-semibold text-brand-700 dark:bg-brand-900/30 dark:text-brand-300">
+                  {formatDayOfLife(entry.entryDate, child.birthDate, child.dayCountStart)}
+                </span>
+              )}
             </span>
-          )}
+          ))}
           <span className="text-xs font-semibold text-brand-800 dark:text-brand-200">
             {formatEntryDate(entry.entryDate)}
           </span>
-          {entry.child?.birthDate && (
-            <span className="rounded-full bg-brand-50 px-2 py-0.5 text-xs font-semibold text-brand-700 dark:bg-brand-900/30 dark:text-brand-300">
-              {formatDayOfLife(entry.entryDate, entry.child.birthDate, entry.child.dayCountStart)}
-            </span>
-          )}
         </div>
         <div className="flex items-center gap-2">
           {entry.milestoneCategory && (

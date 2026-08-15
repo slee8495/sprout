@@ -15,7 +15,8 @@ export function OnThisDay({ entries }: { entries: JournalEntryWithPhotos[] }) {
         <div key={entry.id} className="text-sm">
           <span className="font-medium text-amber-700 dark:text-amber-400">
             {formatEntryDate(entry.entryDate)}
-            {entry.child?.birthDate && ` (${formatDayOfLife(entry.entryDate, entry.child.birthDate, entry.child.dayCountStart)})`}
+            {entry.children[0]?.birthDate &&
+              ` (${formatDayOfLife(entry.entryDate, entry.children[0].birthDate, entry.children[0].dayCountStart)})`}
           </span>{" "}
           {entry.author?.name && (
             <span

@@ -18,7 +18,7 @@ type MilestoneCategory = (typeof milestoneCategoryEnum.enumValues)[number];
 
 export type DraftEntryData = {
   id: number;
-  childId: number | null;
+  childIds: number[];
   entryDate: string;
   title: string | null;
   body: string;
@@ -52,8 +52,8 @@ export function EntryForm({
   const formRef = useRef<HTMLFormElement>(null);
 
   const [entryDate, setEntryDate] = useState(draft?.entryDate ?? initialDate ?? todayInTimezone(timezone).iso);
-  const [childId, setChildId] = useState<number | undefined>(
-    draft ? (draft.childId ?? undefined) : (defaultChildId ?? kids[0]?.id),
+  const [childIds, setChildIds] = useState<number[]>(
+    draft ? draft.childIds : defaultChildId !== undefined ? [defaultChildId] : kids[0] ? [kids[0].id] : [],
   );
   const [title, setTitle] = useState(draft?.title ?? "");
   const [body, setBody] = useState(draft?.body ?? "");
@@ -75,7 +75,7 @@ export function EntryForm({
   if (key !== prevKey) {
     setPrevKey(key);
     setEntryDate(draft?.entryDate ?? initialDate ?? todayInTimezone(timezone).iso);
-    setChildId(draft ? (draft.childId ?? undefined) : (defaultChildId ?? kids[0]?.id));
+    setChildIds(draft ? draft.childIds : defaultChildId !== undefined ? [defaultChildId] : kids[0] ? [kids[0].id] : []);
     setTitle(draft?.title ?? "");
     setBody(draft?.body ?? "");
     setMilestoneCategory(draft?.milestoneCategory ?? "");
@@ -86,8 +86,12 @@ export function EntryForm({
     setVideoFile(null);
   }
 
-  const selectedChild = kids.find((k) => k.id === childId);
-  const milestoneCategories = getMilestoneCategories(selectedChild?.type ?? "child");
+  const selectedChildren = kids.filter((k) => childIds.includes(k.id));
+  const milestoneCategories = getMilestoneCategories(selectedChildren[0]?.type ?? "child");
+
+  function toggleChild(id: number) {
+    setChildIds((prev) => (prev.includes(id) ? prev.filter((c) => c !== id) : [...prev, id]));
+  }
 
   const voiceMemoUrl = useMemo(() => (voiceMemo ? URL.createObjectURL(voiceMemo) : null), [voiceMemo]);
   useEffect(() => {
@@ -191,8 +195,8 @@ export function EntryForm({
         } else {
           await createEntry({
             ...shared,
-            audience: childId ? "child" : "parents",
-            childId,
+            audience: childIds.length ? "child" : "parents",
+            childIds,
             voiceMemoUrl: uploadedVoiceMemoUrl,
             videoUrl: uploadedVideo?.url,
             videoSizeBytes: uploadedVideo?.sizeBytes,
@@ -226,12 +230,21 @@ export function EntryForm({
       className="flex flex-col gap-3 rounded-3xl border border-brand-200/70 bg-white p-4 shadow-md shadow-brand-900/5 dark:border-brand-800/50 dark:bg-zinc-900 dark:shadow-black/40"
     >
       {draft ? (
-        <div className="flex items-center gap-2">
-          <span className="rounded-full bg-brand-100 px-3 py-1.5 font-heading text-sm font-semibold text-brand-800 dark:bg-brand-900/40 dark:text-brand-200">
-            {childId
-              ? `${subjectEmoji(selectedChild?.type ?? "child")} ${selectedChild?.name ?? "Child"}`
-              : t("💌 Parents")}
-          </span>
+        <div className="flex flex-wrap items-center gap-2">
+          {selectedChildren.length ? (
+            selectedChildren.map((child) => (
+              <span
+                key={child.id}
+                className="rounded-full bg-brand-100 px-3 py-1.5 font-heading text-sm font-semibold text-brand-800 dark:bg-brand-900/40 dark:text-brand-200"
+              >
+                {subjectEmoji(child.type)} {child.name}
+              </span>
+            ))
+          ) : (
+            <span className="rounded-full bg-brand-100 px-3 py-1.5 font-heading text-sm font-semibold text-brand-800 dark:bg-brand-900/40 dark:text-brand-200">
+              {t("💌 Parents")}
+            </span>
+          )}
           <span className="text-xs text-zinc-500 dark:text-zinc-400">{t("(can't change once saved)")}</span>
         </div>
       ) : (
@@ -240,9 +253,9 @@ export function EntryForm({
             <button
               key={child.id}
               type="button"
-              onClick={() => setChildId(child.id)}
+              onClick={() => toggleChild(child.id)}
               className={`rounded-full px-3 py-1.5 font-heading text-sm font-semibold transition-transform hover:scale-105 active:scale-95 ${
-                childId === child.id
+                childIds.includes(child.id)
                   ? "bg-brand-600 text-white shadow-sm shadow-brand-900/20"
                   : "border border-brand-100 text-brand-800 dark:border-brand-900/40 dark:text-brand-200"
               }`}
@@ -252,9 +265,9 @@ export function EntryForm({
           ))}
           <button
             type="button"
-            onClick={() => setChildId(undefined)}
+            onClick={() => setChildIds([])}
             className={`rounded-full px-3 py-1.5 font-heading text-sm font-semibold transition-transform hover:scale-105 active:scale-95 ${
-              childId === undefined
+              childIds.length === 0
                 ? "bg-rose-500 text-white shadow-sm shadow-rose-900/20"
                 : "border border-brand-100 text-brand-800 dark:border-brand-900/40 dark:text-brand-200"
             }`}
@@ -288,7 +301,7 @@ export function EntryForm({
         className="rounded-2xl border border-brand-100 bg-white px-3 py-2 text-sm dark:border-brand-900/40 dark:bg-zinc-900"
       />
 
-      {childId !== undefined && (
+      {childIds.length > 0 && (
         <div className="flex flex-wrap gap-3">
           <select
             value={milestoneCategory}

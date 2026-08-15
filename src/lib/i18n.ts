@@ -7,6 +7,7 @@ const ko: Record<string, string> = {
   Journal: "저널",
   Feed: "피드",
   Milestones: "마일스톤",
+  Albums: "앨범",
   Settings: "설정",
 
   // JournalHome
@@ -102,6 +103,17 @@ const ko: Record<string, string> = {
   // Settings — Kids & Pets
   "Kids & Pets": "아이 & 반려동물",
   "+ Add a kid or pet": "+ 아이 또는 반려동물 추가",
+  "Album cover": "앨범 커버",
+
+  // Library / Albums
+  "📚 Albums": "📚 앨범",
+  "{count} photos": "사진 {count}장",
+  "No photos yet": "아직 사진이 없어요",
+  "Back to Albums": "앨범으로 돌아가기",
+  "📜 Scroll": "📜 스크롤",
+  "📖 Page turn": "📖 페이지 넘김",
+  Portrait: "세로",
+  Landscape: "가로",
   Name: "이름",
   "👶 Child": "👶 아이",
   "🐾 Pet": "🐾 반려동물",
@@ -264,6 +276,7 @@ const zh: Record<string, string> = {
   Journal: "日记",
   Feed: "动态",
   Milestones: "里程碑",
+  Albums: "相册",
   Settings: "设置",
 
   // JournalHome
@@ -359,6 +372,17 @@ const zh: Record<string, string> = {
   // Settings — Kids & Pets
   "Kids & Pets": "孩子与宠物",
   "+ Add a kid or pet": "+ 添加孩子或宠物",
+  "Album cover": "相册封面",
+
+  // Library / Albums
+  "📚 Albums": "📚 相册",
+  "{count} photos": "{count} 张照片",
+  "No photos yet": "还没有照片",
+  "Back to Albums": "返回相册",
+  "📜 Scroll": "📜 滚动",
+  "📖 Page turn": "📖 翻页",
+  Portrait: "竖版",
+  Landscape: "横版",
   Name: "姓名",
   "👶 Child": "👶 孩子",
   "🐾 Pet": "🐾 宠物",
@@ -520,6 +544,7 @@ const ja: Record<string, string> = {
   Journal: "日記",
   Feed: "フィード",
   Milestones: "マイルストーン",
+  Albums: "アルバム",
   Settings: "設定",
 
   // JournalHome
@@ -615,6 +640,17 @@ const ja: Record<string, string> = {
   // Settings — Kids & Pets
   "Kids & Pets": "子供とペット",
   "+ Add a kid or pet": "+ 子供またはペットを追加",
+  "Album cover": "アルバムの表紙",
+
+  // Library / Albums
+  "📚 Albums": "📚 アルバム",
+  "{count} photos": "写真{count}枚",
+  "No photos yet": "まだ写真がありません",
+  "Back to Albums": "アルバムに戻る",
+  "📜 Scroll": "📜 スクロール",
+  "📖 Page turn": "📖 ページめくり",
+  Portrait: "縦",
+  Landscape: "横",
   Name: "名前",
   "👶 Child": "👶 子供",
   "🐾 Pet": "🐾 ペット",
@@ -777,6 +813,7 @@ const es: Record<string, string> = {
   Journal: "Diario",
   Feed: "Novedades",
   Milestones: "Hitos",
+  Albums: "Álbumes",
   Settings: "Ajustes",
 
   // JournalHome
@@ -872,6 +909,17 @@ const es: Record<string, string> = {
   // Settings — Kids & Pets
   "Kids & Pets": "Hijos y mascotas",
   "+ Add a kid or pet": "+ Añadir hijo o mascota",
+  "Album cover": "Portada del álbum",
+
+  // Library / Albums
+  "📚 Albums": "📚 Álbumes",
+  "{count} photos": "{count} fotos",
+  "No photos yet": "Aún no hay fotos",
+  "Back to Albums": "Volver a Álbumes",
+  "📜 Scroll": "📜 Desplazar",
+  "📖 Page turn": "📖 Pasar página",
+  Portrait: "Vertical",
+  Landscape: "Horizontal",
   Name: "Nombre",
   "👶 Child": "👶 Hijo/a",
   "🐾 Pet": "🐾 Mascota",

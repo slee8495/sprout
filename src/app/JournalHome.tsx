@@ -30,11 +30,11 @@ export function JournalHome({
   const selectedChild = kids.find((k) => k.id === selectedChildId);
 
   const selectedChildEntries = useMemo(
-    () => childEntries.filter((entry) => entry.childId === selectedChildId),
+    () => childEntries.filter((entry) => entry.children.some((c) => c.id === selectedChildId)),
     [childEntries, selectedChildId],
   );
   const childOnThisDay = useMemo(
-    () => onThisDayEntries.filter((entry) => entry.childId === selectedChildId),
+    () => onThisDayEntries.filter((entry) => entry.children.some((c) => c.id === selectedChildId)),
     [onThisDayEntries, selectedChildId],
   );
   // Parents-only entries aren't tied to a specific child, so they show up regardless of

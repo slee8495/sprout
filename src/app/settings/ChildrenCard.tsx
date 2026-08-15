@@ -1,8 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useState, type CSSProperties } from "react";
 import { useRouter } from "next/navigation";
 import type { DayCountStart } from "@/lib/date";
+import { coverBackgroundHex } from "@/lib/covers";
 import { subjectEmoji, type SubjectType } from "@/lib/milestones";
 import { useSettings } from "../SettingsProvider";
 import { ChildForm } from "./ChildForm";
@@ -14,6 +15,8 @@ export type ChildSummary = {
   type: SubjectType;
   birthDate: string | null;
   dayCountStart: DayCountStart;
+  coverAnimal: string | null;
+  coverBackground: string | null;
 };
 
 export function ChildrenCard({ kids }: { kids: ChildSummary[] }) {
@@ -37,6 +40,8 @@ export function ChildrenCard({ kids }: { kids: ChildSummary[] }) {
               type: child.type,
               birthDate: child.birthDate ?? "",
               dayCountStart: child.dayCountStart,
+              coverAnimal: child.coverAnimal ?? undefined,
+              coverBackground: child.coverBackground ?? undefined,
             }}
             submitLabel={t("Save")}
             onCancel={() => setEditingId(null)}
@@ -51,8 +56,19 @@ export function ChildrenCard({ kids }: { kids: ChildSummary[] }) {
             key={child.id}
             className="flex items-center justify-between rounded-2xl border border-brand-100 px-3 py-2 text-sm dark:border-brand-900/40"
           >
-            <span className="font-semibold text-brand-900 dark:text-brand-100">
-              {subjectEmoji(child.type)} {child.name}
+            <span className="flex items-center gap-2 font-semibold text-brand-900 dark:text-brand-100">
+              <span
+                className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[var(--cover-light)] text-sm dark:bg-[var(--cover-dark)]"
+                style={
+                  {
+                    "--cover-light": coverBackgroundHex(child.coverBackground, false),
+                    "--cover-dark": coverBackgroundHex(child.coverBackground, true),
+                  } as CSSProperties
+                }
+              >
+                {child.coverAnimal || subjectEmoji(child.type)}
+              </span>
+              {child.name}
             </span>
             {canEdit && (
               <button

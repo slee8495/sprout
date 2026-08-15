@@ -21,7 +21,7 @@ function resolveHighlightTab(
   if (!highlightEntryId) return undefined;
   if (parentEntries.some((e) => e.id === highlightEntryId)) return "parents";
   const linkedChildEntry = childEntries.find((e) => e.id === highlightEntryId);
-  return linkedChildEntry?.childId ?? undefined;
+  return linkedChildEntry?.children[0]?.id ?? undefined;
 }
 
 function sortEntries(entries: JournalEntryWithPhotos[], field: SortField, order: SortOrder) {
@@ -76,7 +76,8 @@ export function FeedTabs({
     if (resolved !== undefined) setTab(resolved);
   }, [highlightEntryId, childEntries, parentEntries]);
 
-  const entries = tab === "parents" ? parentEntries : childEntries.filter((entry) => entry.childId === tab);
+  const entries =
+    tab === "parents" ? parentEntries : childEntries.filter((entry) => entry.children.some((c) => c.id === tab));
   const searchedEntries = useMemo(() => searchEntries(entries, search), [entries, search]);
   const sortedEntries = useMemo(
     () => sortEntries(searchedEntries, sortField, sortOrder),

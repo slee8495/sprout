@@ -37,16 +37,19 @@ export function DraftsList({
         {t("📝 Drafts — only you can see these")}
       </h2>
       {drafts.map((draft) => {
-        const child = draft.childId ? kids.find((k) => k.id === draft.childId) : undefined;
+        const draftChildren = kids.filter((k) => draft.childIds.includes(k.id));
         return (
           <div key={draft.id} className="flex items-center justify-between gap-3 rounded-2xl bg-white/60 px-3 py-2 text-sm dark:bg-zinc-900/40">
             <div className="min-w-0 flex-1">
               <span className="font-medium text-amber-800 dark:text-amber-300">{draft.entryDate}</span>{" "}
-              {child && (
-                <span className="rounded-full bg-violet-100 px-2 py-0.5 text-xs font-semibold text-violet-800 dark:bg-violet-900/50 dark:text-violet-200">
+              {draftChildren.map((child) => (
+                <span
+                  key={child.id}
+                  className="mr-1 rounded-full bg-violet-100 px-2 py-0.5 text-xs font-semibold text-violet-800 dark:bg-violet-900/50 dark:text-violet-200"
+                >
                   {subjectEmoji(child.type)} {child.name}
                 </span>
-              )}{" "}
+              ))}{" "}
               <span className="truncate text-zinc-700 dark:text-zinc-300">
                 {draft.title || draft.body || t("(empty draft)")}
               </span>

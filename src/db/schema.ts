@@ -10,6 +10,7 @@ import {
   bigint,
   boolean,
   pgEnum,
+  unique,
 } from "drizzle-orm/pg-core";
 
 export const milestoneCategoryEnum = pgEnum("milestone_category", [
@@ -72,6 +73,10 @@ export const children = pgTable("children", {
   type: subjectTypeEnum("type").notNull().default("child"),
   birthDate: date("birth_date"),
   dayCountStart: dayCountStartEnum("day_count_start").notNull().default("zero"),
+  // Album cover (Library feature) — both nullable; null falls back to subjectEmoji(type) on a
+  // default background so existing kids/pets need no backfill.
+  coverAnimal: varchar("cover_animal", { length: 8 }),
+  coverBackground: varchar("cover_background", { length: 16 }),
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
 });
 
@@ -79,6 +84,9 @@ export const journalEntries = pgTable("journal_entries", {
   id: serial("id").primaryKey(),
   familyId: integer("family_id").notNull().references(() => families.id),
   authorId: integer("author_id").notNull().references(() => users.id),
+  // Deprecated in favor of journalEntryChildren (many-to-many) — kept only as the backfill
+  // source during the Album Library migration; nothing should read this once the join table
+  // is fully wired up, and it gets dropped in a later, separate migration.
   childId: integer("child_id").references(() => children.id),
   audience: audienceEnum("audience").notNull().default("child"),
   entryDate: date("entry_date").notNull(),
@@ -93,6 +101,18 @@ export const journalEntries = pgTable("journal_entries", {
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
 });
+
+// One entry can now be tagged to multiple kids/pets at once (Album Library) — replaces
+// journalEntries.childId, which stays around only as the migration's backfill source.
+export const journalEntryChildren = pgTable(
+  "journal_entry_children",
+  {
+    id: serial("id").primaryKey(),
+    entryId: integer("entry_id").notNull().references(() => journalEntries.id),
+    childId: integer("child_id").notNull().references(() => children.id),
+  },
+  (table) => [unique().on(table.entryId, table.childId)],
+);
 
 export const photos = pgTable("photos", {
   id: serial("id").primaryKey(),
@@ -139,7 +159,18 @@ export const journalEntriesRelations = relations(journalEntries, ({ many, one })
   photos: many(photos),
   comments: many(comments),
   author: one(users, { fields: [journalEntries.authorId], references: [users.id] }),
+  // Deprecated single-child relation — see journalEntries.childId's comment.
   child: one(children, { fields: [journalEntries.childId], references: [children.id] }),
+  entryChildren: many(journalEntryChildren),
+}));
+
+export const childrenRelations = relations(children, ({ many }) => ({
+  entryChildren: many(journalEntryChildren),
+}));
+
+export const journalEntryChildrenRelations = relations(journalEntryChildren, ({ one }) => ({
+  entry: one(journalEntries, { fields: [journalEntryChildren.entryId], references: [journalEntries.id] }),
+  child: one(children, { fields: [journalEntryChildren.childId], references: [children.id] }),
 }));
 
 export const photosRelations = relations(photos, ({ one }) => ({

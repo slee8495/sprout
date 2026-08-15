@@ -8,6 +8,7 @@ import {
   dayCountStartEnum,
   families,
   journalEntries,
+  journalEntryChildren,
   milestoneCategoryEnum,
   notifications,
   photos,
@@ -76,6 +77,8 @@ export async function createChild(input: {
   type?: (typeof subjectTypeEnum.enumValues)[number];
   birthDate?: string;
   dayCountStart?: (typeof dayCountStartEnum.enumValues)[number];
+  coverAnimal?: string;
+  coverBackground?: string;
 }) {
   const [child] = await db
     .insert(children)
@@ -85,6 +88,8 @@ export async function createChild(input: {
       type: input.type ?? "child",
       birthDate: input.birthDate || null,
       dayCountStart: input.dayCountStart ?? "zero",
+      coverAnimal: input.coverAnimal || null,
+      coverBackground: input.coverBackground || null,
     })
     .returning();
   return child;
@@ -98,11 +103,20 @@ export async function updateChild(
     type: (typeof subjectTypeEnum.enumValues)[number];
     birthDate: string;
     dayCountStart: (typeof dayCountStartEnum.enumValues)[number];
+    coverAnimal?: string;
+    coverBackground?: string;
   },
 ) {
   const [child] = await db
     .update(children)
-    .set(patch)
+    .set({
+      name: patch.name,
+      type: patch.type,
+      birthDate: patch.birthDate,
+      dayCountStart: patch.dayCountStart,
+      coverAnimal: patch.coverAnimal || null,
+      coverBackground: patch.coverBackground || null,
+    })
     .where(and(eq(children.id, childId), eq(children.familyId, familyId)))
     .returning();
   if (!child) throw new Error("Couldn't find that child or pet to update.");
@@ -169,39 +183,42 @@ export async function linkOrJoinFamilyMember(input: { familyId: number; name: st
 
 type Audience = (typeof audienceEnum.enumValues)[number];
 
-export function listJournalEntries(familyId: number, audience?: Audience, childId?: number) {
-  return db.query.journalEntries.findMany({
+export async function listJournalEntries(familyId: number, audience?: Audience) {
+  const rows = await db.query.journalEntries.findMany({
     where: and(
       eq(journalEntries.familyId, familyId),
       eq(journalEntries.isDraft, false),
       audience ? eq(journalEntries.audience, audience) : undefined,
-      childId ? eq(journalEntries.childId, childId) : undefined,
     ),
     orderBy: [desc(journalEntries.entryDate), desc(journalEntries.id)],
     with: {
       author: true,
       photos: true,
-      child: true,
+      entryChildren: { with: { child: true } },
       comments: { with: { author: true }, orderBy: (comments, { asc }) => [asc(comments.createdAt)] },
     },
   });
+  return rows.map(({ entryChildren, ...e }) => ({ ...e, children: entryChildren.map((ec) => ec.child) }));
 }
 
 export type JournalEntryWithPhotos = Awaited<ReturnType<typeof listJournalEntries>>[number];
 
-export function listMyDrafts(familyId: number, authorId: number) {
-  return db.query.journalEntries.findMany({
+// Returns childIds (not full Child rows) since the only consumer is DraftEntryData/EntryForm,
+// which just needs to re-seed its multi-select state when resuming a draft.
+export async function listMyDrafts(familyId: number, authorId: number) {
+  const rows = await db.query.journalEntries.findMany({
     where: and(
       eq(journalEntries.familyId, familyId),
       eq(journalEntries.authorId, authorId),
       eq(journalEntries.isDraft, true),
     ),
     orderBy: [desc(journalEntries.updatedAt)],
-    with: { photos: true, child: true },
+    with: { photos: true, entryChildren: true },
   });
+  return rows.map(({ entryChildren, ...e }) => ({ ...e, childIds: entryChildren.map((ec) => ec.childId) }));
 }
 
-export async function listEntryDates(familyId: number, audience?: Audience, childId?: number): Promise<string[]> {
+export async function listEntryDates(familyId: number, audience?: Audience): Promise<string[]> {
   const rows = await db
     .select({ entryDate: journalEntries.entryDate })
     .from(journalEntries)
@@ -210,10 +227,17 @@ export async function listEntryDates(familyId: number, audience?: Audience, chil
         eq(journalEntries.familyId, familyId),
         eq(journalEntries.isDraft, false),
         audience ? eq(journalEntries.audience, audience) : undefined,
-        childId ? eq(journalEntries.childId, childId) : undefined,
       ),
     );
   return rows.map((r) => r.entryDate);
+}
+
+export async function getJournalEntryChildren(entryId: number) {
+  const rows = await db.query.journalEntryChildren.findMany({
+    where: eq(journalEntryChildren.entryId, entryId),
+    with: { child: true },
+  });
+  return rows.map((r) => r.child);
 }
 
 export async function createComment(input: {
@@ -224,7 +248,8 @@ export async function createComment(input: {
 }) {
   const entry = await db.query.journalEntries.findFirst({
     where: and(eq(journalEntries.id, input.entryId), eq(journalEntries.familyId, input.familyId)),
-    columns: { id: true, audience: true, childId: true },
+    columns: { id: true, audience: true },
+    with: { entryChildren: { with: { child: true } } },
   });
   if (!entry) throw new Error("Entry not found");
 
@@ -232,7 +257,7 @@ export async function createComment(input: {
     .insert(comments)
     .values({ entryId: input.entryId, authorId: input.authorId, body: input.body })
     .returning();
-  return { ...comment, audience: entry.audience, childId: entry.childId };
+  return { ...comment, audience: entry.audience, children: entry.entryChildren.map((ec) => ec.child) };
 }
 
 export type PhotoInput = { url: string; sizeBytes?: number };
@@ -241,7 +266,7 @@ export async function createJournalEntry(input: {
   familyId: number;
   authorId: number;
   audience: Audience;
-  childId?: number;
+  childIds?: number[];
   entryDate: string;
   title?: string;
   body: string;
@@ -259,7 +284,6 @@ export async function createJournalEntry(input: {
       familyId: input.familyId,
       authorId: input.authorId,
       audience: input.audience,
-      childId: input.childId ?? null,
       entryDate: input.entryDate,
       title: input.title || null,
       body: input.body,
@@ -271,6 +295,12 @@ export async function createJournalEntry(input: {
       isDraft: input.isDraft ?? false,
     })
     .returning();
+
+  if (input.childIds?.length) {
+    await db
+      .insert(journalEntryChildren)
+      .values(input.childIds.map((childId) => ({ entryId: entry.id, childId })));
+  }
 
   if (input.photos?.length) {
     await db
@@ -349,17 +379,17 @@ export async function deleteJournalEntry(entryId: number, familyId: number, auth
 
   await db.delete(photos).where(eq(photos.entryId, entryId));
   await db.delete(comments).where(eq(comments.entryId, entryId));
+  await db.delete(journalEntryChildren).where(eq(journalEntryChildren.entryId, entryId));
   await db.delete(journalEntries).where(eq(journalEntries.id, entryId));
   return true;
 }
 
-export function getOnThisDayEntries(familyId: number, month: number, day: number, audience?: Audience, childId?: number) {
-  return db.query.journalEntries.findMany({
+export async function getOnThisDayEntries(familyId: number, month: number, day: number, audience?: Audience) {
+  const rows = await db.query.journalEntries.findMany({
     where: and(
       eq(journalEntries.familyId, familyId),
       eq(journalEntries.isDraft, false),
       audience ? eq(journalEntries.audience, audience) : undefined,
-      childId ? eq(journalEntries.childId, childId) : undefined,
       sql`extract(month from ${journalEntries.entryDate}) = ${month}`,
       sql`extract(day from ${journalEntries.entryDate}) = ${day}`,
       sql`extract(year from ${journalEntries.entryDate}) < extract(year from current_date)`,
@@ -368,10 +398,11 @@ export function getOnThisDayEntries(familyId: number, month: number, day: number
     with: {
       author: true,
       photos: true,
-      child: true,
+      entryChildren: { with: { child: true } },
       comments: { with: { author: true }, orderBy: (comments, { asc }) => [asc(comments.createdAt)] },
     },
   });
+  return rows.map(({ entryChildren, ...e }) => ({ ...e, children: entryChildren.map((ec) => ec.child) }));
 }
 
 export async function getFamilySettings(familyId: number) {
@@ -589,6 +620,7 @@ export async function deleteFamilyAccount(familyId: number): Promise<string[]> {
     if (entryIds.length) {
       await tx.delete(comments).where(inArray(comments.entryId, entryIds));
       await tx.delete(photos).where(inArray(photos.entryId, entryIds));
+      await tx.delete(journalEntryChildren).where(inArray(journalEntryChildren.entryId, entryIds));
     }
     await tx.delete(journalEntries).where(eq(journalEntries.familyId, familyId));
     await tx.delete(children).where(eq(children.familyId, familyId));
@@ -606,23 +638,23 @@ export async function deleteFamilyAccount(familyId: number): Promise<string[]> {
   });
 }
 
-export function listMilestoneEntries(familyId: number, childId?: number) {
-  return db.query.journalEntries.findMany({
+export async function listMilestoneEntries(familyId: number) {
+  const rows = await db.query.journalEntries.findMany({
     where: and(
       eq(journalEntries.familyId, familyId),
       eq(journalEntries.isDraft, false),
       eq(journalEntries.audience, "child"),
-      childId ? eq(journalEntries.childId, childId) : undefined,
       isNotNull(journalEntries.milestoneCategory),
     ),
     orderBy: [desc(journalEntries.entryDate)],
     with: {
       author: true,
       photos: true,
-      child: true,
+      entryChildren: { with: { child: true } },
       comments: { with: { author: true }, orderBy: (comments, { asc }) => [asc(comments.createdAt)] },
     },
   });
+  return rows.map(({ entryChildren, ...e }) => ({ ...e, children: entryChildren.map((ec) => ec.child) }));
 }
 
 export async function listAllFamiliesForAdmin() {

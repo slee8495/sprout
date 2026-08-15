@@ -10,6 +10,7 @@ import {
   deleteJournalEntry,
   deletePushSubscription,
   getChild,
+  getJournalEntryChildren,
   isFamilyPaid,
   listNotifications,
   markAllNotificationsRead,
@@ -21,15 +22,18 @@ import { audienceEnum, milestoneCategoryEnum } from "@/db/schema";
 import { requireEditor, requireSession } from "@/lib/session";
 import { notifyFamily } from "@/lib/push";
 
-// Labels a notification with who/what the entry is about, e.g. "[Roun]" or "[Brownie]" or
-// "[Parents]" — lets the recipient tell at a glance which feed tab a notification belongs to.
-function subjectLabel(child: { name: string } | null | undefined) {
-  return child ? `[${child.name}]` : "[Parents]";
+// Labels a notification with who/what the entry is about, e.g. "[Roun]", "[Brownie]",
+// "[Roun, Brownie]", or "[Parents]" if tagged to none — lets the recipient tell at a glance which
+// feed tab(s) a notification belongs to.
+function subjectLabel(children: { name: string }[]) {
+  if (children.length === 0) return "[Parents]";
+  if (children.length <= 2) return `[${children.map((c) => c.name).join(", ")}]`;
+  return `[${children[0].name}, ${children[1].name} +${children.length - 2} more]`;
 }
 
 const entrySchema = z.object({
   audience: z.enum(audienceEnum.enumValues).default("child"),
-  childId: z.number().optional(),
+  childIds: z.array(z.number()).default([]),
   entryDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
   title: z.string().max(256).optional(),
   body: z.string().max(10000),
@@ -46,11 +50,12 @@ export async function createEntry(input: z.infer<typeof entrySchema>) {
   const { userId, familyId, name } = await requireEditor();
   const parsed = entrySchema.parse(input);
 
-  let child: Awaited<ReturnType<typeof getChild>> | undefined;
+  let children: NonNullable<Awaited<ReturnType<typeof getChild>>>[] = [];
   if (parsed.audience === "child") {
-    if (!parsed.childId) throw new Error("Pick which child this entry is about.");
-    child = await getChild(parsed.childId, familyId);
-    if (!child) throw new Error("That child doesn't belong to your family.");
+    if (!parsed.childIds.length) throw new Error("Pick who this entry is about.");
+    const found = await Promise.all(parsed.childIds.map((id) => getChild(id, familyId)));
+    if (found.some((c) => !c)) throw new Error("That child doesn't belong to your family.");
+    children = found as NonNullable<Awaited<ReturnType<typeof getChild>>>[];
   }
   if (!parsed.isDraft && !parsed.body.trim()) throw new Error("Write something before publishing.");
 
@@ -58,7 +63,7 @@ export async function createEntry(input: z.infer<typeof entrySchema>) {
     familyId,
     authorId: userId,
     audience: parsed.audience,
-    childId: parsed.audience === "child" ? parsed.childId : undefined,
+    childIds: parsed.audience === "child" ? parsed.childIds : undefined,
     entryDate: parsed.entryDate,
     title: parsed.title,
     body: parsed.body,
@@ -78,14 +83,14 @@ export async function createEntry(input: z.infer<typeof entrySchema>) {
 
   const preview = (parsed.title || parsed.body).slice(0, 120);
   const payload = {
-    title: `${subjectLabel(child)} ${name ?? "New entry"}`,
+    title: `${subjectLabel(children)} ${name ?? "New entry"}`,
     body: preview,
     url: `/feed?entry=${entry.id}`,
   };
   await Promise.all([notifyFamily(familyId, userId, payload), createNotificationsForFamily(familyId, userId, payload)]);
 }
 
-const updateEntrySchema = entrySchema.omit({ audience: true, childId: true, isDraft: true }).extend({
+const updateEntrySchema = entrySchema.omit({ audience: true, childIds: true, isDraft: true }).extend({
   voiceMemoUrl: z.string().url().nullable().optional(),
   videoUrl: z.string().url().nullable().optional(),
   videoSizeBytes: z.number().nullable().optional(),
@@ -103,7 +108,7 @@ export async function updateEntry(entryId: number, input: z.infer<typeof updateE
   revalidatePath("/feed");
 }
 
-const draftUpdateSchema = entrySchema.omit({ audience: true, childId: true, voiceMemoUrl: true });
+const draftUpdateSchema = entrySchema.omit({ audience: true, childIds: true, voiceMemoUrl: true });
 
 // Resumes and saves a private draft — either re-saving it as a draft (isDraft: true, no
 // notification) or publishing it to the family for the first time (isDraft: false, notifies
@@ -121,10 +126,10 @@ export async function updateDraft(entryId: number, input: z.infer<typeof draftUp
 
   if (parsed.isDraft) return;
 
-  const child = entry.childId ? await getChild(entry.childId, familyId) : undefined;
+  const children = await getJournalEntryChildren(entry.id);
   const preview = (parsed.title || parsed.body).slice(0, 120);
   const payload = {
-    title: `${subjectLabel(child)} ${name ?? "New entry"}`,
+    title: `${subjectLabel(children)} ${name ?? "New entry"}`,
     body: preview,
     url: `/feed?entry=${entry.id}`,
   };
@@ -153,9 +158,8 @@ export async function addComment(input: z.infer<typeof commentSchema>) {
   revalidatePath("/");
   revalidatePath("/feed");
 
-  const child = comment.childId ? await getChild(comment.childId, familyId) : undefined;
   const payload = {
-    title: `💬 ${subjectLabel(child)} ${name ?? "New comment"}`,
+    title: `💬 ${subjectLabel(comment.children)} ${name ?? "New comment"}`,
     body: parsed.body.slice(0, 120),
     url: `/feed?entry=${parsed.entryId}`,
   };

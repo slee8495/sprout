@@ -35,6 +35,8 @@ const childSchema = z.object({
   type: z.enum(subjectTypeEnum.enumValues).default("child"),
   birthDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Pick a valid birth date."),
   dayCountStart: z.enum(dayCountStartEnum.enumValues),
+  coverAnimal: z.string().max(8).optional(),
+  coverBackground: z.string().max(16).optional(),
 });
 
 export async function addChild(input: z.infer<typeof childSchema>) {
