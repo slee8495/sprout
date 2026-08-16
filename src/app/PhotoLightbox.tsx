@@ -4,6 +4,7 @@ import { useEffect, useRef } from "react";
 import Image from "next/image";
 import type { JournalEntryWithPhotos } from "@/db/queries";
 import { fill } from "@/lib/i18n";
+import { DownloadButton } from "./DownloadButton";
 import { useSettings } from "./SettingsProvider";
 
 type Photo = JournalEntryWithPhotos["photos"][number];
@@ -69,13 +70,13 @@ export function PhotoLightbox({
               height={1200}
               className="max-h-full max-w-full rounded-lg object-contain"
             />
-            <a
-              href={`/api/download?url=${encodeURIComponent(photo.url)}`}
-              onClick={(e) => e.stopPropagation()}
+            <DownloadButton
+              url={photo.url}
+              kind="photo"
               className="absolute bottom-4 right-4 flex h-9 items-center gap-1.5 rounded-full bg-white/10 px-3 text-xs font-semibold text-white hover:bg-white/20"
             >
               ⬇ {t("Download")}
-            </a>
+            </DownloadButton>
           </div>
         ))}
       </div>

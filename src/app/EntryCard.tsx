@@ -10,6 +10,7 @@ import { authorBadgeClasses } from "@/lib/author";
 import { formatDayOfLife, formatUploadedAt } from "@/lib/date";
 import { deleteEntry, updateEntry } from "./actions";
 import { CommentThread } from "./CommentThread";
+import { DownloadButton } from "./DownloadButton";
 import { PhotoCollage } from "./PhotoCollage";
 import { PhotoLightbox } from "./PhotoLightbox";
 import type { milestoneCategoryEnum } from "@/db/schema";
@@ -444,12 +445,13 @@ export function EntryCard({ entry, highlighted }: { entry: JournalEntryWithPhoto
       {entry.videoUrl && (
         <div className="flex flex-col gap-1.5">
           <video controls src={entry.videoUrl} className="w-full rounded-2xl" />
-          <a
-            href={`/api/download?url=${encodeURIComponent(entry.videoUrl)}`}
+          <DownloadButton
+            url={entry.videoUrl}
+            kind="video"
             className="self-start text-xs font-semibold text-brand-700 hover:underline dark:text-brand-300"
           >
             ⬇ {t("Download video")}
-          </a>
+          </DownloadButton>
         </div>
       )}
       <PhotoCollage photos={entry.photos} onOpen={setLightboxIndex} />

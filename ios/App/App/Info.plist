@@ -42,6 +42,10 @@
 	</array>
 	<key>NSUserTrackingUsageDescription</key>
 	<string>This identifier is used to show you a rewarded ad in exchange for bonus storage.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Roun saves the photos and videos you download to your Photos library.</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>Roun saves the photos and videos you download to your Photos library.</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>UIApplicationSceneManifest</key>
