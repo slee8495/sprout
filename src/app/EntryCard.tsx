@@ -441,7 +441,17 @@ export function EntryCard({ entry, highlighted }: { entry: JournalEntryWithPhoto
       {entry.title && <h2 className="font-heading font-bold text-brand-950 dark:text-brand-50">{entry.title}</h2>}
       <p className="whitespace-pre-wrap text-sm text-zinc-800 dark:text-zinc-200">{entry.body}</p>
       {entry.voiceMemoUrl && <audio controls src={entry.voiceMemoUrl} className="h-10 w-full" />}
-      {entry.videoUrl && <video controls src={entry.videoUrl} className="w-full rounded-2xl" />}
+      {entry.videoUrl && (
+        <div className="flex flex-col gap-1.5">
+          <video controls src={entry.videoUrl} className="w-full rounded-2xl" />
+          <a
+            href={`/api/download?url=${encodeURIComponent(entry.videoUrl)}`}
+            className="self-start text-xs font-semibold text-brand-700 hover:underline dark:text-brand-300"
+          >
+            ⬇ {t("Download video")}
+          </a>
+        </div>
+      )}
       <PhotoCollage photos={entry.photos} onOpen={setLightboxIndex} />
       {lightboxIndex !== null && (
         <PhotoLightbox photos={entry.photos} initialIndex={lightboxIndex} onClose={() => setLightboxIndex(null)} />

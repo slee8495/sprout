@@ -58,7 +58,10 @@ export function PhotoLightbox({
         className="flex h-full w-full snap-x snap-mandatory overflow-x-auto"
       >
         {photos.map((photo) => (
-          <div key={photo.id} className="flex h-full w-full flex-shrink-0 snap-center items-center justify-center px-4">
+          <div
+            key={photo.id}
+            className="relative flex h-full w-full flex-shrink-0 snap-center items-center justify-center px-4"
+          >
             <Image
               src={photo.url}
               alt={photo.caption ?? ""}
@@ -66,6 +69,13 @@ export function PhotoLightbox({
               height={1200}
               className="max-h-full max-w-full rounded-lg object-contain"
             />
+            <a
+              href={`/api/download?url=${encodeURIComponent(photo.url)}`}
+              onClick={(e) => e.stopPropagation()}
+              className="absolute bottom-4 right-4 flex h-9 items-center gap-1.5 rounded-full bg-white/10 px-3 text-xs font-semibold text-white hover:bg-white/20"
+            >
+              ⬇ {t("Download")}
+            </a>
           </div>
         ))}
       </div>
