@@ -402,6 +402,11 @@ export function EntryCard({ entry, highlighted }: { entry: JournalEntryWithPhoto
           <span className="text-xs font-semibold text-brand-800 dark:text-brand-200">
             {formatEntryDate(entry.entryDate)}
           </span>
+          {entry.visibility === "inner" && (
+            <span title={t("Just us — hidden from extended family members")} aria-label={t("Just us")}>
+              🔒
+            </span>
+          )}
         </div>
         <div className="flex items-center gap-2">
           {entry.milestoneCategory && (
