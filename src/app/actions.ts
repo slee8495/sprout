@@ -97,7 +97,7 @@ export async function createEntry(input: z.infer<typeof entrySchema>) {
   ]);
 }
 
-const updateEntrySchema = entrySchema.omit({ audience: true, childIds: true, isDraft: true, visibility: true }).extend({
+const updateEntrySchema = entrySchema.omit({ audience: true, childIds: true, isDraft: true }).extend({
   voiceMemoUrl: z.string().url().nullable().optional(),
   videoUrl: z.string().url().nullable().optional(),
   videoSizeBytes: z.number().nullable().optional(),

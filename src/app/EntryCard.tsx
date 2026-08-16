@@ -42,6 +42,7 @@ export function EntryCard({ entry, highlighted }: { entry: JournalEntryWithPhoto
     return () => clearTimeout(timer);
   }, [highlighted, entry.id]);
   const [entryDate, setEntryDate] = useState(entry.entryDate);
+  const [justUs, setJustUs] = useState(entry.visibility === "inner");
   const [title, setTitle] = useState(entry.title ?? "");
   const [body, setBody] = useState(entry.body);
   const [milestoneCategory, setMilestoneCategory] = useState(entry.milestoneCategory ?? "");
@@ -164,6 +165,7 @@ export function EntryCard({ entry, highlighted }: { entry: JournalEntryWithPhoto
           voiceMemoUrl,
           videoUrl,
           videoSizeBytes,
+          visibility: justUs ? "inner" : "everyone",
         });
         setIsEditing(false);
         setNewFiles([]);
@@ -202,6 +204,11 @@ export function EntryCard({ entry, highlighted }: { entry: JournalEntryWithPhoto
             className="min-w-0 flex-1 rounded-2xl border border-brand-100 bg-white px-3 py-2 text-sm dark:border-brand-900/40 dark:bg-zinc-900"
           />
         </div>
+        <label className="flex w-fit items-center gap-2 text-sm">
+          <input type="checkbox" checked={justUs} onChange={(e) => setJustUs(e.target.checked)} className="h-4 w-4" />
+          <span className="font-heading font-semibold text-brand-800 dark:text-brand-200">{t("🔒 Just us")}</span>
+          <span className="text-xs text-zinc-500 dark:text-zinc-400">{t("Hidden from extended family members")}</span>
+        </label>
         <textarea
           value={body}
           onChange={(e) => setBody(e.target.value)}
