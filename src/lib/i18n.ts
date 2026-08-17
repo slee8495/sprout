@@ -275,11 +275,8 @@ const ko: Record<string, string> = {
   "New entries and comments push to your phone.": "새 일기와 댓글이 폰으로 알림 와요.",
   "Notifications are off.": "알림이 꺼져 있어요.",
 
-  // Transactional emails
-  "Welcome, {familyName}!": "환영해요, {familyName}!",
-  "You're all set to start journaling your family's moments.": "이제 우리 가족의 소중한 순간을 기록할 준비가 다 됐어요.",
-  "Start journaling": "기록 시작하기",
-  "You can invite a partner or switch languages anytime from Settings.": "설정에서 언제든 배우자를 초대하거나 언어를 바꿀 수 있어요.",
+  // Transactional emails (only monthlyAlbumEmail is locale-aware — welcomeEmail and
+  // subscriptionCanceledEmail are hand-written English-only founder copy, see emailTemplates.ts)
   "📖 {childName}'s {monthLabel} album is ready": "📖 {childName}의 {monthLabel} 앨범이 준비됐어요",
   "{childName}'s {monthLabel} album": "{childName}의 {monthLabel} 앨범",
   "is attached as a PDF — every photo you kept last month, laid out and ready to save or print.":
@@ -287,17 +284,6 @@ const ko: Record<string, string> = {
   "Open the album": "앨범 열기",
   "You'll get one of these on the 1st of every month for each child/pet with photos from the month before.":
     "지난달에 사진이 있는 아이/펫마다 매달 1일에 이 이메일을 받게 돼요.",
-  "Your Pro subscription has ended": "Pro 구독이 종료됐어요",
-  "Your Pro subscription has ended and your account is now on the Free plan.":
-    "Pro 구독이 종료되어 계정이 이제 프리 요금제로 전환됐어요.",
-  "Everything you've already written or uploaded stays exactly as it is — nothing is deleted.":
-    "이미 작성하거나 업로드한 내용은 그대로 남아있어요 — 아무것도 삭제되지 않아요.",
-  "On the Free plan:": "프리 요금제에서는:",
-  "You can't add a new child/pet beyond your first one (existing ones are unaffected)":
-    "첫 번째 아이/펫 외에는 새로 추가할 수 없어요 (기존에 있던 것은 영향 없어요)",
-  "You can't upload new photos/videos once you're over 1GB (existing files are unaffected)":
-    "1GB를 초과하면 새 사진/동영상을 업로드할 수 없어요 (기존 파일은 영향 없어요)",
-  Resubscribe: "다시 구독하기",
 };
 
 const zh: Record<string, string> = {
@@ -572,11 +558,8 @@ const zh: Record<string, string> = {
   "New entries and comments push to your phone.": "新日记和评论会推送到您的手机。",
   "Notifications are off.": "通知已关闭。",
 
-  // Transactional emails
-  "Welcome, {familyName}!": "欢迎，{familyName}！",
-  "You're all set to start journaling your family's moments.": "一切就绪，可以开始记录您家庭的珍贵时刻了。",
-  "Start journaling": "开始记录",
-  "You can invite a partner or switch languages anytime from Settings.": "您可以随时在设置中邀请伴侣或切换语言。",
+  // Transactional emails (only monthlyAlbumEmail is locale-aware — welcomeEmail and
+  // subscriptionCanceledEmail are hand-written English-only founder copy, see emailTemplates.ts)
   "📖 {childName}'s {monthLabel} album is ready": "📖 {childName}的{monthLabel}相册已准备好",
   "{childName}'s {monthLabel} album": "{childName}的{monthLabel}相册",
   "is attached as a PDF — every photo you kept last month, laid out and ready to save or print.":
@@ -584,16 +567,6 @@ const zh: Record<string, string> = {
   "Open the album": "打开相册",
   "You'll get one of these on the 1st of every month for each child/pet with photos from the month before.":
     "每个孩子/宠物只要上个月有照片，您每月1号都会收到一封这样的邮件。",
-  "Your Pro subscription has ended": "您的 Pro 订阅已结束",
-  "Your Pro subscription has ended and your account is now on the Free plan.": "您的 Pro 订阅已结束，账户现已切换到免费版。",
-  "Everything you've already written or uploaded stays exactly as it is — nothing is deleted.":
-    "您已写下或上传的所有内容都会原样保留 — 不会被删除。",
-  "On the Free plan:": "在免费版中：",
-  "You can't add a new child/pet beyond your first one (existing ones are unaffected)":
-    "除第一个孩子/宠物外，无法再添加新的（已有的不受影响）",
-  "You can't upload new photos/videos once you're over 1GB (existing files are unaffected)":
-    "超过 1GB 后将无法上传新照片/视频（已有文件不受影响）",
-  Resubscribe: "重新订阅",
 };
 
 const ja: Record<string, string> = {
@@ -869,11 +842,8 @@ const ja: Record<string, string> = {
   "New entries and comments push to your phone.": "新しい日記やコメントがスマホにプッシュされます。",
   "Notifications are off.": "通知はオフになっています。",
 
-  // Transactional emails
-  "Welcome, {familyName}!": "ようこそ、{familyName}さん！",
-  "You're all set to start journaling your family's moments.": "ご家族の大切な瞬間を記録する準備が整いました。",
-  "Start journaling": "記録を始める",
-  "You can invite a partner or switch languages anytime from Settings.": "設定からいつでもパートナーを招待したり、言語を切り替えたりできます。",
+  // Transactional emails (only monthlyAlbumEmail is locale-aware — welcomeEmail and
+  // subscriptionCanceledEmail are hand-written English-only founder copy, see emailTemplates.ts)
   "📖 {childName}'s {monthLabel} album is ready": "📖 {childName}の{monthLabel}のアルバムができました",
   "{childName}'s {monthLabel} album": "{childName}の{monthLabel}のアルバム",
   "is attached as a PDF — every photo you kept last month, laid out and ready to save or print.":
@@ -881,17 +851,6 @@ const ja: Record<string, string> = {
   "Open the album": "アルバムを開く",
   "You'll get one of these on the 1st of every month for each child/pet with photos from the month before.":
     "前月に写真があるお子さま/ペットごとに、毎月1日にこのメールが届きます。",
-  "Your Pro subscription has ended": "Proサブスクリプションが終了しました",
-  "Your Pro subscription has ended and your account is now on the Free plan.":
-    "Proサブスクリプションが終了し、アカウントは無料プランになりました。",
-  "Everything you've already written or uploaded stays exactly as it is — nothing is deleted.":
-    "これまで書いたり、アップロードしたりした内容はすべてそのまま残ります — 削除されることはありません。",
-  "On the Free plan:": "無料プランでは：",
-  "You can't add a new child/pet beyond your first one (existing ones are unaffected)":
-    "最初のお子さま/ペット以外は追加できません（既存のものには影響ありません）",
-  "You can't upload new photos/videos once you're over 1GB (existing files are unaffected)":
-    "1GBを超えると新しい写真・動画をアップロードできなくなります（既存のファイルには影響ありません）",
-  Resubscribe: "再購読する",
 };
 
 const es: Record<string, string> = {
@@ -1168,12 +1127,8 @@ const es: Record<string, string> = {
   "New entries and comments push to your phone.": "Las nuevas entradas y comentarios se envían a tu teléfono.",
   "Notifications are off.": "Las notificaciones están desactivadas.",
 
-  // Transactional emails
-  "Welcome, {familyName}!": "¡Bienvenido, {familyName}!",
-  "You're all set to start journaling your family's moments.": "Todo listo para empezar a registrar los momentos de tu familia.",
-  "Start journaling": "Empezar a escribir",
-  "You can invite a partner or switch languages anytime from Settings.":
-    "Puedes invitar a tu pareja o cambiar de idioma en cualquier momento desde Configuración.",
+  // Transactional emails (only monthlyAlbumEmail is locale-aware — welcomeEmail and
+  // subscriptionCanceledEmail are hand-written English-only founder copy, see emailTemplates.ts)
   "📖 {childName}'s {monthLabel} album is ready": "📖 El álbum de {monthLabel} de {childName} ya está listo",
   "{childName}'s {monthLabel} album": "El álbum de {monthLabel} de {childName}",
   "is attached as a PDF — every photo you kept last month, laid out and ready to save or print.":
@@ -1181,17 +1136,6 @@ const es: Record<string, string> = {
   "Open the album": "Abrir el álbum",
   "You'll get one of these on the 1st of every month for each child/pet with photos from the month before.":
     "Recibirás uno de estos el día 1 de cada mes por cada hijo/mascota con fotos del mes anterior.",
-  "Your Pro subscription has ended": "Tu suscripción Pro ha terminado",
-  "Your Pro subscription has ended and your account is now on the Free plan.":
-    "Tu suscripción Pro ha terminado y tu cuenta ahora está en el plan Gratis.",
-  "Everything you've already written or uploaded stays exactly as it is — nothing is deleted.":
-    "Todo lo que ya escribiste o subiste se mantiene tal cual — no se elimina nada.",
-  "On the Free plan:": "En el plan Gratis:",
-  "You can't add a new child/pet beyond your first one (existing ones are unaffected)":
-    "No puedes añadir un nuevo hijo/mascota además del primero (los existentes no se ven afectados)",
-  "You can't upload new photos/videos once you're over 1GB (existing files are unaffected)":
-    "No puedes subir nuevas fotos/videos una vez que superes 1GB (los archivos existentes no se ven afectados)",
-  Resubscribe: "Reactivar suscripción",
 };
 
 const DICTIONARIES: Partial<Record<Locale, Record<string, string>>> = { ko, zh, ja, es };

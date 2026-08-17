@@ -17,22 +17,29 @@ function escapeHtml(text: string): string {
   return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 }
 
-export function welcomeEmail(input: { familyName: string; appUrl: string; locale?: Locale }): {
+// A personal note from the founder rather than a boilerplate confirmation — deliberately warmer
+// and longer than a typical transactional email. English-only by choice: it fires immediately at
+// signup, before the user has ever had a chance to set a language in Settings, and this copy is
+// hand-tuned voice rather than a fixed dictionary string, so there's no good translation to fall
+// back to yet.
+export function welcomeEmail(input: { familyName: string; appUrl: string }): {
   subject: string;
   html: string;
 } {
-  const locale = input.locale ?? "en";
-  const t = (text: string) => translate(locale, text);
   return {
-    subject: t("🌱 Welcome to Roun"),
+    subject: "🌱 Welcome to Roun",
     html: `
       <div style="${WRAPPER_STYLE}">
         ${LOGO_HEADER}
-        <p><strong>${fill(t("Welcome, {familyName}!"), { familyName: input.familyName })}</strong> ${t("You're all set to start journaling your family's moments.")}</p>
-        <a href="${input.appUrl}" style="${BUTTON_STYLE}">${t("Start journaling")}</a>
-        <p style="margin-top: 24px; font-size: 13px; color: #a1a1aa;">
-          ${t("You can invite a partner or switch languages anytime from Settings.")}
-        </p>
+        <p>Hi ${input.familyName}, so glad you're here!</p>
+        <p>I hope this app helps you fill up with happy memories of your kids and pets.</p>
+        <p>I built this because I'm a parent too. I wanted a richer way to hold onto the moments with my own child, something we could look back on and share together one day, and I wanted to share that with everyone who needed the same thing, not just keep it for myself.</p>
+        <p>The Free plan can already do a lot, but Pro lets you hold onto a lot more of what matters.</p>
+        <p>Pro's $3.99 price isn't there for my profit. It's set at close to the minimum it actually costs to run and maintain this app.</p>
+        <p>As a parent raising my own kid, and as someone who still misses a dog I loved and lost, I hope your memories with your family, your pets, everyone, stay here exactly as vivid as the day you wrote them down, forever.</p>
+        <p>SL Studio is always listening. Reach out anytime at <a href="mailto:support@sl-studio.dev" style="color:#059669;">support@sl-studio.dev</a> or through <a href="https://sl-studio.dev" style="color:#059669;">sl-studio.dev</a>.</p>
+        <p>Let's start this journey with the family you love. 🌱</p>
+        <a href="${input.appUrl}" style="${BUTTON_STYLE}">Start journaling</a>
       </div>
     `,
   };
@@ -94,25 +101,27 @@ export function announcementEmail(input: {
   };
 }
 
-export function subscriptionCanceledEmail(input: { appUrl: string; locale?: Locale }): {
+// Same founder-voice choice as welcomeEmail above: English-only, hand-tuned copy rather than a
+// dictionary lookup.
+export function subscriptionCanceledEmail(input: { appUrl: string }): {
   subject: string;
   html: string;
 } {
-  const locale = input.locale ?? "en";
-  const t = (text: string) => translate(locale, text);
   return {
-    subject: t("Your Pro subscription has ended"),
+    subject: "Sorry to see you go",
     html: `
       <div style="${WRAPPER_STYLE}">
         ${LOGO_HEADER}
-        <p>${t("Your Pro subscription has ended and your account is now on the Free plan.")}</p>
-        <p style="font-weight: 600;">${t("Everything you've already written or uploaded stays exactly as it is — nothing is deleted.")}</p>
-        <p>${t("On the Free plan:")}</p>
+        <p>It's genuinely sad that this space for your family and pets' memories won't be with you all the way through. Sorry to see you go.</p>
+        <p style="font-weight: 600;">But I respect your choice. And I want you to remember: the best moments and memories with your family are already yours, forever. They never fade.</p>
+        <p>Everything you've already written or uploaded stays exactly as it is. Nothing is deleted.</p>
+        <p>On the Free plan:</p>
         <ul>
-          <li>${t("You can't add a new child/pet beyond your first one (existing ones are unaffected)")}</li>
-          <li>${t("You can't upload new photos/videos once you're over 1GB (existing files are unaffected)")}</li>
+          <li>You can't add a new child/pet beyond your first one (existing ones are unaffected)</li>
+          <li>You can't upload new photos/videos once you're over 1GB (existing files are unaffected)</li>
         </ul>
-        <a href="${input.appUrl}/settings" style="${BUTTON_STYLE}">${t("Resubscribe")}</a>
+        <p>I hope we get to see you again sometime. If anything comes up or you have any questions, reach out anytime. I'll always be here waiting.</p>
+        <a href="${input.appUrl}/settings" style="${BUTTON_STYLE}">Resubscribe</a>
       </div>
     `,
   };
