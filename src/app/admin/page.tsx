@@ -3,6 +3,7 @@ import { auth } from "@/auth";
 import { isAdmin } from "@/lib/admin";
 import { listAllFamiliesForAdmin } from "@/db/queries";
 import { AdminFamilyList } from "./AdminFamilyList";
+import { AdminAnnouncementForm } from "./AdminAnnouncementForm";
 
 export default async function AdminPage() {
   const session = await auth();
@@ -18,6 +19,7 @@ export default async function AdminPage() {
           Grant or revoke complimentary Pro access. This never touches a family&apos;s real Stripe subscription.
         </p>
       </header>
+      <AdminAnnouncementForm />
       <AdminFamilyList families={families} />
     </div>
   );

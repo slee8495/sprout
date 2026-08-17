@@ -715,6 +715,10 @@ export async function listMilestoneEntries(familyId: number, viewerTier?: Member
   return rows.map(({ entryChildren, ...e }) => ({ ...e, children: entryChildren.map((ec) => ec.child) }));
 }
 
+export async function listAllUserEmails() {
+  return db.select({ email: users.email, name: users.name }).from(users);
+}
+
 export async function listAllFamiliesForAdmin() {
   const [familyRows, userRows] = await Promise.all([
     db.select().from(families).orderBy(desc(families.createdAt)),

@@ -3,6 +3,10 @@ const WRAPPER_STYLE =
 const BUTTON_STYLE =
   "display: inline-block; background: #059669; color: #ffffff; text-decoration: none; padding: 10px 24px; border-radius: 999px; font-weight: 600; margin-top: 12px;";
 
+function escapeHtml(text: string): string {
+  return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+}
+
 export function welcomeEmail(input: { familyName: string; appUrl: string }): { subject: string; html: string } {
   return {
     subject: "🌱 Welcome to Roun",
@@ -34,6 +38,36 @@ export function monthlyAlbumEmail(input: {
         <p style="margin-top: 24px; font-size: 13px; color: #a1a1aa;">
           You'll get one of these on the 1st of every month for each child/pet with photos from the month before.
         </p>
+      </div>
+    `,
+  };
+}
+
+// General-purpose announcement email (product news, "now on the App Store", etc). `body` is
+// plain text — one `<p>` per non-empty line, so callers can write multi-paragraph copy without
+// hand-writing HTML.
+export function announcementEmail(input: {
+  subject: string;
+  heading: string;
+  body: string;
+  ctaLabel?: string;
+  ctaHref?: string;
+}): { subject: string; html: string } {
+  const paragraphs = input.body
+    .split("\n")
+    .map((line) => line.trim())
+    .filter(Boolean)
+    .map((line) => `<p>${escapeHtml(line)}</p>`)
+    .join("\n");
+
+  return {
+    subject: input.subject,
+    html: `
+      <div style="${WRAPPER_STYLE}">
+        <h1 style="color: #047857;">🌱 Roun</h1>
+        <h2 style="color: #27272a; margin-bottom: 4px;">${escapeHtml(input.heading)}</h2>
+        ${paragraphs}
+        ${input.ctaLabel && input.ctaHref ? `<a href="${input.ctaHref}" style="${BUTTON_STYLE}">${input.ctaLabel}</a>` : ""}
       </div>
     `,
   };

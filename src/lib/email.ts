@@ -23,3 +23,25 @@ export async function sendEmail(input: {
     attachments: input.attachments,
   });
 }
+
+// For sending the same email to many separate recipients (e.g. a site-wide announcement).
+// Sends one message per recipient — never puts multiple real users' addresses in the same `to`
+// array, which would leak each recipient's email to every other recipient. Uses Resend's batch
+// endpoint (max 100 emails/call, no attachments) so N recipients cost ceil(N/100) API calls
+// instead of N.
+export async function sendBulkEmail(input: { to: string[]; subject: string; html: string }): Promise<number> {
+  const domain = process.env.RESEND_EMAIL_DOMAIN;
+  if (!domain) return 0; // Not configured (e.g. local dev without Resend env vars) — skip silently.
+
+  const from = `Roun <no-reply@${domain}>`;
+  const BATCH_SIZE = 100;
+  let sent = 0;
+
+  for (let i = 0; i < input.to.length; i += BATCH_SIZE) {
+    const chunk = input.to.slice(i, i + BATCH_SIZE);
+    await getResend().batch.send(chunk.map((to) => ({ from, to, subject: input.subject, html: input.html })));
+    sent += chunk.length;
+  }
+
+  return sent;
+}
