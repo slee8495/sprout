@@ -17,9 +17,17 @@ export function NavBar() {
   const { t } = useSettings();
 
   if (
-    ["/login", "/onboarding", "/connect", "/signup", "/join", "/privacy", "/terms", "/account-deletion"].includes(
-      pathname,
-    )
+    [
+      "/login",
+      "/onboarding",
+      "/connect",
+      "/signup",
+      "/join",
+      "/privacy",
+      "/terms",
+      "/account-deletion",
+      "/get-app",
+    ].includes(pathname)
   )
     return null;
 
