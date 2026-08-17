@@ -146,8 +146,12 @@ export default function GetAppPage() {
         </button>
       )}
 
+      <a href="/settings" className="text-xs text-zinc-400 underline dark:text-zinc-500">
+        Or continue in your browser, no install needed
+      </a>
+
       <p className="mt-2 text-xs text-zinc-400 dark:text-zinc-500">
-        📱 App Store &amp; Google Play versions — coming soon.
+        📱 App Store &amp; Google Play versions, coming soon.
       </p>
     </div>
   );
