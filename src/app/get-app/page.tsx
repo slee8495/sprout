@@ -83,7 +83,7 @@ export default function GetAppPage() {
 
   return (
     <div className="mx-auto flex w-full max-w-md flex-1 flex-col items-center gap-6 p-6 pb-16 text-center">
-      <Image src="/icon-512.png" alt="Roun" width={88} height={88} className="rounded-[22px] shadow-lg shadow-brand-900/20" />
+      <Image src="/icon-512.png" alt="Roun" width={88} height={88} priority className="rounded-[22px] shadow-lg shadow-brand-900/20" />
       <div>
         <h1 className="font-heading text-2xl font-bold text-brand-700 dark:text-brand-300">Get Roun on your phone</h1>
         <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
