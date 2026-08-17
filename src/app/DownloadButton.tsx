@@ -1,7 +1,7 @@
 "use client";
 
 import type { ReactNode } from "react";
-import { useTransition } from "react";
+import { useEffect, useState, useTransition } from "react";
 import { Capacitor } from "@capacitor/core";
 import { saveToPhotos } from "@/lib/saveToPhotos";
 import { useSettings } from "./SettingsProvider";
@@ -22,6 +22,16 @@ export function DownloadButton({
 }) {
   const { t } = useSettings();
   const [isPending, startTransition] = useTransition();
+  // The web-only <a href> fallback doesn't work inside the native app's WebView (no visible
+  // download destination — the exact problem the native save flow was built to fix), so a native
+  // build that predates the Media plugin has no good way to download at all. Hide the button
+  // rather than show one that just alerts "Couldn't save" — it reappears on its own once the
+  // user's app updates to a build with the plugin, no follow-up cleanup needed here.
+  const [hideOnOldNativeBuild, setHideOnOldNativeBuild] = useState(false);
+
+  useEffect(() => {
+    setHideOnOldNativeBuild(Capacitor.isNativePlatform() && !Capacitor.isPluginAvailable("Media"));
+  }, []);
 
   function handleClick(e: React.MouseEvent<HTMLAnchorElement>) {
     e.stopPropagation(); // don't let a parent overlay (e.g. the photo lightbox) treat this as "close"
@@ -32,6 +42,8 @@ export function DownloadButton({
       if (!ok) alert(t("Couldn't save — try again."));
     });
   }
+
+  if (hideOnOldNativeBuild) return null;
 
   return (
     <a
