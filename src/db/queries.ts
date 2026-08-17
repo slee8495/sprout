@@ -1,5 +1,6 @@
 import { and, desc, eq, ilike, inArray, isNotNull, isNull, lt, ne, sql } from "drizzle-orm";
 import { db } from "./index";
+import type { Locale } from "@/lib/i18n";
 import { isPaidStatus } from "@/lib/storage";
 import {
   audienceEnum,
@@ -46,10 +47,19 @@ export async function getFamilyMemberByName(familyId: number, name: string) {
 
 export async function listFamilyMemberEmails(familyId: number) {
   const rows = await db
-    .select({ email: users.email, name: users.name })
+    .select({ email: users.email, name: users.name, locale: users.locale })
     .from(users)
     .where(eq(users.familyId, familyId));
   return rows;
+}
+
+export async function getUserLocale(userId: number): Promise<Locale> {
+  const row = await db.query.users.findFirst({ where: eq(users.id, userId), columns: { locale: true } });
+  return row?.locale ?? "en";
+}
+
+export async function updateUserLocale(userId: number, locale: Locale) {
+  await db.update(users).set({ locale }).where(eq(users.id, userId));
 }
 
 export async function getUserByEmail(email: string) {
@@ -722,13 +732,15 @@ export async function listAllUserEmails() {
 export async function listAllFamiliesForAdmin() {
   const [familyRows, userRows] = await Promise.all([
     db.select().from(families).orderBy(desc(families.createdAt)),
-    db.select({ familyId: users.familyId, email: users.email, name: users.name, tier: users.tier }).from(users),
+    db
+      .select({ familyId: users.familyId, email: users.email, name: users.name, tier: users.tier, locale: users.locale })
+      .from(users),
   ]);
 
-  const membersByFamily = new Map<number, { email: string; name: string | null; tier: MemberTier }[]>();
+  const membersByFamily = new Map<number, { email: string; name: string | null; tier: MemberTier; locale: Locale }[]>();
   for (const u of userRows) {
     const list = membersByFamily.get(u.familyId) ?? [];
-    list.push({ email: u.email, name: u.name, tier: u.tier });
+    list.push({ email: u.email, name: u.name, tier: u.tier, locale: u.locale });
     membersByFamily.set(u.familyId, list);
   }
 

@@ -7,8 +7,9 @@ import {
   updateFamilyBilling,
 } from "@/db/queries";
 import { subscriptionStatusEnum } from "@/db/schema";
-import { sendEmail } from "@/lib/email";
+import { groupByLocale, sendEmail } from "@/lib/email";
 import { subscriptionCanceledEmail } from "@/lib/emailTemplates";
+import type { Locale } from "@/lib/i18n";
 import { STORAGE_ADDON_BYTES } from "@/lib/storage";
 import { getStripe } from "@/lib/stripe";
 
@@ -72,10 +73,15 @@ export async function POST(request: Request) {
 
       if (event.type === "customer.subscription.deleted") {
         const members = await listFamilyMemberEmails(family.id);
-        await sendEmail({
-          to: members.map((m) => m.email),
-          ...subscriptionCanceledEmail({ appUrl: APP_URL }),
-        }).catch(() => {}); // Best-effort — a failed notification email shouldn't fail the webhook.
+        const byLocale = groupByLocale(members);
+        await Promise.all(
+          Object.entries(byLocale).map(([locale, group]) =>
+            sendEmail({
+              to: group.map((m) => m.email),
+              ...subscriptionCanceledEmail({ appUrl: APP_URL, locale: locale as Locale }),
+            }),
+          ),
+        ).catch(() => {}); // Best-effort — a failed notification email shouldn't fail the webhook.
       }
       break;
     }

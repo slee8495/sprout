@@ -10,10 +10,17 @@ import {
   updateFamilySettings,
   updateMemberRole,
   updateMemberTier,
+  updateUserLocale,
 } from "@/db/queries";
-import { dayCountStartEnum, memberTierEnum, subjectTypeEnum, userRoleEnum } from "@/db/schema";
-import { requireEditor, requireOwner } from "@/lib/session";
+import { dayCountStartEnum, localeEnum, memberTierEnum, subjectTypeEnum, userRoleEnum } from "@/db/schema";
+import { requireEditor, requireOwner, requireSession } from "@/lib/session";
 import { FREE_CHILD_LIMIT, isPaidStatus } from "@/lib/storage";
+
+export async function updateLocale(locale: (typeof localeEnum.enumValues)[number]) {
+  const { userId } = await requireSession();
+  const parsed = z.enum(localeEnum.enumValues).parse(locale);
+  await updateUserLocale(userId, parsed);
+}
 
 const familySettingsSchema = z.object({
   timezone: z.string().min(1),

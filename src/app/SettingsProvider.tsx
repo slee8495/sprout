@@ -2,6 +2,7 @@
 
 import { createContext, useContext, useEffect, useState } from "react";
 import { translate, type Locale } from "@/lib/i18n";
+import { updateLocale } from "./settings/actions";
 
 export type Theme = "light" | "dark" | "system";
 export type FontSize = "sm" | "md" | "lg";
@@ -79,18 +80,30 @@ export function SettingsProvider({
   family,
   userId,
   role,
+  initialLocale,
   children,
 }: {
   family: FamilySettings;
   userId: number;
   role: UserRole;
+  // Only set for a logged-in visitor — the DB is the source of truth for their language once
+  // they have an account, so it takes priority over whatever's cached in localStorage (e.g. from
+  // a different account that previously signed in on this browser). Undefined for logged-out
+  // visitors, who keep using the localStorage-only behavior below.
+  initialLocale?: Locale;
   children: React.ReactNode;
 }) {
   const [theme, setThemeState] = useState<Theme>(readStoredTheme);
   const [colorTheme, setColorThemeState] = useState<ColorTheme>(readStoredColorTheme);
   const [background, setBackgroundState] = useState<Background>(readStoredBackground);
   const [fontSize, setFontSizeState] = useState<FontSize>(readStoredFontSize);
-  const [locale, setLocaleState] = useState<Locale>(readStoredLocale);
+  const [locale, setLocaleState] = useState<Locale>(() => initialLocale ?? readStoredLocale());
+
+  useEffect(() => {
+    if (initialLocale) localStorage.setItem("locale", initialLocale);
+    // Only meant to sync the DB's value into localStorage once, on mount.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
     applyTheme(theme);
@@ -140,6 +153,7 @@ export function SettingsProvider({
   function setLocale(next: Locale) {
     setLocaleState(next);
     localStorage.setItem("locale", next);
+    if (userId) updateLocale(next).catch(() => {}); // Best-effort — worst case it re-syncs next time they change it.
   }
 
   function t(text: string) {

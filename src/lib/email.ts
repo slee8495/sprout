@@ -1,4 +1,5 @@
 import { Resend } from "resend";
+import type { Locale } from "./i18n";
 
 let resendClient: Resend | undefined;
 
@@ -44,4 +45,16 @@ export async function sendBulkEmail(input: { to: string[]; subject: string; html
   }
 
   return sent;
+}
+
+// Splits a family's members by their saved language, so a locale-aware email template (see
+// emailTemplates.ts) can be rendered once per language instead of once per recipient — each
+// group still gets a single `sendEmail` call with everyone in that language in the `to` array,
+// same as before locale existed.
+export function groupByLocale<T extends { locale: Locale }>(members: T[]): Partial<Record<Locale, T[]>> {
+  const groups: Partial<Record<Locale, T[]>> = {};
+  for (const member of members) {
+    (groups[member.locale] ??= []).push(member);
+  }
+  return groups;
 }

@@ -2,7 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Fredoka, Nunito } from "next/font/google";
 import "./globals.css";
 import { auth } from "@/auth";
-import { getFamilySettings } from "@/db/queries";
+import { getFamilySettings, getUserLocale } from "@/db/queries";
 import { DEFAULT_TIMEZONE } from "@/lib/date";
 import { AdClickTracker } from "./AdClickTracker";
 import { MobileAuthListener } from "./MobileAuthListener";
@@ -53,9 +53,10 @@ export default async function RootLayout({
   children: React.ReactNode;
 }>) {
   const session = await auth();
-  const family = session?.user?.familyId
-    ? await getFamilySettings(session.user.familyId)
-    : { timezone: DEFAULT_TIMEZONE };
+  const [family, initialLocale] = await Promise.all([
+    session?.user?.familyId ? getFamilySettings(session.user.familyId) : { timezone: DEFAULT_TIMEZONE },
+    session?.user?.id ? getUserLocale(Number(session.user.id)) : undefined,
+  ]);
 
   return (
     <html
@@ -70,6 +71,7 @@ export default async function RootLayout({
           family={{ timezone: family.timezone }}
           userId={session?.user?.id ? Number(session.user.id) : 0}
           role={session?.user?.role ?? "editor"}
+          initialLocale={initialLocale}
         >
           <AdClickTracker />
           <MobileAuthListener />

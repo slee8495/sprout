@@ -48,6 +48,11 @@ export const memberTierEnum = pgEnum("member_tier", ["inner", "extended"]);
 // entry into being restricted.
 export const entryVisibilityEnum = pgEnum("entry_visibility", ["everyone", "inner"]);
 
+// Kept in sync with the `Locale` type in src/lib/i18n.ts by hand — server-side source of truth
+// for which language to send emails in, separate from the client-only localStorage copy used to
+// paint the UI before this ever loads.
+export const localeEnum = pgEnum("locale", ["en", "ko", "zh", "ja", "es"]);
+
 export const families = pgTable("families", {
   id: serial("id").primaryKey(),
   name: varchar("name", { length: 128 }).notNull(),
@@ -74,6 +79,7 @@ export const users = pgTable("users", {
   imageUrl: text("image_url"),
   role: userRoleEnum("role").notNull().default("editor"),
   tier: memberTierEnum("tier").notNull().default("inner"),
+  locale: localeEnum("locale").notNull().default("en"),
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
 });
 

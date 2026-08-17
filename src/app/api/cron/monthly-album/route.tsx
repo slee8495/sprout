@@ -3,8 +3,9 @@ import { NextResponse } from "next/server";
 import { AlbumPdfDocument } from "@/app/api/library/[childId]/export/AlbumPdfDocument";
 import { listAllFamiliesForAdmin, listChildren, listJournalEntries } from "@/db/queries";
 import { buildAlbumPages, sortAlbumEntries } from "@/lib/albumPages";
-import { sendEmail } from "@/lib/email";
+import { groupByLocale, sendEmail } from "@/lib/email";
 import { monthlyAlbumEmail } from "@/lib/emailTemplates";
+import type { Locale } from "@/lib/i18n";
 import { formatMonthLabel } from "@/lib/milestones";
 import { preparePhotosForPdf } from "@/lib/pdfPhotos";
 
@@ -50,8 +51,8 @@ export async function GET(request: Request) {
         listJournalEntries(family.id, "child"),
       ]);
 
-      const innerEmails = family.members.filter((m) => m.tier !== "extended").map((m) => m.email);
-      const extendedEmails = family.members.filter((m) => m.tier === "extended").map((m) => m.email);
+      const innerMembers = family.members.filter((m) => m.tier !== "extended");
+      const extendedMembers = family.members.filter((m) => m.tier === "extended");
 
       for (const child of children) {
         const photoEntries = entries.filter(
@@ -64,32 +65,38 @@ export async function GET(request: Request) {
         const filename = `${child.name.replace(/[^a-z0-9]+/gi, "_")}-${from.slice(0, 7)}.pdf`;
 
         // "Inner" members get everything; "extended" members only get entries not marked 🔒 Just
-        // us — two separate PDFs/sends when both groups exist, so a restricted entry never rides
-        // along in an attachment that reaches an extended-tier inbox.
-        if (innerEmails.length) {
+        // us — two separate PDFs when both groups exist, so a restricted entry never rides along
+        // in an attachment that reaches an extended-tier inbox. Within each tier, the same
+        // rendered PDF is reused across every locale group — the attachment doesn't change, only
+        // the email text wrapped around it does.
+        if (innerMembers.length) {
           const pages = buildAlbumPages(sortAlbumEntries(photoEntries));
           const pdfPages = await preparePhotosForPdf(pages);
           const buffer = await renderToBuffer(<AlbumPdfDocument child={child} pages={pdfPages} />);
-          await sendEmail({
-            to: innerEmails,
-            ...monthlyAlbumEmail({ childName: child.name, monthLabel, appUrl: APP_URL }),
-            attachments: [{ filename, content: buffer }],
-          });
-          sent++;
+          for (const [locale, group] of Object.entries(groupByLocale(innerMembers))) {
+            await sendEmail({
+              to: group.map((m) => m.email),
+              ...monthlyAlbumEmail({ childName: child.name, monthLabel, appUrl: APP_URL, locale: locale as Locale }),
+              attachments: [{ filename, content: buffer }],
+            });
+            sent++;
+          }
         }
 
-        if (extendedEmails.length) {
+        if (extendedMembers.length) {
           const everyoneEntries = photoEntries.filter((e) => e.visibility === "everyone");
           if (everyoneEntries.length) {
             const pages = buildAlbumPages(sortAlbumEntries(everyoneEntries));
             const pdfPages = await preparePhotosForPdf(pages);
             const buffer = await renderToBuffer(<AlbumPdfDocument child={child} pages={pdfPages} />);
-            await sendEmail({
-              to: extendedEmails,
-              ...monthlyAlbumEmail({ childName: child.name, monthLabel, appUrl: APP_URL }),
-              attachments: [{ filename, content: buffer }],
-            });
-            sent++;
+            for (const [locale, group] of Object.entries(groupByLocale(extendedMembers))) {
+              await sendEmail({
+                to: group.map((m) => m.email),
+                ...monthlyAlbumEmail({ childName: child.name, monthLabel, appUrl: APP_URL, locale: locale as Locale }),
+                attachments: [{ filename, content: buffer }],
+              });
+              sent++;
+            }
           }
         }
       }

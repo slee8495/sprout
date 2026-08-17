@@ -1,3 +1,5 @@
+import { fill, translate, type Locale } from "./i18n";
+
 const WRAPPER_STYLE =
   "font-family: -apple-system, BlinkMacSystemFont, sans-serif; max-width: 480px; margin: 0 auto; color: #27272a;";
 const BUTTON_STYLE =
@@ -15,16 +17,21 @@ function escapeHtml(text: string): string {
   return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 }
 
-export function welcomeEmail(input: { familyName: string; appUrl: string }): { subject: string; html: string } {
+export function welcomeEmail(input: { familyName: string; appUrl: string; locale?: Locale }): {
+  subject: string;
+  html: string;
+} {
+  const locale = input.locale ?? "en";
+  const t = (text: string) => translate(locale, text);
   return {
-    subject: "🌱 Welcome to Roun",
+    subject: t("🌱 Welcome to Roun"),
     html: `
       <div style="${WRAPPER_STYLE}">
         ${LOGO_HEADER}
-        <p><strong>Welcome, ${input.familyName}!</strong> You're all set to start journaling your family's moments.</p>
-        <a href="${input.appUrl}" style="${BUTTON_STYLE}">Start journaling</a>
+        <p><strong>${fill(t("Welcome, {familyName}!"), { familyName: input.familyName })}</strong> ${t("You're all set to start journaling your family's moments.")}</p>
+        <a href="${input.appUrl}" style="${BUTTON_STYLE}">${t("Start journaling")}</a>
         <p style="margin-top: 24px; font-size: 13px; color: #a1a1aa;">
-          You can invite a partner or switch languages anytime from Settings.
+          ${t("You can invite a partner or switch languages anytime from Settings.")}
         </p>
       </div>
     `,
@@ -35,16 +42,20 @@ export function monthlyAlbumEmail(input: {
   childName: string;
   monthLabel: string;
   appUrl: string;
+  locale?: Locale;
 }): { subject: string; html: string } {
+  const locale = input.locale ?? "en";
+  const t = (text: string) => translate(locale, text);
+  const values = { childName: input.childName, monthLabel: input.monthLabel };
   return {
-    subject: `📖 ${input.childName}'s ${input.monthLabel} album is ready`,
+    subject: fill(t("📖 {childName}'s {monthLabel} album is ready"), values),
     html: `
       <div style="${WRAPPER_STYLE}">
         ${LOGO_HEADER}
-        <p><strong>${input.childName}'s ${input.monthLabel} album</strong> is attached as a PDF — every photo you kept last month, laid out and ready to save or print.</p>
-        <a href="${input.appUrl}/library" style="${BUTTON_STYLE}">Open the album</a>
+        <p><strong>${fill(t("{childName}'s {monthLabel} album"), values)}</strong> ${t("is attached as a PDF — every photo you kept last month, laid out and ready to save or print.")}</p>
+        <a href="${input.appUrl}/library" style="${BUTTON_STYLE}">${t("Open the album")}</a>
         <p style="margin-top: 24px; font-size: 13px; color: #a1a1aa;">
-          You'll get one of these on the 1st of every month for each child/pet with photos from the month before.
+          ${t("You'll get one of these on the 1st of every month for each child/pet with photos from the month before.")}
         </p>
       </div>
     `,
@@ -53,7 +64,9 @@ export function monthlyAlbumEmail(input: {
 
 // General-purpose announcement email (product news, "now on the App Store", etc). `body` is
 // plain text — one `<p>` per non-empty line, so callers can write multi-paragraph copy without
-// hand-writing HTML.
+// hand-writing HTML. Unlike the templates above, this one has no `locale` param: the copy is
+// free text an admin types per send, not a fixed string in the translation dictionary, so there's
+// nothing to look up — it goes out in whatever language it was written in.
 export function announcementEmail(input: {
   subject: string;
   heading: string;
@@ -81,20 +94,25 @@ export function announcementEmail(input: {
   };
 }
 
-export function subscriptionCanceledEmail(input: { appUrl: string }): { subject: string; html: string } {
+export function subscriptionCanceledEmail(input: { appUrl: string; locale?: Locale }): {
+  subject: string;
+  html: string;
+} {
+  const locale = input.locale ?? "en";
+  const t = (text: string) => translate(locale, text);
   return {
-    subject: "Your Pro subscription has ended",
+    subject: t("Your Pro subscription has ended"),
     html: `
       <div style="${WRAPPER_STYLE}">
         ${LOGO_HEADER}
-        <p>Your Pro subscription has ended and your account is now on the Free plan.</p>
-        <p style="font-weight: 600;">Everything you've already written or uploaded stays exactly as it is — nothing is deleted.</p>
-        <p>On the Free plan:</p>
+        <p>${t("Your Pro subscription has ended and your account is now on the Free plan.")}</p>
+        <p style="font-weight: 600;">${t("Everything you've already written or uploaded stays exactly as it is — nothing is deleted.")}</p>
+        <p>${t("On the Free plan:")}</p>
         <ul>
-          <li>You can't add a new child/pet beyond your first one (existing ones are unaffected)</li>
-          <li>You can't upload new photos/videos once you're over 1GB (existing files are unaffected)</li>
+          <li>${t("You can't add a new child/pet beyond your first one (existing ones are unaffected)")}</li>
+          <li>${t("You can't upload new photos/videos once you're over 1GB (existing files are unaffected)")}</li>
         </ul>
-        <a href="${input.appUrl}/settings" style="${BUTTON_STYLE}">Resubscribe</a>
+        <a href="${input.appUrl}/settings" style="${BUTTON_STYLE}">${t("Resubscribe")}</a>
       </div>
     `,
   };
