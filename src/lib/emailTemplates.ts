@@ -3,6 +3,14 @@ const WRAPPER_STYLE =
 const BUTTON_STYLE =
   "display: inline-block; background: #059669; color: #ffffff; text-decoration: none; padding: 10px 24px; border-radius: 999px; font-weight: 600; margin-top: 12px;";
 
+// Absolute URL — email clients can't resolve a relative "/icon-192.png" the way a browser can.
+const LOGO_HEADER = `
+  <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 16px;">
+    <img src="https://roun.sl-studio.dev/icon-192.png" alt="Roun" width="32" height="32" style="border-radius: 8px; display: block;" />
+    <span style="font-size: 20px; font-weight: 700; color: #047857;">Roun</span>
+  </div>
+`;
+
 function escapeHtml(text: string): string {
   return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 }
@@ -12,7 +20,7 @@ export function welcomeEmail(input: { familyName: string; appUrl: string }): { s
     subject: "🌱 Welcome to Roun",
     html: `
       <div style="${WRAPPER_STYLE}">
-        <h1 style="color: #047857;">🌱 Roun</h1>
+        ${LOGO_HEADER}
         <p><strong>Welcome, ${input.familyName}!</strong> You're all set to start journaling your family's moments.</p>
         <a href="${input.appUrl}" style="${BUTTON_STYLE}">Start journaling</a>
         <p style="margin-top: 24px; font-size: 13px; color: #a1a1aa;">
@@ -32,7 +40,7 @@ export function monthlyAlbumEmail(input: {
     subject: `📖 ${input.childName}'s ${input.monthLabel} album is ready`,
     html: `
       <div style="${WRAPPER_STYLE}">
-        <h1 style="color: #047857;">🌱 Roun</h1>
+        ${LOGO_HEADER}
         <p><strong>${input.childName}'s ${input.monthLabel} album</strong> is attached as a PDF — every photo you kept last month, laid out and ready to save or print.</p>
         <a href="${input.appUrl}/library" style="${BUTTON_STYLE}">Open the album</a>
         <p style="margin-top: 24px; font-size: 13px; color: #a1a1aa;">
@@ -64,7 +72,7 @@ export function announcementEmail(input: {
     subject: input.subject,
     html: `
       <div style="${WRAPPER_STYLE}">
-        <h1 style="color: #047857;">🌱 Roun</h1>
+        ${LOGO_HEADER}
         <h2 style="color: #27272a; margin-bottom: 4px;">${escapeHtml(input.heading)}</h2>
         ${paragraphs}
         ${input.ctaLabel && input.ctaHref ? `<a href="${input.ctaHref}" style="${BUTTON_STYLE}">${input.ctaLabel}</a>` : ""}
@@ -78,7 +86,7 @@ export function subscriptionCanceledEmail(input: { appUrl: string }): { subject:
     subject: "Your Pro subscription has ended",
     html: `
       <div style="${WRAPPER_STYLE}">
-        <h1 style="color: #047857;">🌱 Roun</h1>
+        ${LOGO_HEADER}
         <p>Your Pro subscription has ended and your account is now on the Free plan.</p>
         <p style="font-weight: 600;">Everything you've already written or uploaded stays exactly as it is — nothing is deleted.</p>
         <p>On the Free plan:</p>
