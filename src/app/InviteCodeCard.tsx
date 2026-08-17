@@ -16,7 +16,7 @@ export function InviteCodeCard({ inviteCode }: { inviteCode: string }) {
   return (
     <section className="flex flex-col gap-2 rounded-3xl border border-brand-200/70 bg-brand-50/60 p-4 dark:border-brand-800/50 dark:bg-brand-950/30">
       <h2 className="font-heading text-sm font-semibold text-brand-800 dark:text-brand-200">
-        {t("Invite your partner")}
+        {t("Invite your family")}
       </h2>
       <p className="text-xs text-zinc-600 dark:text-zinc-400">
         {t("Share this family code — they can sign in with Google and join at")} <code>/join</code>.

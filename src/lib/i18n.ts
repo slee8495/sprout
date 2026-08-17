@@ -163,7 +163,7 @@ const ko: Record<string, string> = {
   "Permanently delete this family's account": "이 가족 계정을 영구적으로 삭제",
 
   // Settings — Invite
-  "Invite your partner": "파트너 초대하기",
+  "Invite your family": "가족 초대하기",
   "Share this family code — they can sign in with Google and join at":
     "이 가족 코드를 공유하세요 — Google로 로그인해서 아래 주소에서 가입할 수 있어요",
   "Copied!": "복사됨!",
@@ -447,7 +447,7 @@ const zh: Record<string, string> = {
   "Permanently delete this family's account": "永久删除此家庭账户",
 
   // Settings — Invite
-  "Invite your partner": "邀请伴侣",
+  "Invite your family": "邀请家人",
   "Share this family code — they can sign in with Google and join at":
     "分享这个家庭代码 — 对方可以用 Google 登录并加入",
   "Copied!": "已复制！",
@@ -730,7 +730,7 @@ const ja: Record<string, string> = {
   "Permanently delete this family's account": "この家族のアカウントを完全に削除する",
 
   // Settings — Invite
-  "Invite your partner": "パートナーを招待",
+  "Invite your family": "家族を招待",
   "Share this family code — they can sign in with Google and join at":
     "この家族コードを共有してください — 相手は Google でログインして参加できます",
   "Copied!": "コピーしました！",
@@ -1014,7 +1014,7 @@ const es: Record<string, string> = {
   "Permanently delete this family's account": "Eliminar permanentemente la cuenta de esta familia",
 
   // Settings — Invite
-  "Invite your partner": "Invita a tu pareja",
+  "Invite your family": "Invita a tu familia",
   "Share this family code — they can sign in with Google and join at":
     "Comparte este código familiar — pueden iniciar sesión con Google y unirse en",
   "Copied!": "¡Copiado!",
