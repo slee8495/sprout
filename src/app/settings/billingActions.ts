@@ -20,16 +20,17 @@ async function getOrCreateCustomerId(familyId: number, customerId: string | null
   return customer.id;
 }
 
-export async function startSubscriptionCheckout() {
+export async function startSubscriptionCheckout(interval: "month" | "year" = "month") {
   const { familyId } = await requireSession();
   const billing = await getFamilyBilling(familyId);
   const customerId = await getOrCreateCustomerId(familyId, billing.stripeCustomerId);
   const origin = await getOrigin();
+  const priceId = interval === "year" ? process.env.STRIPE_ANNUAL_PRICE_ID! : process.env.STRIPE_PRICE_ID!;
 
   const session = await getStripe().checkout.sessions.create({
     mode: "subscription",
     customer: customerId,
-    line_items: [{ price: process.env.STRIPE_PRICE_ID!, quantity: 1 }],
+    line_items: [{ price: priceId, quantity: 1 }],
     success_url: `${origin}/settings?checkout=success`,
     cancel_url: `${origin}/settings?checkout=cancel`,
     client_reference_id: String(familyId),

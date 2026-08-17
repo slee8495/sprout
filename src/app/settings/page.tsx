@@ -36,13 +36,14 @@ async function getCancelAtPeriodEnd(subscriptionId: string | null) {
 
 export default async function SettingsPage() {
   const { familyId, userId, role } = await requireSession();
-  const [settings, kids, storageUsed, billing, priceLabel, addonPriceLabel, deletionSummary, members] =
+  const [settings, kids, storageUsed, billing, priceLabel, annualPriceLabel, addonPriceLabel, deletionSummary, members] =
     await Promise.all([
       getFamilySettings(familyId),
       listChildren(familyId),
       getFamilyStorageUsage(familyId),
       getFamilyBilling(familyId),
       getPriceLabel(process.env.STRIPE_PRICE_ID),
+      getPriceLabel(process.env.STRIPE_ANNUAL_PRICE_ID),
       getPriceLabel(process.env.STRIPE_STORAGE_ADDON_PRICE_ID),
       getFamilyDeletionSummary(familyId),
       listFamilyMembers(familyId),
@@ -62,6 +63,7 @@ export default async function SettingsPage() {
       <BillingCard
         billing={billing}
         priceLabel={priceLabel}
+        annualPriceLabel={annualPriceLabel}
         addonPriceLabel={addonPriceLabel}
         cancelAtPeriodEnd={cancelAtPeriodEnd}
       />

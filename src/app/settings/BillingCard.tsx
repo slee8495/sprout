@@ -1,6 +1,6 @@
 "use client";
 
-import { useTransition } from "react";
+import { useState, useTransition } from "react";
 import type { FamilyBilling } from "@/db/queries";
 import { fill } from "@/lib/i18n";
 import { useSettings } from "../SettingsProvider";
@@ -18,19 +18,29 @@ const secondaryButtonClasses =
   "rounded-full border border-brand-600 px-4 py-1.5 font-heading text-sm font-semibold text-brand-700 transition-transform hover:scale-105 active:scale-95 dark:text-brand-300";
 const textButtonClasses = "font-heading text-sm font-semibold text-rose-600 underline dark:text-rose-400";
 
+// Pulls the numeric amount out of a formatted price label like "$3.99/month" — used only to show
+// a "save X%" hint on the annual toggle, so an unparseable label just means no hint, not an error.
+function parsePriceAmount(label: string | null): number | null {
+  const match = label?.match(/[\d.]+/);
+  return match ? Number(match[0]) : null;
+}
+
 export function BillingCard({
   billing,
   priceLabel,
+  annualPriceLabel,
   addonPriceLabel,
   cancelAtPeriodEnd,
 }: {
   billing: FamilyBilling;
   priceLabel: string | null;
+  annualPriceLabel: string | null;
   addonPriceLabel: string | null;
   cancelAtPeriodEnd: boolean;
 }) {
   const { t } = useSettings();
   const [isPending, startTransition] = useTransition();
+  const [interval, setInterval] = useState<"month" | "year">("month");
   const isPaid = billing.subscriptionStatus === "active" || billing.subscriptionStatus === "past_due";
   const wasSubscribed = billing.subscriptionStatus === "canceled";
   // Admin-granted free access (no real Stripe subscription behind it) — distinct from a real subscriber.
@@ -44,6 +54,15 @@ export function BillingCard({
   function handleResume() {
     startTransition(() => resumeSubscription());
   }
+
+  function handleUpgrade() {
+    startTransition(() => startSubscriptionCheckout(interval));
+  }
+
+  const monthlyAmount = parsePriceAmount(priceLabel);
+  const annualAmount = parsePriceAmount(annualPriceLabel);
+  const annualSavingsPercent =
+    monthlyAmount && annualAmount ? Math.round((1 - annualAmount / (monthlyAmount * 12)) * 100) : null;
 
   return (
     <section className="flex flex-col gap-3 rounded-3xl border border-brand-200/70 bg-white p-4 dark:border-brand-800/50 dark:bg-zinc-900">
@@ -127,12 +146,38 @@ export function BillingCard({
             {wasSubscribed ? t("Free plan (previously subscribed)") : t("Free plan")}
             {t(" — 1 child or pet, 1GB storage.")}
           </p>
-          <form action={startSubscriptionCheckout}>
-            <button type="submit" className={buttonClasses}>
-              {t("Upgrade to Pro")}
-              {priceLabel ? ` — ${priceLabel}` : ""}
-            </button>
-          </form>
+          {annualPriceLabel && (
+            <div className="flex gap-1.5">
+              <button
+                type="button"
+                onClick={() => setInterval("month")}
+                className={`rounded-full px-3 py-1 font-heading text-xs font-semibold transition-colors ${
+                  interval === "month"
+                    ? "bg-brand-600 text-white"
+                    : "border border-brand-200 text-brand-700 dark:border-brand-800 dark:text-brand-300"
+                }`}
+              >
+                {t("Monthly")}
+              </button>
+              <button
+                type="button"
+                onClick={() => setInterval("year")}
+                className={`rounded-full px-3 py-1 font-heading text-xs font-semibold transition-colors ${
+                  interval === "year"
+                    ? "bg-brand-600 text-white"
+                    : "border border-brand-200 text-brand-700 dark:border-brand-800 dark:text-brand-300"
+                }`}
+              >
+                {t("Annual")}
+                {annualSavingsPercent != null && ` — ${fill(t("save {percent}%"), { percent: annualSavingsPercent })}`}
+              </button>
+            </div>
+          )}
+          <button type="button" onClick={handleUpgrade} disabled={isPending} className={buttonClasses}>
+            {t("Upgrade to Pro")}
+            {(interval === "year" ? annualPriceLabel : priceLabel) &&
+              ` — ${interval === "year" ? annualPriceLabel : priceLabel}`}
+          </button>
         </>
       )}
     </section>
