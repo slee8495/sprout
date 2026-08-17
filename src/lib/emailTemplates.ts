@@ -13,6 +13,15 @@ const LOGO_HEADER = `
   </div>
 `;
 
+// Appended to every outgoing email, transactional or not — a low-key cross-sell for the
+// SL Studio newsletter, not specific to Roun. Links straight to the signup form on the
+// marketing site rather than a dedicated landing page.
+const NEWSLETTER_FOOTER = `
+  <p style="margin-top: 24px; padding-top: 16px; border-top: 1px solid #e4e4e7; font-size: 13px; color: #a1a1aa;">
+    Want to hear about other things SL Studio builds? <a href="https://sl-studio.dev/#newsletter" style="color:#059669;">Subscribe to the newsletter</a>.
+  </p>
+`;
+
 function escapeHtml(text: string): string {
   return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 }
@@ -40,6 +49,7 @@ export function welcomeEmail(input: { familyName: string; appUrl: string }): {
         <p>SL Studio is always listening. Reach out anytime at <a href="mailto:support@sl-studio.dev" style="color:#059669;">support@sl-studio.dev</a> or through <a href="https://sl-studio.dev" style="color:#059669;">sl-studio.dev</a>.</p>
         <p>Let's start this journey with the family you love. 🌱</p>
         <a href="${input.appUrl}" style="${BUTTON_STYLE}">Start journaling</a>
+        ${NEWSLETTER_FOOTER}
       </div>
     `,
   };
@@ -64,6 +74,7 @@ export function monthlyAlbumEmail(input: {
         <p style="margin-top: 24px; font-size: 13px; color: #a1a1aa;">
           ${t("You'll get one of these on the 1st of every month for each child/pet with photos from the month before.")}
         </p>
+        ${NEWSLETTER_FOOTER}
       </div>
     `,
   };
@@ -96,6 +107,7 @@ export function announcementEmail(input: {
         <h2 style="color: #27272a; margin-bottom: 4px;">${escapeHtml(input.heading)}</h2>
         ${paragraphs}
         ${input.ctaLabel && input.ctaHref ? `<a href="${input.ctaHref}" style="${BUTTON_STYLE}">${input.ctaLabel}</a>` : ""}
+        ${NEWSLETTER_FOOTER}
       </div>
     `,
   };
@@ -122,6 +134,7 @@ export function subscriptionCanceledEmail(input: { appUrl: string }): {
         </ul>
         <p>I hope we get to see you again sometime. If anything comes up or you have any questions, reach out anytime. I'll always be here waiting.</p>
         <a href="${input.appUrl}/settings" style="${BUTTON_STYLE}">Resubscribe</a>
+        ${NEWSLETTER_FOOTER}
       </div>
     `,
   };
