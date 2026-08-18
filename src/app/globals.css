@@ -137,3 +137,15 @@ body {
   font-family: var(--font-body), ui-sans-serif, system-ui, sans-serif;
   font-weight: 500;
 }
+
+/* iOS Safari/WKWebView auto-zooms the whole page on focus for any text input whose computed
+   font-size is under 16px — most of the app's form fields use text-sm (14px). Forcing 16px here
+   (phone-width viewports only, so desktop/tablet keep the smaller size) prevents the zoom instead
+   of trying to catch it after the fact — the zoomed-in state doesn't reliably reset on blur. */
+@media (max-width: 640px) {
+  input,
+  textarea,
+  select {
+    font-size: 16px;
+  }
+}

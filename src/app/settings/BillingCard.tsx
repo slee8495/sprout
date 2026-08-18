@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useEffect, useState, useTransition } from "react";
+import { Capacitor } from "@capacitor/core";
 import type { FamilyBilling } from "@/db/queries";
 import { fill } from "@/lib/i18n";
 import { useSettings } from "../SettingsProvider";
@@ -41,10 +42,19 @@ export function BillingCard({
   const { t } = useSettings();
   const [isPending, startTransition] = useTransition();
   const [interval, setInterval] = useState<"month" | "year">("month");
+  // Stripe Checkout/billing portal are web-hosted pages — redirecting to them from inside the
+  // native app's WebView would violate App Store/Play Store guidelines on in-app digital purchases.
+  // Hide the whole card on native until RevenueCat's native IAP replaces these flows; Pro sign-up
+  // stays reachable at roun.sl-studio.dev in the meantime.
+  const [hideOnNative, setHideOnNative] = useState(false);
   const isPaid = billing.subscriptionStatus === "active" || billing.subscriptionStatus === "past_due";
   const wasSubscribed = billing.subscriptionStatus === "canceled";
   // Admin-granted free access (no real Stripe subscription behind it) — distinct from a real subscriber.
   const isComplimentary = isPaid && !billing.stripeCustomerId;
+
+  useEffect(() => {
+    setHideOnNative(Capacitor.isNativePlatform());
+  }, []);
 
   function handleCancel() {
     if (!confirm(t("Switch to Free? You'll keep Pro until your current period ends."))) return;
@@ -63,6 +73,8 @@ export function BillingCard({
   const annualAmount = parsePriceAmount(annualPriceLabel);
   const annualSavingsPercent =
     monthlyAmount && annualAmount ? Math.round((1 - annualAmount / (monthlyAmount * 12)) * 100) : null;
+
+  if (hideOnNative) return null;
 
   return (
     <section className="flex flex-col gap-3 rounded-3xl border border-brand-200/70 bg-white p-4 dark:border-brand-800/50 dark:bg-zinc-900">
