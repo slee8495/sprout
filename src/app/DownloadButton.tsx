@@ -28,6 +28,9 @@ export function DownloadButton({
   // rather than show one that just alerts "Couldn't save" — it reappears on its own once the
   // user's app updates to a build with the plugin, no follow-up cleanup needed here.
   const [hideOnOldNativeBuild, setHideOnOldNativeBuild] = useState(false);
+  // The native save is silent otherwise — nothing in the UI ever confirmed it happened, so a
+  // successful save could look indistinguishable from a tap that did nothing.
+  const [justSaved, setJustSaved] = useState(false);
 
   useEffect(() => {
     setHideOnOldNativeBuild(Capacitor.isNativePlatform() && !Capacitor.isPluginAvailable("Media"));
@@ -39,7 +42,12 @@ export function DownloadButton({
     e.preventDefault();
     startTransition(async () => {
       const ok = await saveToPhotos(url, kind);
-      if (!ok) alert(t("Couldn't save — try again."));
+      if (ok) {
+        setJustSaved(true);
+        setTimeout(() => setJustSaved(false), 2000);
+      } else {
+        alert(t("Couldn't save — try again."));
+      }
     });
   }
 
@@ -52,7 +60,7 @@ export function DownloadButton({
       aria-busy={isPending}
       className={className}
     >
-      {children}
+      {justSaved ? `✓ ${t("Saved")}` : children}
     </a>
   );
 }
