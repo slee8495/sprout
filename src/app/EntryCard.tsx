@@ -443,12 +443,12 @@ export function EntryCard({ entry, highlighted }: { entry: JournalEntryWithPhoto
       <p className="whitespace-pre-wrap text-sm text-zinc-800 dark:text-zinc-200">{entry.body}</p>
       {entry.voiceMemoUrl && <audio controls src={entry.voiceMemoUrl} className="h-10 w-full" />}
       {entry.videoUrl && (
-        <div className="flex flex-col gap-1.5">
+        <div className="flex flex-col gap-3">
           <video controls src={entry.videoUrl} className="w-full rounded-2xl" />
           <DownloadButton
             url={entry.videoUrl}
             kind="video"
-            className="self-start text-xs font-semibold text-brand-700 hover:underline dark:text-brand-300"
+            className="self-end text-xs font-semibold text-brand-700 hover:underline dark:text-brand-300"
           >
             ⬇ {t("Download video")}
           </DownloadButton>

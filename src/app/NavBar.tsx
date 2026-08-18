@@ -32,7 +32,10 @@ export function NavBar() {
     return null;
 
   return (
-    <nav className="sticky top-0 z-10 flex gap-1 border-b border-brand-100/70 bg-[#fff9f0]/90 px-2 py-2 backdrop-blur dark:border-brand-900/40 dark:bg-[#1f2420]/90 print:hidden">
+    <nav
+      className="sticky top-0 z-10 flex gap-1 border-b border-brand-100/70 bg-[#fff9f0]/90 px-2 py-2 backdrop-blur dark:border-brand-900/40 dark:bg-[#1f2420]/90 print:hidden"
+      style={{ paddingTop: "calc(env(safe-area-inset-top) + 0.5rem)" }}
+    >
       {LINKS.map((link) => {
         const active = link.href === "/" ? pathname === "/" : pathname.startsWith(link.href);
         return (
