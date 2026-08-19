@@ -78,7 +78,11 @@ export function DownloadButton({
       e.preventDefault();
       startTransition(async () => {
         const result = await shareOnAndroidWeb();
-        if (result === "unsupported") window.location.href = `/api/download?url=${encodeURIComponent(url)}`;
+        if (result === "unsupported") {
+          const link = document.createElement("a");
+          link.href = `/api/download?url=${encodeURIComponent(url)}`;
+          link.click();
+        }
       });
       return;
     }
