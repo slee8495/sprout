@@ -46,11 +46,10 @@ export async function GET(request: Request) {
     if (!isPaid || family.members.length === 0) continue;
 
     try {
-      const [children, rawEntries] = await Promise.all([
+      const [children, entries] = await Promise.all([
         listChildren(family.id),
         listJournalEntries(family.id, "child"),
       ]);
-      const entries = rawEntries.map((e) => ({ ...e, photos: e.photos.filter((p) => !p.excludeFromAlbum) }));
 
       const innerMembers = family.members.filter((m) => m.tier !== "extended");
       const extendedMembers = family.members.filter((m) => m.tier === "extended");

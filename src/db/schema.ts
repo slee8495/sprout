@@ -139,9 +139,6 @@ export const photos = pgTable("photos", {
   url: text("url").notNull(),
   caption: text("caption"),
   sizeBytes: integer("size_bytes"),
-  // Lets a family keep a photo in the entry/Feed but leave it out of the Albums/PDF collage —
-  // e.g. a blurry or duplicate shot they still want in the journal timeline.
-  excludeFromAlbum: boolean("exclude_from_album").notNull().default(false),
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
 });
 
