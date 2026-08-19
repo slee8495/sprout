@@ -32,6 +32,9 @@ export function AlbumView({
   const [from, setFrom] = useState("");
   const [to, setTo] = useState("");
   const [pdfStatus, setPdfStatus] = useState<PdfStatus>("idle");
+  // Off by default — the × on every tile would be one stray tap away from removing a photo
+  // during normal browsing, so it only shows once someone deliberately opts into editing.
+  const [editMode, setEditMode] = useState(false);
 
   // From/To is the only date-navigation UI now — it drives both what's shown on screen (oldest
   // first, continuous scroll or page-turn) and, unchanged, the exact range exported to PDF.
@@ -136,6 +139,17 @@ export function AlbumView({
             {t("📖 Page turn")}
           </button>
         </div>
+        <button
+          type="button"
+          onClick={() => setEditMode((v) => !v)}
+          className={`rounded-2xl border px-3 py-1.5 font-semibold transition-transform hover:scale-105 active:scale-95 ${
+            editMode
+              ? "border-brand-600 bg-brand-600 text-white"
+              : "border-brand-100 text-brand-800 dark:border-brand-900/40 dark:text-brand-200"
+          }`}
+        >
+          {editMode ? t("Done") : t("Edit")}
+        </button>
       </div>
 
       <div className="flex flex-wrap items-center gap-2 text-xs">
@@ -189,14 +203,14 @@ export function AlbumView({
       ) : viewMode === "scroll" ? (
         <div className="flex flex-col gap-8">
           {pages.map((page, i) => (
-            <AlbumPageFrame key={i} page={page} monthIndex={monthIndices[i]} />
+            <AlbumPageFrame key={i} page={page} monthIndex={monthIndices[i]} editMode={editMode} />
           ))}
         </div>
       ) : (
         <div className="flex snap-x snap-mandatory gap-4 overflow-x-auto pb-4">
           {pages.map((page, i) => (
             <div key={i} className="w-full shrink-0 snap-start">
-              <AlbumPageFrame page={page} monthIndex={monthIndices[i]} />
+              <AlbumPageFrame page={page} monthIndex={monthIndices[i]} editMode={editMode} />
             </div>
           ))}
         </div>
@@ -205,7 +219,7 @@ export function AlbumView({
   );
 }
 
-function AlbumPageFrame({ page, monthIndex }: { page: PageData; monthIndex: number }) {
+function AlbumPageFrame({ page, monthIndex, editMode }: { page: PageData; monthIndex: number; editMode: boolean }) {
   return (
     <div className="aspect-[4/3] overflow-hidden rounded-2xl border border-brand-100/60 bg-[#fffaf0] p-3 shadow-md shadow-brand-900/5 dark:border-brand-900/40 dark:bg-zinc-900 dark:shadow-black/40">
       {page.kind === "month" ? (
@@ -214,7 +228,7 @@ function AlbumPageFrame({ page, monthIndex }: { page: PageData; monthIndex: numb
         <div className="flex h-full w-full flex-col">
           <PageCaption dates={page.dates} label={page.kind === "title" ? page.label : undefined} />
           <div className="min-h-0 flex-1">
-            <CollagePage photos={page.photos} />
+            <CollagePage photos={page.photos} editMode={editMode} />
           </div>
         </div>
       )}

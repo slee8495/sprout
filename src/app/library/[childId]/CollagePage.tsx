@@ -9,7 +9,7 @@ import { getCollageTemplate } from "@/lib/collage";
 
 type Photo = { id: number; url: string; caption: string | null };
 
-export function CollagePage({ photos }: { photos: Photo[] }) {
+export function CollagePage({ photos, editMode }: { photos: Photo[]; editMode: boolean }) {
   const { t } = useSettings();
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
@@ -57,16 +57,18 @@ export function CollagePage({ photos }: { photos: Photo[] }) {
               in real family photos (a baby lower in frame than the adult holding them, etc.)
               that showing the whole photo with a little matting beats risking that. */}
           <Image src={photo.url} alt={photo.caption ?? ""} fill sizes="50vw" className="object-contain" />
-          <button
-            type="button"
-            onClick={() => removeFromAlbum(photo.id)}
-            disabled={isPending}
-            aria-label={t("Remove from Album")}
-            title={t("Remove from Album")}
-            className="absolute right-1.5 top-1.5 flex h-6 w-6 items-center justify-center rounded-full bg-black/50 text-xs font-bold text-white hover:bg-black/70 disabled:opacity-50"
-          >
-            ×
-          </button>
+          {editMode && (
+            <button
+              type="button"
+              onClick={() => removeFromAlbum(photo.id)}
+              disabled={isPending}
+              aria-label={t("Remove from Album")}
+              title={t("Remove from Album")}
+              className="absolute right-1.5 top-1.5 flex h-6 w-6 items-center justify-center rounded-full bg-black/50 text-xs font-bold text-white hover:bg-black/70 disabled:opacity-50"
+            >
+              ×
+            </button>
+          )}
         </div>
       ))}
     </div>
