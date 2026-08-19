@@ -159,7 +159,7 @@ export function EntryForm({
       recorder.start();
       setRecording(true);
     } catch {
-      setError("Couldn't access the microphone.");
+      setError(t("Couldn't access the microphone."));
     }
   }
 

@@ -76,6 +76,22 @@ const ko: Record<string, string> = {
   "Uploaded {time}": "{time}에 업로드됨",
   "· Edited": "· 수정됨",
 
+  // Just us / Album / Download
+  "🔒 Just us": "🔒 우리끼리",
+  "Just us": "우리끼리",
+  "Just us — hidden from extended family members": "우리끼리 — 확장 가족 구성원에게는 보이지 않아요",
+  "Hidden from extended family members": "확장 가족 구성원에게는 보이지 않아요",
+  "\"Extended\" members never see entries marked 🔒 Just us.": "\"확장\" 구성원은 🔒 우리끼리로 표시된 일기를 볼 수 없어요.",
+  "Sees:": "볼 수 있는 사람:",
+  "In Album": "앨범에 있음",
+  "Not in Album": "앨범에 없음",
+  "Remove from Album": "앨범에서 제거",
+  Download: "다운로드",
+  "Download video": "동영상 다운로드",
+  Saved: "저장됨",
+  Done: "완료",
+  "Couldn't access the microphone.": "마이크에 접근할 수 없어요.",
+
   // Empty states
   "No entries yet — write the first one above 🌱": "아직 일기가 없어요 — 위에서 첫 일기를 써보세요 🌱",
 
@@ -363,6 +379,22 @@ const zh: Record<string, string> = {
   "Uploaded {time}": "{time}上传",
   "· Edited": "· 已编辑",
 
+  // Just us / Album / Download
+  "🔒 Just us": "🔒 仅我们",
+  "Just us": "仅我们",
+  "Just us — hidden from extended family members": "仅我们 — 对扩展家庭成员隐藏",
+  "Hidden from extended family members": "对扩展家庭成员隐藏",
+  "\"Extended\" members never see entries marked 🔒 Just us.": "扩展家庭成员看不到标记为 🔒 仅我们 的日记。",
+  "Sees:": "可见:",
+  "In Album": "已在相册中",
+  "Not in Album": "不在相册中",
+  "Remove from Album": "从相册中移除",
+  Download: "下载",
+  "Download video": "下载视频",
+  Saved: "已保存",
+  Done: "完成",
+  "Couldn't access the microphone.": "无法访问麦克风。",
+
   // Empty states
   "No entries yet — write the first one above 🌱": "还没有日记 — 在上面写下第一篇吧 🌱",
 
@@ -648,6 +680,22 @@ const ja: Record<string, string> = {
   Delete: "削除",
   "Uploaded {time}": "{time}にアップロード",
   "· Edited": "・編集済み",
+
+  // Just us / Album / Download
+  "🔒 Just us": "🔒 自分たちだけ",
+  "Just us": "自分たちだけ",
+  "Just us — hidden from extended family members": "自分たちだけ — 拡張家族メンバーには非表示",
+  "Hidden from extended family members": "拡張家族メンバーには非表示",
+  "\"Extended\" members never see entries marked 🔒 Just us.": "「拡張」メンバーは🔒自分たちだけとマークされた記録を見ることができません。",
+  "Sees:": "閲覧可能:",
+  "In Album": "アルバムに追加済み",
+  "Not in Album": "アルバムに未追加",
+  "Remove from Album": "アルバムから削除",
+  Download: "ダウンロード",
+  "Download video": "動画をダウンロード",
+  Saved: "保存しました",
+  Done: "完了",
+  "Couldn't access the microphone.": "マイクにアクセスできませんでした。",
 
   // Empty states
   "No entries yet — write the first one above 🌱": "まだ記録がありません — 上から最初の記録を書いてみましょう 🌱",
@@ -935,6 +983,22 @@ const es: Record<string, string> = {
   Delete: "Eliminar",
   "Uploaded {time}": "Subido {time}",
   "· Edited": "· Editado",
+
+  // Just us / Album / Download
+  "🔒 Just us": "🔒 Solo nosotros",
+  "Just us": "Solo nosotros",
+  "Just us — hidden from extended family members": "Solo nosotros — oculto para la familia extendida",
+  "Hidden from extended family members": "Oculto para los miembros de la familia extendida",
+  "\"Extended\" members never see entries marked 🔒 Just us.": "Los miembros extendidos nunca ven las entradas marcadas como 🔒 Solo nosotros.",
+  "Sees:": "Lo ven:",
+  "In Album": "En el álbum",
+  "Not in Album": "No está en el álbum",
+  "Remove from Album": "Quitar del álbum",
+  Download: "Descargar",
+  "Download video": "Descargar video",
+  Saved: "Guardado",
+  Done: "Listo",
+  "Couldn't access the microphone.": "No se pudo acceder al micrófono.",
 
   // Empty states
   "No entries yet — write the first one above 🌱": "Aún no hay entradas — escribe la primera arriba 🌱",
