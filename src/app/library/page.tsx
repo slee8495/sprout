@@ -11,8 +11,11 @@ export default async function LibraryPage() {
   if (kids.length === 0) redirect("/onboarding");
 
   const entries = await listJournalEntries(familyId, "child", tier);
-  // Albums are photo albums — text/voice/video-only entries don't get a page.
-  const photoEntries = entries.filter((entry) => entry.photos.length > 0);
+  // Albums are photo albums — text/voice/video-only entries don't get a page, and any photo a
+  // family marked "exclude from album" (still visible in the Feed/Journal) is left out here too.
+  const photoEntries = entries
+    .map((entry) => ({ ...entry, photos: entry.photos.filter((p) => !p.excludeFromAlbum) }))
+    .filter((entry) => entry.photos.length > 0);
 
   return (
     <div className="mx-auto flex w-full max-w-2xl flex-1 flex-col gap-6 p-4 pb-24">

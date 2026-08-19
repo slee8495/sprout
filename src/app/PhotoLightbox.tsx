@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState, useTransition } from "react";
 import Image from "next/image";
 import type { JournalEntryWithPhotos } from "@/db/queries";
+import { setPhotoAlbumExclusion } from "./actions";
 import { fill } from "@/lib/i18n";
 import { DownloadButton } from "./DownloadButton";
 import { useSettings } from "./SettingsProvider";
@@ -20,6 +21,31 @@ export function PhotoLightbox({
 }) {
   const containerRef = useRef<HTMLDivElement>(null);
   const { t } = useSettings();
+  const [excluded, setExcluded] = useState(() => new Set(photos.filter((p) => p.excludeFromAlbum).map((p) => p.id)));
+  const [isPending, startTransition] = useTransition();
+
+  function toggleAlbumExclusion(photoId: number) {
+    const next = !excluded.has(photoId);
+    setExcluded((prev) => {
+      const copy = new Set(prev);
+      if (next) copy.add(photoId);
+      else copy.delete(photoId);
+      return copy;
+    });
+    startTransition(async () => {
+      try {
+        await setPhotoAlbumExclusion(photoId, next);
+      } catch {
+        // Revert on failure — the server is the source of truth for the next load either way.
+        setExcluded((prev) => {
+          const copy = new Set(prev);
+          if (next) copy.delete(photoId);
+          else copy.add(photoId);
+          return copy;
+        });
+      }
+    });
+  }
 
   useEffect(() => {
     const slide = containerRef.current?.children[initialIndex];
@@ -81,6 +107,20 @@ export function PhotoLightbox({
             >
               ⬇ {t("Download")}
             </DownloadButton>
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                toggleAlbumExclusion(photo.id);
+              }}
+              disabled={isPending}
+              aria-pressed={!excluded.has(photo.id)}
+              className={`absolute bottom-4 left-4 flex h-9 items-center gap-1.5 rounded-full px-3 text-xs font-semibold text-white disabled:opacity-60 ${
+                excluded.has(photo.id) ? "bg-white/10 hover:bg-white/20" : "bg-brand-600 hover:bg-brand-700"
+              }`}
+            >
+              {excluded.has(photo.id) ? `🚫 ${t("Not in Album")}` : `📕 ${t("In Album")}`}
+            </button>
           </div>
         ))}
       </div>

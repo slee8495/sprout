@@ -427,6 +427,25 @@ export async function deleteJournalEntry(entryId: number, familyId: number, auth
   return true;
 }
 
+// Any editor in the family can toggle this (not just the entry's author) — curating which photos
+// make the album is a shared-family decision, unlike editing someone else's journal entry.
+export async function setPhotoAlbumExclusion(photoId: number, familyId: number, excluded: boolean) {
+  const [updated] = await db
+    .update(photos)
+    .set({ excludeFromAlbum: excluded })
+    .where(
+      and(
+        eq(photos.id, photoId),
+        inArray(
+          photos.entryId,
+          db.select({ id: journalEntries.id }).from(journalEntries).where(eq(journalEntries.familyId, familyId)),
+        ),
+      ),
+    )
+    .returning({ id: photos.id });
+  return Boolean(updated);
+}
+
 export async function getOnThisDayEntries(
   familyId: number,
   month: number,

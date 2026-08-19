@@ -16,6 +16,7 @@ import {
   markAllNotificationsRead,
   markNotificationRead,
   savePushSubscription,
+  setPhotoAlbumExclusion as setPhotoAlbumExclusionQuery,
   updateJournalEntry,
 } from "@/db/queries";
 import { audienceEnum, entryVisibilityEnum, milestoneCategoryEnum } from "@/db/schema";
@@ -153,6 +154,14 @@ export async function deleteEntry(entryId: number) {
 
   revalidatePath("/");
   revalidatePath("/feed");
+}
+
+export async function setPhotoAlbumExclusion(photoId: number, excluded: boolean) {
+  const { familyId } = await requireEditor();
+  const updated = await setPhotoAlbumExclusionQuery(photoId, familyId, excluded);
+  if (!updated) throw new Error("Photo not found.");
+
+  revalidatePath("/library");
 }
 
 const commentSchema = z.object({
