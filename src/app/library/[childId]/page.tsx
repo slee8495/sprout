@@ -15,7 +15,9 @@ export default async function AlbumPage({ params }: { params: Promise<{ childId:
   ]);
   if (!child) notFound();
 
-  const photoEntries = entries.filter((entry) => entry.photos.length > 0 && entry.children.some((c) => c.id === id));
+  const photoEntries = entries
+    .map((entry) => ({ ...entry, photos: entry.photos.filter((p) => !p.excludeFromAlbum) }))
+    .filter((entry) => entry.photos.length > 0 && entry.children.some((c) => c.id === id));
 
   return <AlbumView child={child} kids={kids} entries={photoEntries} />;
 }
