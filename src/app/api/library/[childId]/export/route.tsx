@@ -24,13 +24,15 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
   const to = searchParams.get("to"); // "YYYY-MM-DD", inclusive
 
   const entries = await listJournalEntries(familyId, "child", tier);
-  const photoEntries = entries.filter(
-    (e) =>
-      e.photos.length > 0 &&
-      e.children.some((c) => c.id === id) &&
-      (!from || e.entryDate >= from) &&
-      (!to || e.entryDate <= to),
-  );
+  const photoEntries = entries
+    .map((e) => ({ ...e, photos: e.photos.filter((p) => !p.excludeFromAlbum) }))
+    .filter(
+      (e) =>
+        e.photos.length > 0 &&
+        e.children.some((c) => c.id === id) &&
+        (!from || e.entryDate >= from) &&
+        (!to || e.entryDate <= to),
+    );
   const pages = buildAlbumPages(sortAlbumEntries(photoEntries));
   const pdfPages = await preparePhotosForPdf(pages);
 
