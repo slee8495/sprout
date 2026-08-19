@@ -44,12 +44,16 @@ export function PhotoLightbox({
         type="button"
         onClick={onClose}
         aria-label={t("Close")}
-        className="absolute right-4 top-4 z-10 flex h-9 w-9 items-center justify-center rounded-full bg-white/10 text-xl font-bold text-white hover:bg-white/20"
+        style={{ top: "calc(env(safe-area-inset-top) + 1rem)" }}
+        className="absolute right-4 z-10 flex h-9 w-9 items-center justify-center rounded-full bg-white/10 text-xl font-bold text-white hover:bg-white/20"
       >
         ×
       </button>
       {photos.length > 1 && (
-        <div className="absolute right-4 top-4 mr-14 flex h-9 items-center rounded-full bg-white/10 px-3 text-xs font-semibold text-white">
+        <div
+          style={{ top: "calc(env(safe-area-inset-top) + 1rem)" }}
+          className="absolute right-4 mr-14 flex h-9 items-center rounded-full bg-white/10 px-3 text-xs font-semibold text-white"
+        >
           {fill(t("{count} photos — swipe to browse"), { count: photos.length })}
         </div>
       )}
