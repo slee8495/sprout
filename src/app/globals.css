@@ -142,6 +142,29 @@ body {
   font-weight: 500;
 }
 
+/* App-shell layout, native builds only (toggled by NavBar.tsx). WKWebView repositions
+   `position: fixed` elements mid-scroll-gesture, so the nav can't stay fixed there. Taking scroll
+   off the body and giving it to the content column instead lets the nav be a plain static element
+   at the top of a container that never scrolls — nothing left for the WebView to reposition. */
+html.native-shell,
+html.native-shell body {
+  height: 100%;
+  overflow: hidden;
+}
+
+html.native-shell .app-nav {
+  position: relative;
+}
+
+html.native-shell .app-scroll {
+  flex: 1;
+  /* Without this a flex child refuses to shrink below its content's height, so the column would
+     overflow the shell instead of scrolling inside it. */
+  min-height: 0;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
 /* iOS Safari/WKWebView auto-zooms the whole page on focus for any text input whose computed
    font-size is under 16px — most of the app's form fields use text-sm (14px). Forcing 16px here
    (phone-width viewports only, so desktop/tablet keep the smaller size) prevents the zoom instead

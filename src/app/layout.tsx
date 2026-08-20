@@ -78,7 +78,7 @@ export default async function RootLayout({
           <MobileAuthListener />
           <NavBar />
           {session?.user?.familyId && <PushNotifications />}
-          <div className="flex flex-1 flex-col" style={{ paddingTop: "var(--navbar-height, 0px)" }}>
+          <div className="app-scroll flex flex-1 flex-col" style={{ paddingTop: "var(--navbar-height, 0px)" }}>
             {children}
           </div>
         </SettingsProvider>
