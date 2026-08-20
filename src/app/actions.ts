@@ -17,6 +17,7 @@ import {
   markNotificationRead,
   savePushSubscription,
   setPhotoAlbumExclusion as setPhotoAlbumExclusionQuery,
+  updateComment as updateCommentQuery,
   updateJournalEntry,
 } from "@/db/queries";
 import { audienceEnum, entryVisibilityEnum, milestoneCategoryEnum } from "@/db/schema";
@@ -186,6 +187,18 @@ export async function addComment(input: z.infer<typeof commentSchema>) {
     notifyFamily(familyId, userId, payload, comment.visibility),
     createNotificationsForFamily(familyId, userId, payload, comment.visibility),
   ]);
+}
+
+export async function updateComment(commentId: number, body: string) {
+  const { userId, familyId } = await requireEditor();
+  const trimmed = body.trim();
+  if (!trimmed) throw new Error("Comment can't be empty.");
+
+  const comment = await updateCommentQuery(commentId, familyId, userId, trimmed);
+  if (!comment) throw new Error("You can only edit comments you wrote.");
+
+  revalidatePath("/");
+  revalidatePath("/feed");
 }
 
 const pushSubscriptionSchema = z.object({

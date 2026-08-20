@@ -151,6 +151,7 @@ export const comments = pgTable("comments", {
   authorId: integer("author_id").notNull().references(() => users.id),
   body: text("body").notNull(),
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }),
 });
 
 export const pushSubscriptions = pgTable("push_subscriptions", {
