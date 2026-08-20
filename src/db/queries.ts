@@ -296,25 +296,6 @@ export async function createComment(input: {
   };
 }
 
-export async function updateComment(commentId: number, familyId: number, authorId: number, body: string) {
-  const [comment] = await db
-    .update(comments)
-    .set({ body, updatedAt: new Date() })
-    .where(
-      and(
-        eq(comments.id, commentId),
-        eq(comments.authorId, authorId),
-        inArray(
-          comments.entryId,
-          db.select({ id: journalEntries.id }).from(journalEntries).where(eq(journalEntries.familyId, familyId)),
-        ),
-      ),
-    )
-    .returning();
-  return comment;
-}
-
-
 export type PhotoInput = { url: string; sizeBytes?: number };
 
 export async function createJournalEntry(input: {
