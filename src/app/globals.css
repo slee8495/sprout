@@ -152,8 +152,17 @@ html.native-shell body {
   overflow: hidden;
 }
 
+/* Clears the notch on the web, where the nav is fixed and so sits outside normal flow. */
+.app-nav {
+  padding-top: calc(env(safe-area-inset-top) + 0.5rem);
+}
+
+/* In the shell the nav is a static element inside the WebView's scroll view, which
+   ios.contentInset: "automatic" has already inset past the notch — adding env() on top of that is
+   what left the bar looking oversized. Native gets plain padding and lets the inset do its job. */
 html.native-shell .app-nav {
   position: relative;
+  padding-top: 0.5rem;
 }
 
 html.native-shell .app-scroll {

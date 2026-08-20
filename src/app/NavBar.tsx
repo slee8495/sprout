@@ -65,8 +65,9 @@ export function NavBar() {
   return (
     <nav
       ref={navRef}
+      // .app-nav owns padding-top (globals.css) rather than an inline style, because the shell
+      // layout needs to override it and an inline style would outrank any rule that tried.
       className="app-nav fixed inset-x-0 top-0 z-10 flex gap-1 border-b border-brand-100/70 bg-[#fff9f0]/90 px-2 py-2 backdrop-blur dark:border-brand-900/40 dark:bg-[#1f2420]/90 print:hidden"
-      style={{ paddingTop: "calc(env(safe-area-inset-top) + 0.5rem)" }}
     >
       {LINKS.map((link) => {
         const active = link.href === "/" ? pathname === "/" : pathname.startsWith(link.href);
