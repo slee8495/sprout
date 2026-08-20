@@ -22,6 +22,10 @@
   --brand-800: #375f46;
   --brand-900: #2b4b38;
   --brand-950: #1c2f24;
+
+  /* Rough estimate for the fixed NavBar's real height (see NavBar.tsx), used only until its
+     ResizeObserver overwrites this with the exact measured value right after mount. */
+  --navbar-height: 88px;
 }
 
 @theme inline {

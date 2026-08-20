@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useEffect, useRef } from "react";
 import { NotificationBell } from "./NotificationBell";
 import { useSettings } from "./SettingsProvider";
 
@@ -12,33 +13,51 @@ const LINKS = [
   { href: "/library", label: "Albums" },
 ];
 
+const HIDDEN_ON = [
+  "/login",
+  "/onboarding",
+  "/connect",
+  "/signup",
+  "/join",
+  "/privacy",
+  "/terms",
+  "/account-deletion",
+  "/get-app",
+];
+
 export function NavBar() {
   const pathname = usePathname();
   const { t } = useSettings();
+  const navRef = useRef<HTMLElement>(null);
+  const hidden = HIDDEN_ON.includes(pathname);
 
-  if (
-    [
-      "/login",
-      "/onboarding",
-      "/connect",
-      "/signup",
-      "/join",
-      "/privacy",
-      "/terms",
-      "/account-deletion",
-      "/get-app",
-    ].includes(pathname)
-  )
-    return null;
+  // `position: sticky` visually lags/detaches during iOS WKWebView's rubber-band scroll bounce
+  // (the native app's rendering engine), briefly leaving a gap above the nav that shows the page
+  // background. `fixed` sidesteps that whole class of bug by never re-deriving its position from
+  // scroll at all, but that means it no longer reserves its own space in the document flow — this
+  // measures its real (safe-area-dependent) height and feeds it to the layout as a CSS var so
+  // page content gets exactly that much top padding instead of hiding underneath it.
+  useEffect(() => {
+    if (hidden) {
+      document.documentElement.style.setProperty("--navbar-height", "0px");
+      return;
+    }
+    const el = navRef.current;
+    if (!el) return;
+    const setHeight = () => document.documentElement.style.setProperty("--navbar-height", `${el.offsetHeight}px`);
+    setHeight();
+    const observer = new ResizeObserver(setHeight);
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [hidden]);
+
+  if (hidden) return null;
 
   return (
     <nav
-      className="sticky top-0 z-10 flex gap-1 border-b border-brand-100/70 bg-[#fff9f0]/90 px-2 py-2 backdrop-blur dark:border-brand-900/40 dark:bg-[#1f2420]/90 print:hidden"
-      // iOS WKWebView (the native app's rendering engine) has a known bug where a `sticky`
-      // element visually lags behind during the rubber-band bounce at the top of a scroll —
-      // it briefly detaches, leaving a gap above it that shows the page background. Forcing
-      // this onto its own GPU compositing layer keeps it pinned through the bounce.
-      style={{ paddingTop: "calc(env(safe-area-inset-top) + 0.5rem)", transform: "translateZ(0)" }}
+      ref={navRef}
+      className="fixed inset-x-0 top-0 z-10 flex gap-1 border-b border-brand-100/70 bg-[#fff9f0]/90 px-2 py-2 backdrop-blur dark:border-brand-900/40 dark:bg-[#1f2420]/90 print:hidden"
+      style={{ paddingTop: "calc(env(safe-area-inset-top) + 0.5rem)" }}
     >
       {LINKS.map((link) => {
         const active = link.href === "/" ? pathname === "/" : pathname.startsWith(link.href);
