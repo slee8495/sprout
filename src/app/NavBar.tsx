@@ -31,15 +31,32 @@ export function NavBar() {
   const { t } = useSettings();
   const navRef = useRef<HTMLElement>(null);
   const hidden = HIDDEN_ON.includes(pathname);
-  // capacitor.config.ts sets ios.contentInset: "automatic", which makes WKWebView inset the
-  // scrolled content past the safe area natively. Adding env(safe-area-inset-top) padding on top
-  // of that double-counts the notch — and because iOS re-derives that automatic inset *during* a
-  // scroll gesture, the nav visibly slides down as you scroll. On native iOS the native inset
-  // already covers it, so the CSS padding has to come off; every other platform still needs it.
+  // In the native iOS app, WKWebView re-derives env(safe-area-inset-top) *during* a scroll gesture
+  // (a side effect of ios.contentInset: "automatic" in capacitor.config.ts), so a live env() in the
+  // padding makes this fixed bar visibly slide as you scroll. The padding itself is still required
+  // — contentInset only shifts scrolled content, and a fixed element sits over the status bar
+  // without it — so measure the inset once and freeze it as a px value. Re-measured on rotation
+  // only, which is the one time it legitimately changes; scrolling never triggers it.
   useEffect(() => {
-    if (Capacitor.isNativePlatform() && Capacitor.getPlatform() === "ios") {
-      document.documentElement.style.setProperty("--navbar-safe-top", "0px");
-    }
+    if (!Capacitor.isNativePlatform() || Capacitor.getPlatform() !== "ios") return;
+
+    const probe = document.createElement("div");
+    probe.style.cssText = "position:fixed;top:0;left:0;visibility:hidden;padding-top:env(safe-area-inset-top)";
+    document.body.appendChild(probe);
+
+    const measure = () => {
+      const inset = Number.parseFloat(getComputedStyle(probe).paddingTop) || 0;
+      document.documentElement.style.setProperty("--navbar-safe-top", `${inset}px`);
+    };
+    measure();
+    // Rotation reports the new inset a frame or two after the event fires.
+    const remeasure = () => requestAnimationFrame(() => requestAnimationFrame(measure));
+    window.addEventListener("orientationchange", remeasure);
+
+    return () => {
+      window.removeEventListener("orientationchange", remeasure);
+      probe.remove();
+    };
   }, []);
 
   // `position: sticky` visually lags/detaches during iOS WKWebView's rubber-band scroll bounce
