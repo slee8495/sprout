@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef } from "react";
+import { Capacitor } from "@capacitor/core";
 import { NotificationBell } from "./NotificationBell";
 import { useSettings } from "./SettingsProvider";
 
@@ -30,6 +31,16 @@ export function NavBar() {
   const { t } = useSettings();
   const navRef = useRef<HTMLElement>(null);
   const hidden = HIDDEN_ON.includes(pathname);
+  // capacitor.config.ts sets ios.contentInset: "automatic", which makes WKWebView inset the
+  // scrolled content past the safe area natively. Adding env(safe-area-inset-top) padding on top
+  // of that double-counts the notch — and because iOS re-derives that automatic inset *during* a
+  // scroll gesture, the nav visibly slides down as you scroll. On native iOS the native inset
+  // already covers it, so the CSS padding has to come off; every other platform still needs it.
+  useEffect(() => {
+    if (Capacitor.isNativePlatform() && Capacitor.getPlatform() === "ios") {
+      document.documentElement.style.setProperty("--navbar-safe-top", "0px");
+    }
+  }, []);
 
   // `position: sticky` visually lags/detaches during iOS WKWebView's rubber-band scroll bounce
   // (the native app's rendering engine), briefly leaving a gap above the nav that shows the page
@@ -57,11 +68,13 @@ export function NavBar() {
     <nav
       ref={navRef}
       className="fixed inset-x-0 top-0 z-10 flex gap-1 border-b border-brand-100/70 bg-[#fff9f0]/90 px-2 py-2 backdrop-blur dark:border-brand-900/40 dark:bg-[#1f2420]/90 print:hidden"
-      // WKWebView's UIScrollView (the native app's scroll implementation) only repositions
-      // `fixed` elements once a scroll gesture ends, not continuously during the drag, unless
-      // the element is promoted to its own GPU compositing layer — without this it visibly
-      // trails/slides along with the content while scrolling instead of staying pinned.
-      style={{ paddingTop: "calc(env(safe-area-inset-top) + 0.5rem)", transform: "translateZ(0)", willChange: "transform" }}
+      // translateZ keeps it on its own compositing layer, so WKWebView repaints it continuously
+      // during a scroll gesture rather than only snapping it back once the gesture ends.
+      style={{
+        paddingTop: "calc(var(--navbar-safe-top, env(safe-area-inset-top)) + 0.5rem)",
+        transform: "translateZ(0)",
+        willChange: "transform",
+      }}
     >
       {LINKS.map((link) => {
         const active = link.href === "/" ? pathname === "/" : pathname.startsWith(link.href);
