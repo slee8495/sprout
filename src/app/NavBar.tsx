@@ -57,7 +57,11 @@ export function NavBar() {
     <nav
       ref={navRef}
       className="fixed inset-x-0 top-0 z-10 flex gap-1 border-b border-brand-100/70 bg-[#fff9f0]/90 px-2 py-2 backdrop-blur dark:border-brand-900/40 dark:bg-[#1f2420]/90 print:hidden"
-      style={{ paddingTop: "calc(env(safe-area-inset-top) + 0.5rem)" }}
+      // WKWebView's UIScrollView (the native app's scroll implementation) only repositions
+      // `fixed` elements once a scroll gesture ends, not continuously during the drag, unless
+      // the element is promoted to its own GPU compositing layer — without this it visibly
+      // trails/slides along with the content while scrolling instead of staying pinned.
+      style={{ paddingTop: "calc(env(safe-area-inset-top) + 0.5rem)", transform: "translateZ(0)", willChange: "transform" }}
     >
       {LINKS.map((link) => {
         const active = link.href === "/" ? pathname === "/" : pathname.startsWith(link.href);
