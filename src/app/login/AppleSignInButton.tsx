@@ -1,23 +1,34 @@
 "use client";
 
+import { Browser } from "@capacitor/browser";
+import { Capacitor } from "@capacitor/core";
 import { T } from "../T";
 
-// Apple allows its OAuth page inside an embedded WebView, so the native app runs this exact
-// in-app flow — no system-browser hop and no deep-link handoff to go wrong (see
-// GoogleSignInButton.tsx for why Google needs all of that).
+// Native app: Capacitor's iOS shell sets no `server.allowNavigation`, so the moment sign-in leaves
+// roun.sl-studio.dev for appleid.apple.com the WebView hands the page to Safari. Sign-in would
+// begin in the app's cookie jar, where Auth.js writes its `state` cookie, and end in Safari's,
+// which has none of it — the callback then fails with "state cookie was missing" (2026-08-21).
+// So run the whole flow in the system browser from the start, exactly as Google already does, and
+// come back through the same deep-link handoff (see /api/mobile-login and MobileAuthListener).
+// That keeps one cookie jar throughout and needs no new native build.
 //
-// Getting the sign-in *started* took three tries, all failing at the callback with "state cookie
-// was missing" (2026-08-21) — Safari on iOS was not storing the cookies Auth.js sets when it hands
-// off to Apple, though Chrome did. So this deliberately uses the most conservative path available:
-// a real form submission to Auth.js's own route handler, i.e. a top-level navigation, rather than
-// a server action or next-auth/react's `signIn()` (which sets the cookies on a `fetch` response).
-// Cookies set on a top-level navigation are the ones browsers treat most permissively.
-//
-// The Set-Cookie flags matter as much as the path — see ../../api/auth/signin/apple/route.ts.
+// Regular web: submit a real form to Auth.js's own route handler. A top-level navigation is the
+// context browsers treat most permissively for the cookies this flow depends on — see
+// ../../api/auth/signin/apple/route.ts, which also relaxes their SameSite flag.
 //
 // Black-on-white with the Apple mark is the presentation Apple's Sign in with Apple guidelines
 // ask for.
 async function startAppleSignIn() {
+  // The native shells that predate the Browser plugin fall back to the in-app flow rather than
+  // throwing "plugin is not implemented" — same guard as GoogleSignInButton.tsx.
+  if (Capacitor.isNativePlatform() && Capacitor.isPluginAvailable("Browser")) {
+    await Browser.open({
+      url: "https://roun.sl-studio.dev/api/mobile-login?provider=apple",
+      toolbarColor: "#000000",
+    });
+    return;
+  }
+
   // Requesting the token is also what sets the CSRF cookie the sign-in route checks against.
   const { csrfToken } = await fetch("/api/auth/csrf").then((response) => response.json());
 
