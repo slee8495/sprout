@@ -25,7 +25,7 @@ export function GoogleSignInButton() {
           // to the app's brand color so the hand-off to the system browser feels less jarring.
           Browser.open({ url: "https://roun.sl-studio.dev/api/mobile-login", toolbarColor: "#059669" })
         }
-        className="flex items-center justify-center gap-2 rounded-full bg-brand-600 px-4 py-2 font-heading font-semibold text-white shadow-sm shadow-brand-900/20 transition-transform hover:scale-105 hover:bg-brand-700 active:scale-95"
+        className="flex w-full items-center justify-center gap-2 rounded-full bg-brand-600 px-4 py-2 font-heading font-semibold text-white shadow-sm shadow-brand-900/20 transition-transform hover:scale-105 hover:bg-brand-700 active:scale-95"
       >
         <T>Sign in with Google</T>
       </button>

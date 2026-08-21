@@ -1,7 +1,9 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { auth } from "@/auth";
+import { isAppleSignInConfigured } from "@/lib/appleClientSecret";
 import { T } from "../T";
+import { AppleSignInButton } from "./AppleSignInButton";
 import { GoogleSignInButton } from "./GoogleSignInButton";
 
 export default async function LoginPage() {
@@ -17,6 +19,7 @@ export default async function LoginPage() {
       </p>
       <div className="flex flex-col gap-3 rounded-3xl border border-brand-200/70 bg-white p-5 shadow-md shadow-brand-900/5 dark:border-brand-800/50 dark:bg-zinc-900 dark:shadow-black/40">
         <GoogleSignInButton />
+        {isAppleSignInConfigured() && <AppleSignInButton />}
       </div>
       <p className="text-center text-xs text-zinc-500 dark:text-zinc-400">
         <T>By continuing, you agree to our</T>{" "}

@@ -1,13 +1,14 @@
 import { NextResponse } from "next/server";
+import type { NextFetchEvent, NextRequest } from "next/server";
 import { auth } from "@/auth";
 
-// Reachable once signed in with Google but before a family is linked yet.
+// Reachable once signed in but before a family is linked yet.
 const FAMILY_SETUP_PATHS = new Set(["/connect", "/signup", "/join"]);
 
 // Legal pages, plus the install guide: always public, regardless of auth state.
 const PUBLIC_PATHS = new Set(["/privacy", "/terms", "/account-deletion", "/get-app"]);
 
-export default auth((req) => {
+const withAuth = auth((req) => {
   const isLoggedIn = !!req.auth?.user;
   const hasFamily = !!req.auth?.user?.familyId;
   const { pathname } = req.nextUrl;
@@ -36,8 +37,24 @@ export default auth((req) => {
   if (!hasFamily) return NextResponse.redirect(new URL("/connect", req.nextUrl));
 });
 
+// src/auth.ts builds its config with an async function (Apple's client secret has to be minted at
+// runtime), and in that mode next-auth's `auth()` wrapper resolves to the middleware rather than
+// being it — its type says otherwise, hence the await on a value TypeScript thinks is already a
+// function. Awaiting is harmless either way, so this keeps working if the config ever goes back to
+// a plain object. Next requires this file's default export to be a function, so it can't just be
+// `export default auth(...)` anymore.
+export default async function proxy(req: NextRequest, event: NextFetchEvent) {
+  // next-auth's overloads resolve this to its route-handler form, whose second parameter is a
+  // route context; at runtime it's the middleware form, which gets the fetch event. Either way the
+  // callback above only ever reads `req`, so what's passed through here is never looked at.
+  return (await withAuth)(req, event as unknown as Parameters<typeof withAuth>[1]);
+}
+
 export const config = {
   matcher: [
-    "/((?!api/auth|api/mobile-login|api/debug|api/stripe/webhook|api/cron|_next/static|_next/image|favicon.ico|manifest.webmanifest|icon\\.png|icon-192|icon-512|apple-icon|sw.js).*)",
+    // `.well-known` covers Apple's domain-association file, which Apple fetches unauthenticated
+    // when verifying the Sign in with Apple Services ID — without this it would be answered with
+    // a redirect to /login and verification would fail.
+    "/((?!api/auth|api/mobile-login|api/debug|api/stripe/webhook|api/cron|_next/static|_next/image|\\.well-known|favicon.ico|manifest.webmanifest|icon\\.png|icon-192|icon-512|apple-icon|sw.js).*)",
   ],
 };

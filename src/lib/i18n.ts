@@ -210,6 +210,7 @@ const ko: Record<string, string> = {
   // Auth / onboarding pages
   "Your family's private journal.": "가족을 위한 프라이빗 저널이에요.",
   "Sign in with Google": "Google로 로그인",
+  "Sign in with Apple": "Apple로 로그인",
   "By continuing, you agree to our": "계속 진행하면 아래 약관에 동의하는 거예요:",
   and: "그리고",
   "Create a new family journal or join one with an invite code.":
@@ -513,6 +514,7 @@ const zh: Record<string, string> = {
   // Auth / onboarding pages
   "Your family's private journal.": "您家庭的私密日记。",
   "Sign in with Google": "使用 Google 登录",
+  "Sign in with Apple": "使用 Apple 登录",
   "By continuing, you agree to our": "继续即表示您同意我们的",
   and: "和",
   "Create a new family journal or join one with an invite code.":
@@ -815,6 +817,7 @@ const ja: Record<string, string> = {
   // Auth / onboarding pages
   "Your family's private journal.": "あなたの家族のプライベートな日記。",
   "Sign in with Google": "Google でログイン",
+  "Sign in with Apple": "Apple でログイン",
   "By continuing, you agree to our": "続行することで、以下に同意したものとみなされます：",
   and: "と",
   "Create a new family journal or join one with an invite code.":
@@ -1118,6 +1121,7 @@ const es: Record<string, string> = {
   // Auth / onboarding pages
   "Your family's private journal.": "El diario privado de tu familia.",
   "Sign in with Google": "Iniciar sesión con Google",
+  "Sign in with Apple": "Iniciar sesión con Apple",
   "By continuing, you agree to our": "Al continuar, aceptas nuestros",
   and: "y",
   "Create a new family journal or join one with an invite code.":

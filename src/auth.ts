@@ -1,8 +1,10 @@
 import NextAuth from "next-auth";
 import type { OAuth2Config } from "next-auth/providers";
+import Apple from "next-auth/providers/apple";
 import type { GoogleProfile } from "next-auth/providers/google";
 import Credentials from "next-auth/providers/credentials";
 import { getUserByEmail, getUserById } from "@/db/queries";
+import { appleClientSecret, isAppleSignInConfigured } from "@/lib/appleClientSecret";
 import { verifyMobileHandoffToken } from "@/lib/mobileAuth";
 
 // Auth.js's built-in Google provider does OIDC discovery, and Google's discovery document
@@ -56,9 +58,24 @@ const MobileHandoffProvider = Credentials({
   },
 });
 
-export const { handlers, auth, signIn, signOut, unstable_update } = NextAuth({
-  providers: [GoogleProvider(), MobileHandoffProvider],
-  session: { strategy: "jwt" },
+// Guideline 4.8 requires any app offering a third-party login service to also offer one that
+// collects no more than name and email and lets users keep that email private — App Review
+// rejected build 1.3 (3) over Google-only sign-in on Aug 21 2026. Unlike Google, Apple permits
+// its OAuth page inside an embedded WebView, so this same web flow works as-is in the native
+// app; no system-browser handoff is needed (see the MobileHandoffProvider comment above).
+//
+// The config is a function because Apple's client secret is a JWT minted at runtime and so can
+// only be awaited, not read straight out of the environment. Kept optional so local development
+// and preview deployments without the Apple keys still boot.
+export const { handlers, auth, signIn, signOut, unstable_update } = NextAuth(async () => ({
+  providers: [
+    GoogleProvider(),
+    ...(isAppleSignInConfigured()
+      ? [Apple({ clientId: process.env.AUTH_APPLE_ID, clientSecret: await appleClientSecret() })]
+      : []),
+    MobileHandoffProvider,
+  ],
+  session: { strategy: "jwt" as const },
   pages: { signIn: "/login" },
   // Without this, next-auth's host detection is inconsistent behind Vercel's proxy on some
   // requests, causing the PKCE/state cookies set during signin to mismatch what the callback
@@ -88,4 +105,4 @@ export const { handlers, auth, signIn, signOut, unstable_update } = NextAuth({
       return session;
     },
   },
-});
+}));
