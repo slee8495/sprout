@@ -65,3 +65,6 @@ android/app/src/main/assets/capacitor.config.json
 
 # android signing key — never commit, keep only locally / in a password manager
 android-signing/
+
+# apple sign-in key — never commit, keep only locally / in a password manager
+apple-signin/
