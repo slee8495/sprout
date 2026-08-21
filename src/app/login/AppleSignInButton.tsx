@@ -1,26 +1,48 @@
 "use client";
 
-import { signIn } from "next-auth/react";
 import { T } from "../T";
 
 // Apple allows its OAuth page inside an embedded WebView, so the native app runs this exact
 // in-app flow — no system-browser hop and no deep-link handoff to go wrong (see
 // GoogleSignInButton.tsx for why Google needs all of that).
 //
-// Sign-in goes through Auth.js's own /api/auth/signin/apple route rather than a server action
-// like Google's. Apple is the one provider using response_mode=form_post, which makes Auth.js
-// mark its `state` and `nonce` cookies SameSite=None — and cookies with that flag, set from
-// inside a Next.js server action, never reach the browser. Every attempt then died at the
-// callback with "InvalidCheck: state cookie was missing" (2026-08-21). Going through the route
-// handler stores them normally. Google is unaffected: its cookies are SameSite=Lax.
+// Getting the sign-in *started* took three tries, all failing at the callback with "state cookie
+// was missing" (2026-08-21) — Safari on iOS was not storing the cookies Auth.js sets when it hands
+// off to Apple, though Chrome did. So this deliberately uses the most conservative path available:
+// a real form submission to Auth.js's own route handler, i.e. a top-level navigation, rather than
+// a server action or next-auth/react's `signIn()` (which sets the cookies on a `fetch` response).
+// Cookies set on a top-level navigation are the ones browsers treat most permissively.
+//
+// The Set-Cookie flags matter as much as the path — see ../../api/auth/signin/apple/route.ts.
 //
 // Black-on-white with the Apple mark is the presentation Apple's Sign in with Apple guidelines
 // ask for.
+async function startAppleSignIn() {
+  // Requesting the token is also what sets the CSRF cookie the sign-in route checks against.
+  const { csrfToken } = await fetch("/api/auth/csrf").then((response) => response.json());
+
+  const form = document.createElement("form");
+  form.method = "POST";
+  form.action = "/api/auth/signin/apple";
+  form.hidden = true;
+  for (const [name, value] of Object.entries({ csrfToken, callbackUrl: "/" })) {
+    const field = document.createElement("input");
+    field.type = "hidden";
+    field.name = name;
+    field.value = value;
+    form.appendChild(field);
+  }
+  document.body.appendChild(form);
+  form.submit();
+}
+
 export function AppleSignInButton() {
   return (
     <button
       type="button"
-      onClick={() => signIn("apple", { redirectTo: "/" })}
+      onClick={() => {
+        void startAppleSignIn();
+      }}
       className="flex w-full items-center justify-center gap-2 rounded-full bg-black px-4 py-2 font-heading font-semibold text-white shadow-sm shadow-black/20 transition-transform hover:scale-105 hover:bg-zinc-800 active:scale-95 dark:bg-white dark:text-black dark:hover:bg-zinc-200"
     >
       <svg viewBox="0 0 384 512" className="h-4 w-4" fill="currentColor" aria-hidden="true">
