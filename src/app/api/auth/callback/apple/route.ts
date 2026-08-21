@@ -17,8 +17,6 @@ import { handlers } from "@/auth";
 // This route only shadows the [...nextauth] catch-all for this one path; a static segment wins
 // over a catch-all, and GET is passed through untouched.
 
-const STATE_COOKIE = /(^|;\s*)(__Secure-)?authjs\.state=/;
-
 // The values below come from Apple, but they land in an HTML attribute, so treat them as untrusted.
 function escapeAttribute(value: string) {
   return value.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
@@ -27,12 +25,11 @@ function escapeAttribute(value: string) {
 export const GET = handlers.GET;
 
 export async function POST(request: NextRequest) {
-  const alreadyBounced = new URL(request.url).searchParams.has("bounced");
-  const hasState = STATE_COOKIE.test(request.headers.get("cookie") ?? "");
-
-  // Nothing to fix when the cookies made it through, and never bounce twice — a genuinely missing
-  // cookie (expired, or cleared mid-flow) has to reach Auth.js so it reports the real error.
-  if (hasState || alreadyBounced) return handlers.POST(request);
+  // Always bounce once, never twice. Bouncing only when the `state` cookie looked missing wasn't
+  // enough: `state` is SameSite=None and does arrive, but Auth.js's `callbackUrl` cookie is
+  // SameSite=Lax and doesn't, so sign-in silently landed on "/" instead of the redirectTo the
+  // flow asked for — which in the native app meant never handing back to the app at all.
+  if (new URL(request.url).searchParams.has("bounced")) return handlers.POST(request);
 
   const form = await request.formData();
   const fields = [...form.entries()]

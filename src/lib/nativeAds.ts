@@ -2,6 +2,7 @@
 
 import { Capacitor } from "@capacitor/core";
 import { AdMob, InterstitialAdPluginEvents } from "@capacitor-community/admob";
+import { App } from "@capacitor/app";
 
 const INTERSTITIAL_AD_UNIT_ID: Record<string, string> = {
   ios: "ca-app-pub-6676109773026277/8500721368",
@@ -61,12 +62,36 @@ export async function requestTrackingConsent(): Promise<void> {
   // guard in GoogleSignInButton.tsx.
   if (!Capacitor.isPluginAvailable("AdMob")) return;
 
+  await whenAppIsActive();
+
   try {
-    const { status } = await AdMob.trackingAuthorizationStatus();
-    // Asking again once the user has answered re-throws rather than re-prompting (iOS only ever
-    // shows this dialog once per install), so only ask while it's still unanswered.
-    if (status === "notDetermined") await AdMob.requestTrackingAuthorization();
+    // iOS only ever shows this dialog once per install; asking again after the user has answered
+    // just reports the existing status instead of prompting, so there's no status check first —
+    // one less plugin call that could throw and swallow the prompt with it.
+    await AdMob.requestTrackingAuthorization();
   } catch {
     // Never let a failed consent prompt block the app from starting.
   }
+}
+
+// iOS silently ignores an ATT request unless the app is already foreground-active. At launch the
+// WebView mounts while the app is still coming up, which is why the first screen recording for
+// App Review caught no prompt at all on a fresh install.
+async function whenAppIsActive(): Promise<void> {
+  if (!Capacitor.isPluginAvailable("App")) return;
+
+  const { isActive } = await App.getState();
+  if (!isActive) {
+    await new Promise<void>((resolve) => {
+      const listener = App.addListener("appStateChange", (state) => {
+        if (!state.isActive) return;
+        void listener.then((l) => l.remove());
+        resolve();
+      });
+    });
+  }
+
+  // Being active isn't quite enough on a cold start — give the launch transition a moment to
+  // finish before putting a system dialog on top of it.
+  await new Promise((resolve) => setTimeout(resolve, 800));
 }
