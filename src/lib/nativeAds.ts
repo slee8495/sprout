@@ -60,18 +60,35 @@ export async function requestTrackingConsent(): Promise<void> {
   // This app loads its web build live from production (Capacitor "remote URL" pattern), so this
   // code also runs inside older installed shells that may predate the plugin — see the same
   // guard in GoogleSignInButton.tsx.
-  if (!Capacitor.isPluginAvailable("AdMob")) return;
+  if (!Capacitor.isPluginAvailable("AdMob")) {
+    void fetch("/api/debug/att", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ platform: Capacitor.getPlatform(), pluginAvailable: false }),
+    }).catch(() => {});
+    return;
+  }
 
   await whenAppIsActive();
 
+  // Temporary instrumentation — the prompt hasn't appeared on a real device and every candidate
+  // cause looks the same from here. See /api/debug/att; remove both once this is confirmed working.
+  const report: Record<string, unknown> = { platform: Capacitor.getPlatform() };
   try {
+    report.before = (await AdMob.trackingAuthorizationStatus()).status;
     // iOS only ever shows this dialog once per install; asking again after the user has answered
-    // just reports the existing status instead of prompting, so there's no status check first —
-    // one less plugin call that could throw and swallow the prompt with it.
+    // reports the existing status instead of prompting.
     await AdMob.requestTrackingAuthorization();
-  } catch {
+    report.after = (await AdMob.trackingAuthorizationStatus()).status;
+  } catch (error) {
     // Never let a failed consent prompt block the app from starting.
+    report.error = error instanceof Error ? error.message : String(error);
   }
+  void fetch("/api/debug/att", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(report),
+  }).catch(() => {});
 }
 
 // iOS silently ignores an ATT request unless the app is already foreground-active. At launch the
