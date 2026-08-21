@@ -82,6 +82,15 @@ export const { handlers, auth, signIn, signOut, unstable_update } = NextAuth(asy
   // looks for (InvalidCheck: "pkceCodeVerifier value could not be parsed") — this only affects
   // first-time sign-ins because returning users skip Google's extra consent-screen redirect hop.
   trustHost: true,
+  // Auth.js's default logger prints an OAuth failure's headline but not its `cause`, and the cause
+  // is where the actual reason lives — "state cookie was missing" and "Invalid cookie" both surface
+  // as the same "state value could not be parsed". Working out the first Sign in with Apple failure
+  // needed exactly that detail, so keep it in the output.
+  logger: {
+    error(error) {
+      console.error("[auth][error]", error.name, error.message, error.cause ?? "");
+    },
+  },
   callbacks: {
     async jwt({ token, account, trigger }) {
       // Re-resolve the internal user/family from the DB whenever a new Google sign-in
