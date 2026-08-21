@@ -9,6 +9,7 @@ import { MobileAuthListener } from "./MobileAuthListener";
 import { NavBar } from "./NavBar";
 import { PushNotifications } from "./PushNotifications";
 import { SettingsProvider } from "./SettingsProvider";
+import { TrackingConsent } from "./TrackingConsent";
 
 const THEME_INIT_SCRIPT = `
 (function () {
@@ -75,6 +76,7 @@ export default async function RootLayout({
           initialLocale={initialLocale}
         >
           <AdClickTracker />
+          <TrackingConsent />
           <MobileAuthListener />
           <NavBar />
           {session?.user?.familyId && <PushNotifications />}

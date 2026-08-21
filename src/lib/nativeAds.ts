@@ -47,3 +47,26 @@ export async function showInterstitialAd(): Promise<void> {
       .catch(finish);
   });
 }
+
+// Apple requires the App Tracking Transparency prompt to appear before anything that could be
+// used to track the user is collected. AdMob's IDFA request is the only such collection here,
+// and an interstitial only loads after 50 taps (see clickAdCounter.ts) — far past what a
+// reviewer, or most users, ever reach — so initializing AdMob lazily meant the prompt in
+// practice never appeared. App Review rejected build 1.3 (3) for exactly that (Guideline 2.1,
+// Aug 21 2026). Ask once at launch instead, before AdMob is ever initialized.
+export async function requestTrackingConsent(): Promise<void> {
+  if (!isNativeAdsAvailable() || Capacitor.getPlatform() !== "ios") return;
+  // This app loads its web build live from production (Capacitor "remote URL" pattern), so this
+  // code also runs inside older installed shells that may predate the plugin — see the same
+  // guard in GoogleSignInButton.tsx.
+  if (!Capacitor.isPluginAvailable("AdMob")) return;
+
+  try {
+    const { status } = await AdMob.trackingAuthorizationStatus();
+    // Asking again once the user has answered re-throws rather than re-prompting (iOS only ever
+    // shows this dialog once per install), so only ask while it's still unanswered.
+    if (status === "notDetermined") await AdMob.requestTrackingAuthorization();
+  } catch {
+    // Never let a failed consent prompt block the app from starting.
+  }
+}
