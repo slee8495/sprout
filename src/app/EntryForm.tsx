@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { createEntry, updateDraft } from "./actions";
 import { uploadJournalPhoto } from "@/lib/uploadPhoto";
+import { readPhotoDate } from "@/lib/photoDate";
 import { uploadVoiceMemo } from "@/lib/uploadVoiceMemo";
 import { getVideoDuration, MAX_VIDEO_DURATION_SECONDS, uploadJournalVideo } from "@/lib/uploadVideo";
 import { maybeRequestReview } from "@/lib/inAppReview";
@@ -65,6 +66,13 @@ export function EntryForm({
   const [milestoneLabel, setMilestoneLabel] = useState(draft?.milestoneLabel ?? "");
   const [existingPhotos, setExistingPhotos] = useState(draft?.photos ?? []);
   const [files, setFiles] = useState<File[]>([]);
+  // When each photo was taken, so a throwback can be filed under the day it happened rather than
+  // today. Index-aligned with `files`; null until read, and for photos that don't say (see
+  // src/lib/photoDate.ts).
+  const [photoDates, setPhotoDates] = useState<(string | null)[]>([]);
+  const [readingPhotoDates, setReadingPhotoDates] = useState(false);
+  const photoPickId = useRef(0);
+
   const [voiceMemo, setVoiceMemo] = useState<Blob | null>(null);
   const [videoFile, setVideoFile] = useState<File | null>(null);
   const [recording, setRecording] = useState(false);
@@ -88,6 +96,7 @@ export function EntryForm({
     setMilestoneLabel(draft?.milestoneLabel ?? "");
     setExistingPhotos(draft?.photos ?? []);
     setFiles([]);
+    setPhotoDates([]);
     setVoiceMemo(null);
     setVideoFile(null);
   }
@@ -119,6 +128,34 @@ export function EntryForm({
       filePreviewUrls.forEach((url) => URL.revokeObjectURL(url));
     };
   }, [filePreviewUrls]);
+
+  function selectPhotos(picked: File[]) {
+    setFiles(picked);
+    setPhotoDates(picked.map(() => null));
+    setReadingPhotoDates(picked.length > 0);
+    // Reading is async, so a second pick could otherwise be overwritten by the first one landing.
+    const pick = ++photoPickId.current;
+    void Promise.all(picked.map(readPhotoDate)).then((dates) => {
+      if (photoPickId.current !== pick) return;
+      setPhotoDates(dates);
+      setReadingPhotoDates(false);
+    });
+  }
+
+  function removePhoto(index: number) {
+    setFiles((prev) => prev.filter((_, i) => i !== index));
+    setPhotoDates((prev) => prev.filter((_, i) => i !== index));
+  }
+
+  // The earliest of them: for a batch from one occasion they all agree, and when they don't, the
+  // first shot is the better guess at when it happened.
+  const suggestedDate = useMemo(() => {
+    const known = photoDates.filter((d): d is string => d !== null);
+    return known.length > 0 ? known.reduce((a, b) => (a < b ? a : b)) : null;
+  }, [photoDates]);
+
+  const formatPhotoDate = (iso: string) =>
+    new Date(`${iso}T00:00:00`).toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" });
 
   async function handleVideoSelected(file: File | undefined) {
     if (!file) return;
@@ -218,6 +255,7 @@ export function EntryForm({
         setMilestoneLabel("");
         setExistingPhotos([]);
         setFiles([]);
+        setPhotoDates([]);
         setVoiceMemo(null);
         setVideoFile(null);
         formRef.current?.reset();
@@ -362,21 +400,39 @@ export function EntryForm({
       )}
 
       {files.length > 0 && (
-        <div className="flex flex-wrap gap-2">
-          {files.map((file, i) => (
-            <div key={`${file.name}-${i}`} className="relative">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={filePreviewUrls[i]} alt="" className="h-24 w-24 rounded-2xl object-cover" />
-              <button
-                type="button"
-                onClick={() => setFiles((prev) => prev.filter((_, j) => j !== i))}
-                className="absolute -right-1.5 -top-1.5 flex h-6 w-6 items-center justify-center rounded-full bg-zinc-900/80 text-xs font-bold text-white shadow-sm hover:bg-rose-600"
-                aria-label={t("Remove photo")}
-              >
-                ×
-              </button>
-            </div>
-          ))}
+        <div className="flex flex-col gap-2">
+          <div className="flex flex-wrap gap-2">
+            {files.map((file, i) => (
+              <div key={`${file.name}-${i}`} className="relative w-24">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={filePreviewUrls[i]} alt="" className="h-24 w-24 rounded-2xl object-cover" />
+                <button
+                  type="button"
+                  onClick={() => removePhoto(i)}
+                  className="absolute -right-1.5 -top-1.5 flex h-6 w-6 items-center justify-center rounded-full bg-zinc-900/80 text-xs font-bold text-white shadow-sm hover:bg-rose-600"
+                  aria-label={t("Remove photo")}
+                >
+                  ×
+                </button>
+                <p className="mt-1 truncate text-center text-[11px] text-zinc-500 dark:text-zinc-400">
+                  {/* Nothing while the date is still being read, so it never flashes "No date" first. */}
+                  {photoDates[i] ? formatPhotoDate(photoDates[i]) : readingPhotoDates ? "\u00a0" : t("No date")}
+                </p>
+              </div>
+            ))}
+          </div>
+
+          {/* The reason any of this exists: filing an old photo under today's date is the easy
+              mistake, and the date picker alone never says when the photo was taken. */}
+          {suggestedDate && suggestedDate !== entryDate && (
+            <button
+              type="button"
+              onClick={() => setEntryDate(suggestedDate)}
+              className="w-fit rounded-full border border-brand-200 bg-brand-50 px-3 py-1.5 text-left font-heading text-xs font-semibold text-brand-800 transition-transform hover:scale-105 active:scale-95 dark:border-brand-900/40 dark:bg-brand-950/40 dark:text-brand-200"
+            >
+              {fill(t("📅 Taken {date} — use this date"), { date: formatPhotoDate(suggestedDate) })}
+            </button>
+          )}
         </div>
       )}
 
@@ -388,7 +444,7 @@ export function EntryForm({
           type="file"
           accept="image/*"
           multiple
-          onChange={(e) => setFiles(Array.from(e.target.files ?? []))}
+          onChange={(e) => selectPhotos(Array.from(e.target.files ?? []))}
           className="hidden"
         />
       </label>

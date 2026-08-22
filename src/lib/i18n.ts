@@ -211,6 +211,8 @@ const ko: Record<string, string> = {
   "Your family's private journal.": "가족을 위한 프라이빗 저널이에요.",
   "Sign in with Google": "Google로 로그인",
   "Sign in with Apple": "Apple로 로그인",
+  "No date": "날짜 없음",
+  "📅 Taken {date} — use this date": "📅 {date}에 찍은 사진 — 이 날짜로 설정",
   "By continuing, you agree to our": "계속 진행하면 아래 약관에 동의하는 거예요:",
   and: "그리고",
   "Create a new family journal or join one with an invite code.":
@@ -515,6 +517,8 @@ const zh: Record<string, string> = {
   "Your family's private journal.": "您家庭的私密日记。",
   "Sign in with Google": "使用 Google 登录",
   "Sign in with Apple": "使用 Apple 登录",
+  "No date": "无日期",
+  "📅 Taken {date} — use this date": "📅 拍摄于 {date} — 使用该日期",
   "By continuing, you agree to our": "继续即表示您同意我们的",
   and: "和",
   "Create a new family journal or join one with an invite code.":
@@ -818,6 +822,8 @@ const ja: Record<string, string> = {
   "Your family's private journal.": "あなたの家族のプライベートな日記。",
   "Sign in with Google": "Google でログイン",
   "Sign in with Apple": "Apple でログイン",
+  "No date": "日付なし",
+  "📅 Taken {date} — use this date": "📅 {date} 撮影 — この日付にする",
   "By continuing, you agree to our": "続行することで、以下に同意したものとみなされます：",
   and: "と",
   "Create a new family journal or join one with an invite code.":
@@ -1122,6 +1128,8 @@ const es: Record<string, string> = {
   "Your family's private journal.": "El diario privado de tu familia.",
   "Sign in with Google": "Iniciar sesión con Google",
   "Sign in with Apple": "Iniciar sesión con Apple",
+  "No date": "Sin fecha",
+  "📅 Taken {date} — use this date": "📅 Tomada el {date}: usar esta fecha",
   "By continuing, you agree to our": "Al continuar, aceptas nuestros",
   and: "y",
   "Create a new family journal or join one with an invite code.":
