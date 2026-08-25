@@ -62,6 +62,7 @@ export default async function SettingsPage() {
       <InviteCodeCard inviteCode={settings.inviteCode} />
       <BillingCard
         billing={billing}
+        familyId={familyId}
         priceLabel={priceLabel}
         annualPriceLabel={annualPriceLabel}
         addonPriceLabel={addonPriceLabel}

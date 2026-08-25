@@ -56,6 +56,6 @@ export const config = {
     // `.well-known` covers Apple's domain-association file, which Apple fetches unauthenticated
     // when verifying the Sign in with Apple Services ID — without this it would be answered with
     // a redirect to /login and verification would fail.
-    "/((?!api/auth|api/mobile-login|api/debug|api/stripe/webhook|api/cron|_next/static|_next/image|\\.well-known|favicon.ico|manifest.webmanifest|icon\\.png|icon-192|icon-512|apple-icon|sw.js).*)",
+    "/((?!api/auth|api/mobile-login|api/debug|api/stripe/webhook|api/revenuecat|api/cron|_next/static|_next/image|\\.well-known|favicon.ico|manifest.webmanifest|icon\\.png|icon-192|icon-512|apple-icon|sw.js).*)",
   ],
 };

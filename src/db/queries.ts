@@ -4,6 +4,7 @@ import type { Locale } from "@/lib/i18n";
 import { isPaidStatus } from "@/lib/storage";
 import {
   audienceEnum,
+  billingSourceEnum,
   children,
   comments,
   dayCountStartEnum,
@@ -531,6 +532,7 @@ export async function getFamilyBilling(familyId: number) {
       subscriptionRenewsAt: true,
       storageAddonBytes: true,
       isTrial: true,
+      billingSource: true,
     },
   });
   if (!family) throw new Error("Family not found");
@@ -550,6 +552,8 @@ export async function updateFamilyBilling(
     stripeSubscriptionId: string | null;
     subscriptionStatus: (typeof subscriptionStatusEnum.enumValues)[number];
     subscriptionRenewsAt: Date | null;
+    billingSource: (typeof billingSourceEnum.enumValues)[number];
+    isTrial: boolean;
   }>,
 ) {
   await db.update(families).set(patch).where(eq(families.id, familyId));

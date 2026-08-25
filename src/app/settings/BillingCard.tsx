@@ -4,7 +4,9 @@ import { useEffect, useState, useTransition } from "react";
 import { Capacitor } from "@capacitor/core";
 import type { FamilyBilling } from "@/db/queries";
 import { fill } from "@/lib/i18n";
+import { isNativePurchasesAvailable } from "@/lib/nativePurchases";
 import { useSettings } from "../SettingsProvider";
+import { NativeBillingCard } from "./NativeBillingCard";
 import {
   cancelSubscription,
   openBillingPortal,
@@ -28,12 +30,14 @@ function parsePriceAmount(label: string | null): number | null {
 
 export function BillingCard({
   billing,
+  familyId,
   priceLabel,
   annualPriceLabel,
   addonPriceLabel,
   cancelAtPeriodEnd,
 }: {
   billing: FamilyBilling;
+  familyId: number;
   priceLabel: string | null;
   annualPriceLabel: string | null;
   addonPriceLabel: string | null;
@@ -42,18 +46,26 @@ export function BillingCard({
   const { t } = useSettings();
   const [isPending, startTransition] = useTransition();
   const [interval, setInterval] = useState<"month" | "year">("month");
-  // Stripe Checkout/billing portal are web-hosted pages — redirecting to them from inside the
-  // native app's WebView would violate App Store/Play Store guidelines on in-app digital purchases.
-  // Hide the whole card on native until RevenueCat's native IAP replaces these flows; Pro sign-up
-  // stays reachable at roun.sl-studio.dev in the meantime.
-  const [hideOnNative, setHideOnNative] = useState(false);
+  // Which of three worlds this card is in. Stripe Checkout and the billing portal are web-hosted
+  // pages, and sending a user to them from inside the app would be an external purchase for digital
+  // goods (App Store guideline 3.1.1), so they must never render on native.
+  //
+  //   "web"    — the browser: Stripe, unchanged.
+  //   "native" — a build that ships the in-app purchase plugin: NativeBillingCard.
+  //   "hidden" — a native build that predates it. This app loads its web build live from
+  //              production, so older installed shells run this code too and must show nothing
+  //              at all rather than a purchase flow they can't complete.
+  //
+  // Resolved in an effect because the server render has no idea which one it will become.
+  const [mode, setMode] = useState<"web" | "native" | "hidden">("web");
   const isPaid = billing.subscriptionStatus === "active" || billing.subscriptionStatus === "past_due";
   const wasSubscribed = billing.subscriptionStatus === "canceled";
   // Admin-granted free access (no real Stripe subscription behind it) — distinct from a real subscriber.
   const isComplimentary = isPaid && !billing.stripeCustomerId;
 
   useEffect(() => {
-    setHideOnNative(Capacitor.isNativePlatform());
+    if (!Capacitor.isNativePlatform()) return;
+    setMode(isNativePurchasesAvailable() ? "native" : "hidden");
   }, []);
 
   function handleCancel() {
@@ -74,7 +86,8 @@ export function BillingCard({
   const annualSavingsPercent =
     monthlyAmount && annualAmount ? Math.round((1 - annualAmount / (monthlyAmount * 12)) * 100) : null;
 
-  if (hideOnNative) return null;
+  if (mode === "hidden") return null;
+  if (mode === "native") return <NativeBillingCard billing={billing} familyId={familyId} />;
 
   return (
     <section className="flex flex-col gap-3 rounded-3xl border border-brand-200/70 bg-white p-4 dark:border-brand-800/50 dark:bg-zinc-900">

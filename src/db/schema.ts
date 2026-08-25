@@ -32,6 +32,12 @@ export const subjectTypeEnum = pgEnum("subject_type", ["child", "pet"]);
 
 export const subscriptionStatusEnum = pgEnum("subscription_status", ["free", "active", "past_due", "canceled"]);
 
+// Where a paid subscription was bought, which decides where the user has to go to manage or cancel
+// it — Apple and Google only let their own systems do that, and a Stripe webhook must never
+// overwrite a subscription Apple owns. "stripe" is the default because every family that existed
+// before in-app purchase arrived subscribed on the web.
+export const billingSourceEnum = pgEnum("billing_source", ["stripe", "apple", "google"]);
+
 // "owner" is whoever created the family (or was promoted to it); only owners can manage other
 // members' roles and delete the family. "viewer" is read-only — no entries, comments, kids/pets,
 // or family settings. "editor" is today's baseline behavior (full read/write, no member management).
@@ -68,6 +74,7 @@ export const families = pgTable("families", {
   // True only while subscriptionRenewsAt reflects the automatic signup trial, not an admin-granted comp — controls BillingCard copy.
   isTrial: boolean("is_trial").notNull().default(false),
   storageAddonBytes: bigint("storage_addon_bytes", { mode: "number" }).notNull().default(0),
+  billingSource: billingSourceEnum("billing_source").notNull().default("stripe"),
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
 });
 
