@@ -5,8 +5,9 @@ import { auth } from "@/auth";
 // Reachable once signed in but before a family is linked yet.
 const FAMILY_SETUP_PATHS = new Set(["/connect", "/signup", "/join"]);
 
-// Legal pages, plus the install guide: always public, regardless of auth state.
-const PUBLIC_PATHS = new Set(["/privacy", "/terms", "/account-deletion", "/get-app"]);
+// Legal pages, the install guide, and support: always public, regardless of auth state. Support
+// especially — it's the App Store's Support URL, so it has to work for someone with no account.
+const PUBLIC_PATHS = new Set(["/privacy", "/terms", "/account-deletion", "/get-app", "/support"]);
 
 const withAuth = auth((req) => {
   const isLoggedIn = !!req.auth?.user;
