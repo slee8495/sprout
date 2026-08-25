@@ -47,11 +47,12 @@ export default function TermsPage() {
         <section className="flex flex-col gap-2">
           <h2 className="font-heading font-semibold text-brand-800 dark:text-brand-200">Subscriptions and billing</h2>
           <p>
-            Roun offers a free plan and a paid Pro subscription. The current price is always shown in the app
-            before you pay. Payments are processed by Stripe — we never see or store your card details.
+            Roun offers a free plan and a paid Pro subscription. Where a paid plan is available to you, the
+            price is shown before you pay. Payments are processed by Stripe — we never see or store your
+            card details.
           </p>
           <p>
-            Pro subscriptions renew automatically each month until you cancel. You can cancel anytime from Settings;
+            Pro subscriptions renew automatically each month until you cancel. You can cancel anytime;
             your Pro access continues until the end of the billing period you&apos;ve already paid for, then your
             family moves to the Free plan. Moving to the Free plan never deletes anything — every entry, photo,
             voice memo, and video you&apos;ve already saved stays exactly as it is and remains visible. On the Free

@@ -55,7 +55,10 @@ export async function addChild(input: z.infer<typeof childSchema>) {
   if (!isPaidStatus(billing.subscriptionStatus)) {
     const kids = await listChildren(familyId);
     if (kids.length >= FREE_CHILD_LIMIT) {
-      throw new Error("Free plan is limited to 1 child or pet — upgrade to add more.");
+      // No "upgrade to add more" here: on iOS there is no upgrade path in the app at all, so the
+      // instruction would be a dead end. Web users are already looking at Settings, where the
+      // billing card sits a few rows down.
+      throw new Error("Free plan is limited to 1 child or pet.");
     }
   }
 
