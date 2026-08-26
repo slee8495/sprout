@@ -149,14 +149,12 @@ export function EntryForm({
     setPhotoDates((prev) => prev.filter((_, i) => i !== index));
   }
 
-  // The earliest of the photos: for one occasion they all agree, and when they don't, the first
-  // thing captured is the better guess at when it happened. A video's date is shown next to it but
-  // deliberately left out of this — it only tells you when the clip was taken, it doesn't offer to
-  // move the entry.
+  // The earliest across everything attached: for one occasion they all agree, and when they don't,
+  // the first thing captured is the better guess at when it happened.
   const suggestedDate = useMemo(() => {
-    const known = photoDates.filter((d): d is string => d !== null);
+    const known = [...photoDates, videoDate].filter((d): d is string => d !== null);
     return known.length > 0 ? known.reduce((a, b) => (a < b ? a : b)) : null;
-  }, [photoDates]);
+  }, [photoDates, videoDate]);
 
   const formatCaptureDate = (iso: string) =>
     new Date(`${iso}T00:00:00`).toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" });
@@ -406,39 +404,25 @@ export function EntryForm({
       )}
 
       {files.length > 0 && (
-        <div className="flex flex-col gap-2">
-          <div className="flex flex-wrap gap-2">
-            {files.map((file, i) => (
-              <div key={`${file.name}-${i}`} className="relative w-24">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={filePreviewUrls[i]} alt="" className="h-24 w-24 rounded-2xl object-cover" />
-                <button
-                  type="button"
-                  onClick={() => removePhoto(i)}
-                  className="absolute -right-1.5 -top-1.5 flex h-6 w-6 items-center justify-center rounded-full bg-zinc-900/80 text-xs font-bold text-white shadow-sm hover:bg-rose-600"
-                  aria-label={t("Remove photo")}
-                >
-                  ×
-                </button>
-                <p className="mt-1 truncate text-center text-[11px] text-zinc-500 dark:text-zinc-400">
-                  {/* Nothing while the date is still being read, so it never flashes "No date" first. */}
-                  {photoDates[i] ? formatCaptureDate(photoDates[i]) : readingPhotoDates ? "\u00a0" : t("No date")}
-                </p>
-              </div>
-            ))}
-          </div>
-
-          {/* The reason any of this exists: filing an old photo under today's date is the easy
-              mistake, and the date picker alone never says when the photo was taken. */}
-          {suggestedDate && suggestedDate !== entryDate && (
-            <button
-              type="button"
-              onClick={() => setEntryDate(suggestedDate)}
-              className="w-fit rounded-full border border-brand-200 bg-brand-50 px-3 py-1.5 text-left font-heading text-xs font-semibold text-brand-800 transition-transform hover:scale-105 active:scale-95 dark:border-brand-900/40 dark:bg-brand-950/40 dark:text-brand-200"
-            >
-              {fill(t("📅 Taken {date} — use this date"), { date: formatCaptureDate(suggestedDate) })}
-            </button>
-          )}
+        <div className="flex flex-wrap gap-2">
+          {files.map((file, i) => (
+            <div key={`${file.name}-${i}`} className="relative w-24">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={filePreviewUrls[i]} alt="" className="h-24 w-24 rounded-2xl object-cover" />
+              <button
+                type="button"
+                onClick={() => removePhoto(i)}
+                className="absolute -right-1.5 -top-1.5 flex h-6 w-6 items-center justify-center rounded-full bg-zinc-900/80 text-xs font-bold text-white shadow-sm hover:bg-rose-600"
+                aria-label={t("Remove photo")}
+              >
+                ×
+              </button>
+              <p className="mt-1 truncate text-center text-[11px] text-zinc-500 dark:text-zinc-400">
+                {/* Nothing while the date is still being read, so it never flashes "No date" first. */}
+                {photoDates[i] ? formatCaptureDate(photoDates[i]) : readingPhotoDates ? "\u00a0" : t("No date")}
+              </p>
+            </div>
+          ))}
         </div>
       )}
 
@@ -518,6 +502,19 @@ export function EntryForm({
             </label>
           )}
         </div>
+      )}
+
+      {/* The reason any of this exists: filing an old photo or video under today's date is the
+          easy mistake, and the date picker alone never says when it was taken. It sits below every
+          attachment rather than with the photos — a video on its own is just as much a throwback. */}
+      {suggestedDate && suggestedDate !== entryDate && (
+        <button
+          type="button"
+          onClick={() => setEntryDate(suggestedDate)}
+          className="w-fit rounded-full border border-brand-200 bg-brand-50 px-3 py-1.5 text-left font-heading text-xs font-semibold text-brand-800 transition-transform hover:scale-105 active:scale-95 dark:border-brand-900/40 dark:bg-brand-950/40 dark:text-brand-200"
+        >
+          {fill(t("📅 Taken {date} — use this date"), { date: formatCaptureDate(suggestedDate) })}
+        </button>
       )}
 
       {error && <p className="text-sm text-rose-600">{error}</p>}
