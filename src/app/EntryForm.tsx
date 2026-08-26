@@ -149,12 +149,14 @@ export function EntryForm({
     setPhotoDates((prev) => prev.filter((_, i) => i !== index));
   }
 
-  // The earliest across everything attached: for one occasion they all agree, and when they don't,
-  // the first thing captured is the better guess at when it happened.
+  // The earliest of the photos: for one occasion they all agree, and when they don't, the first
+  // thing captured is the better guess at when it happened. A video's date is shown next to it but
+  // deliberately left out of this — it only tells you when the clip was taken, it doesn't offer to
+  // move the entry.
   const suggestedDate = useMemo(() => {
-    const known = [...photoDates, videoDate].filter((d): d is string => d !== null);
+    const known = photoDates.filter((d): d is string => d !== null);
     return known.length > 0 ? known.reduce((a, b) => (a < b ? a : b)) : null;
-  }, [photoDates, videoDate]);
+  }, [photoDates]);
 
   const formatCaptureDate = (iso: string) =>
     new Date(`${iso}T00:00:00`).toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" });
