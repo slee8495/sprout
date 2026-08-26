@@ -55,6 +55,14 @@ async function readQuickTimeDate(file: File): Promise<string | null> {
   const moov = await findBox(file, 0, file.size, "moov");
   if (!moov) return null;
 
+  // Apple records the real capture date in its own metadata key, separate from the container's own
+  // clock. That matters because iOS re-encodes a video on its way through a file input, and the
+  // re-encode stamps `mvhd` with the moment of the export — so on iPhone the container clock says
+  // "now" for a clip shot years ago. Ask Apple's key first, and treat `mvhd` as a fallback that
+  // can't be believed when it points at roughly now.
+  const fromApple = await readAppleCreationDate(file, moov);
+  if (fromApple) return fromApple;
+
   const mvhd = await findBox(file, moov.start, moov.end, "mvhd");
   if (!mvhd) return null;
 
@@ -67,7 +75,90 @@ async function readQuickTimeDate(file: File): Promise<string | null> {
   const seconds = version === 1 ? Number(header.getBigUint64(4)) : header.getUint32(4);
   if (!seconds) return null; // cameras with no clock set write zero
 
-  return toIsoDay(new Date(seconds * 1000 - QUICKTIME_EPOCH_OFFSET_MS));
+  const recorded = new Date(seconds * 1000 - QUICKTIME_EPOCH_OFFSET_MS);
+  if (Date.now() - recorded.getTime() < RECENT_MS) return null; // an export stamp, not a capture
+  return toIsoDay(recorded);
+}
+
+const APPLE_CREATION_KEY = "com.apple.quicktime.creationdate";
+
+/**
+ * `moov/meta` holds a `keys` list naming each piece of metadata and an `ilst` holding the values,
+ * matched by position. Walks the names to find Apple's capture date, then reads the value sitting
+ * at the same index.
+ */
+async function readAppleCreationDate(file: File, moov: Box): Promise<string | null> {
+  // Cameras write `meta` straight into `moov`; re-encoders tend to tuck it inside `udta` instead.
+  const udta = await findBox(file, moov.start, moov.end, "udta");
+  const meta =
+    (await findBox(file, moov.start, moov.end, "meta")) ??
+    (udta ? await findBox(file, udta.start, udta.end, "meta") : null);
+  if (!meta) return null;
+
+  // `meta` carries a version/flags word in MP4 but not in QuickTime, so its children start at one
+  // of two places — try the plain layout, then the offset one.
+  for (const childrenStart of [meta.start, meta.start + 4]) {
+    const keys = await findBox(file, childrenStart, meta.end, "keys");
+    const ilst = await findBox(file, childrenStart, meta.end, "ilst");
+    if (!keys || !ilst) continue;
+
+    const index = await findKeyIndex(file, keys);
+    if (index === null) continue;
+
+    const value = await readIlstString(file, ilst, index);
+    const parsed = value?.match(/^(\d{4})-(\d{2})-(\d{2})/);
+    if (parsed) return `${parsed[1]}-${parsed[2]}-${parsed[3]}`;
+  }
+  return null;
+}
+
+/** 1-based position of Apple's capture-date key within the `keys` box, or null. */
+async function findKeyIndex(file: File, keys: Box): Promise<number | null> {
+  const buffer = await file.slice(keys.start, Math.min(keys.end, keys.start + 4096)).arrayBuffer();
+  const view = new DataView(buffer);
+  if (view.byteLength < 8) return null;
+
+  const count = view.getUint32(4); // after the version/flags word
+  let offset = 8;
+
+  for (let i = 1; i <= count; i++) {
+    if (offset + 8 > view.byteLength) return null;
+    const size = view.getUint32(offset);
+    if (size < 8 || offset + size > view.byteLength) return null;
+
+    let name = "";
+    for (let j = offset + 8; j < offset + size; j++) name += String.fromCharCode(view.getUint8(j));
+    if (name === APPLE_CREATION_KEY) return i;
+
+    offset += size;
+  }
+  return null;
+}
+
+/** The string value stored at `index` in an `ilst` box. */
+async function readIlstString(file: File, ilst: Box, index: number): Promise<string | null> {
+  const buffer = await file.slice(ilst.start, Math.min(ilst.end, ilst.start + 8192)).arrayBuffer();
+  const view = new DataView(buffer);
+  let offset = 0;
+
+  while (offset + 8 <= view.byteLength) {
+    const size = view.getUint32(offset);
+    if (size < 8 || offset + size > view.byteLength) return null;
+
+    if (view.getUint32(offset + 4) === index) {
+      // Inside the item sits a `data` box: size, "data", 4-byte type, 4-byte locale, then the value.
+      const dataStart = offset + 8;
+      if (dataStart + 16 > view.byteLength) return null;
+      const dataSize = view.getUint32(dataStart);
+      const valueStart = dataStart + 16;
+      const valueEnd = Math.min(dataStart + dataSize, view.byteLength);
+      if (valueEnd <= valueStart) return null;
+
+      return new TextDecoder().decode(buffer.slice(valueStart, valueEnd));
+    }
+    offset += size;
+  }
+  return null;
 }
 
 type Box = { start: number; end: number };
