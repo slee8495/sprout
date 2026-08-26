@@ -4,7 +4,7 @@ import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { createEntry, updateDraft } from "./actions";
 import { uploadJournalPhoto } from "@/lib/uploadPhoto";
-import { readPhotoDate } from "@/lib/photoDate";
+import { readPhotoDate, readVideoDate } from "@/lib/captureDate";
 import { uploadVoiceMemo } from "@/lib/uploadVoiceMemo";
 import { getVideoDuration, MAX_VIDEO_DURATION_SECONDS, uploadJournalVideo } from "@/lib/uploadVideo";
 import { maybeRequestReview } from "@/lib/inAppReview";
@@ -68,13 +68,14 @@ export function EntryForm({
   const [files, setFiles] = useState<File[]>([]);
   // When each photo was taken, so a throwback can be filed under the day it happened rather than
   // today. Index-aligned with `files`; null until read, and for photos that don't say (see
-  // src/lib/photoDate.ts).
+  // src/lib/captureDate.ts).
   const [photoDates, setPhotoDates] = useState<(string | null)[]>([]);
   const [readingPhotoDates, setReadingPhotoDates] = useState(false);
   const photoPickId = useRef(0);
 
   const [voiceMemo, setVoiceMemo] = useState<Blob | null>(null);
   const [videoFile, setVideoFile] = useState<File | null>(null);
+  const [videoDate, setVideoDate] = useState<string | null>(null);
   const [recording, setRecording] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
@@ -99,6 +100,7 @@ export function EntryForm({
     setPhotoDates([]);
     setVoiceMemo(null);
     setVideoFile(null);
+    setVideoDate(null);
   }
 
   const selectedChildren = kids.filter((k) => childIds.includes(k.id));
@@ -147,14 +149,14 @@ export function EntryForm({
     setPhotoDates((prev) => prev.filter((_, i) => i !== index));
   }
 
-  // The earliest of them: for a batch from one occasion they all agree, and when they don't, the
-  // first shot is the better guess at when it happened.
+  // The earliest across everything attached: for one occasion they all agree, and when they don't,
+  // the first thing captured is the better guess at when it happened.
   const suggestedDate = useMemo(() => {
-    const known = photoDates.filter((d): d is string => d !== null);
+    const known = [...photoDates, videoDate].filter((d): d is string => d !== null);
     return known.length > 0 ? known.reduce((a, b) => (a < b ? a : b)) : null;
-  }, [photoDates]);
+  }, [photoDates, videoDate]);
 
-  const formatPhotoDate = (iso: string) =>
+  const formatCaptureDate = (iso: string) =>
     new Date(`${iso}T00:00:00`).toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" });
 
   async function handleVideoSelected(file: File | undefined) {
@@ -172,6 +174,7 @@ export function EntryForm({
       }
       setError(null);
       setVideoFile(file);
+      setVideoDate(await readVideoDate(file));
     } catch {
       setError(t("Couldn't read that video file."));
     }
@@ -258,6 +261,7 @@ export function EntryForm({
         setPhotoDates([]);
         setVoiceMemo(null);
         setVideoFile(null);
+        setVideoDate(null);
         formRef.current?.reset();
         onSaved?.();
         router.refresh();
@@ -416,7 +420,7 @@ export function EntryForm({
                 </button>
                 <p className="mt-1 truncate text-center text-[11px] text-zinc-500 dark:text-zinc-400">
                   {/* Nothing while the date is still being read, so it never flashes "No date" first. */}
-                  {photoDates[i] ? formatPhotoDate(photoDates[i]) : readingPhotoDates ? "\u00a0" : t("No date")}
+                  {photoDates[i] ? formatCaptureDate(photoDates[i]) : readingPhotoDates ? "\u00a0" : t("No date")}
                 </p>
               </div>
             ))}
@@ -430,7 +434,7 @@ export function EntryForm({
               onClick={() => setEntryDate(suggestedDate)}
               className="w-fit rounded-full border border-brand-200 bg-brand-50 px-3 py-1.5 text-left font-heading text-xs font-semibold text-brand-800 transition-transform hover:scale-105 active:scale-95 dark:border-brand-900/40 dark:bg-brand-950/40 dark:text-brand-200"
             >
-              {fill(t("📅 Taken {date} — use this date"), { date: formatPhotoDate(suggestedDate) })}
+              {fill(t("📅 Taken {date} — use this date"), { date: formatCaptureDate(suggestedDate) })}
             </button>
           )}
         </div>
@@ -481,10 +485,18 @@ export function EntryForm({
         <div className="flex flex-col gap-2">
           {videoPreviewUrl ? (
             <div className="flex items-center gap-3">
-              <video controls src={videoPreviewUrl} className="h-32 rounded-2xl" />
+              <div className="flex flex-col gap-1">
+                <video controls src={videoPreviewUrl} className="h-32 rounded-2xl" />
+                <p className="truncate text-center text-[11px] text-zinc-500 dark:text-zinc-400">
+                  {videoDate ? formatCaptureDate(videoDate) : t("No date")}
+                </p>
+              </div>
               <button
                 type="button"
-                onClick={() => setVideoFile(null)}
+                onClick={() => {
+                  setVideoFile(null);
+                  setVideoDate(null);
+                }}
                 className="text-xs text-zinc-500 dark:text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300"
               >
                 {t("Remove")}

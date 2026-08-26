@@ -1,13 +1,13 @@
 "use client";
 
-// When a photo is picked, the entry form has no idea when it was taken — which is fine for today's
-// photos and useless for a throwback, where the whole point is to file the entry under the day it
-// actually happened. This reads the capture date out of the file so the form can show it and offer
-// it as the entry date.
+// When a photo or video is picked, the entry form has no idea when it was taken — which is fine for
+// today's shots and useless for a throwback, where the whole point is to file the entry under the
+// day it actually happened. This reads the capture date out of the file so the form can show it and
+// offer it as the entry date.
 //
-// EXIF is the only trustworthy source: `File.lastModified` is often the moment the photo was
-// exported or copied rather than shot. It's still used as a fallback, but only when it isn't
-// suspiciously close to now, which is what an export timestamp looks like.
+// Photos and videos keep that date in completely different places: photos in EXIF, videos in the
+// QuickTime/MP4 box tree. Both fall back to `File.lastModified`, but only when it isn't
+// suspiciously close to now — an export or download timestamp looks exactly like that.
 
 const EXIF_SCAN_BYTES = 256 * 1024; // EXIF lives near the start; no reason to read a whole photo
 const RECENT_MS = 24 * 60 * 60 * 1000;
@@ -17,11 +17,7 @@ export async function readPhotoDate(file: File): Promise<string | null> {
   const fromExif = await readExifDate(file).catch(() => null);
   if (fromExif) return fromExif;
 
-  // An export or download timestamp is almost always "just now"; a genuine one rarely is.
-  if (file.lastModified && Date.now() - file.lastModified > RECENT_MS) {
-    return toIsoDay(new Date(file.lastModified));
-  }
-  return null;
+  return fallbackToFileDate(file);
 }
 
 function toIsoDay(date: Date): string | null {
@@ -29,6 +25,79 @@ function toIsoDay(date: Date): string | null {
   const month = String(date.getMonth() + 1).padStart(2, "0");
   const day = String(date.getDate()).padStart(2, "0");
   return `${date.getFullYear()}-${month}-${day}`;
+}
+
+/** The day the video was recorded, as `YYYY-MM-DD`, or null if the file doesn't say. */
+export async function readVideoDate(file: File): Promise<string | null> {
+  const fromContainer = await readQuickTimeDate(file).catch(() => null);
+  if (fromContainer) return fromContainer;
+  return fallbackToFileDate(file);
+}
+
+/** Shared fallback: a modification time only means something if it isn't essentially now. */
+function fallbackToFileDate(file: File): string | null {
+  if (file.lastModified && Date.now() - file.lastModified > RECENT_MS) {
+    return toIsoDay(new Date(file.lastModified));
+  }
+  return null;
+}
+
+// --- QuickTime / MP4 ----------------------------------------------------------------------------
+// Both formats are trees of boxes: a 4-byte size, a 4-byte type, then the payload. The recording
+// time sits in `mvhd` inside `moov`. Only box headers are read here — `moov` can be at the very end
+// of a file that wasn't written for streaming, and pulling a whole video into memory to find it
+// would be wasteful on a phone.
+
+/** QuickTime counts seconds from 1904-01-01 UTC rather than the Unix epoch. */
+const QUICKTIME_EPOCH_OFFSET_MS = 2_082_844_800_000;
+
+async function readQuickTimeDate(file: File): Promise<string | null> {
+  const moov = await findBox(file, 0, file.size, "moov");
+  if (!moov) return null;
+
+  const mvhd = await findBox(file, moov.start, moov.end, "mvhd");
+  if (!mvhd) return null;
+
+  // mvhd payload: 1-byte version, 3-byte flags, then creation time — 32-bit in version 0, 64-bit
+  // in version 1.
+  const header = new DataView(await file.slice(mvhd.start, mvhd.start + 20).arrayBuffer());
+  if (header.byteLength < 12) return null;
+
+  const version = header.getUint8(0);
+  const seconds = version === 1 ? Number(header.getBigUint64(4)) : header.getUint32(4);
+  if (!seconds) return null; // cameras with no clock set write zero
+
+  return toIsoDay(new Date(seconds * 1000 - QUICKTIME_EPOCH_OFFSET_MS));
+}
+
+type Box = { start: number; end: number };
+
+/** Walks the boxes between `from` and `to`, returning the payload bounds of the first match. */
+async function findBox(file: File, from: number, to: number, wanted: string): Promise<Box | null> {
+  let offset = from;
+
+  while (offset + 8 <= to) {
+    const header = new DataView(await file.slice(offset, offset + 16).arrayBuffer());
+    if (header.byteLength < 8) return null;
+
+    let size = header.getUint32(0);
+    let headerLength = 8;
+    if (size === 1) {
+      // Size 1 means the real 64-bit size follows the type — used by boxes larger than 4GB.
+      if (header.byteLength < 16) return null;
+      size = Number(header.getBigUint64(8));
+      headerLength = 16;
+    } else if (size === 0) {
+      size = to - offset; // size 0 means "runs to the end of the file"
+    }
+    if (size < headerLength) return null; // malformed; stop rather than loop forever
+
+    const type = String.fromCharCode(header.getUint8(4), header.getUint8(5), header.getUint8(6), header.getUint8(7));
+    if (type === wanted) return { start: offset + headerLength, end: offset + size };
+
+    offset += size;
+  }
+  return null;
 }
 
 // --- EXIF ---------------------------------------------------------------------------------------
