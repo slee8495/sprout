@@ -23,6 +23,7 @@ const HIDDEN_ON = [
   "/privacy",
   "/terms",
   "/account-deletion",
+  "/support",
   "/get-app",
 ];
 

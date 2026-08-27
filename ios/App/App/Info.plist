@@ -42,6 +42,10 @@
 	</array>
 	<key>NSUserTrackingUsageDescription</key>
 	<string>This identifier is used to show you a rewarded ad in exchange for bonus storage.</string>
+	<key>NSCameraUsageDescription</key>
+	<string>Roun uses the camera when you take a photo or video to add to a journal entry.</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>Roun uses the microphone when you record a voice memo for a journal entry.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>Roun saves the photos and videos you download to your Photos library.</string>
 	<key>NSPhotoLibraryAddUsageDescription</key>
