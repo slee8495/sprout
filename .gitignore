@@ -68,3 +68,10 @@ android-signing/
 
 # apple sign-in key — never commit, keep only locally / in a password manager
 apple-signin/
+
+# demo and store media — large binaries that belong in cloud storage, not in git
+# (.vercelignore keeps these out of deploys too)
+*.mp4
+*.MP4
+photos_for_demo/
+app-store-screenshots/
