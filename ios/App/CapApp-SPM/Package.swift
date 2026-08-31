@@ -17,7 +17,8 @@ let package = Package(
         .package(name: "CapacitorCommunityMedia", path: "../../../node_modules/@capacitor-community/media"),
         .package(name: "CapacitorApp", path: "../../../node_modules/@capacitor/app"),
         .package(name: "CapacitorBrowser", path: "../../../node_modules/@capacitor/browser"),
-        .package(name: "CapacitorPreferences", path: "../../../node_modules/@capacitor/preferences")
+        .package(name: "CapacitorPreferences", path: "../../../node_modules/@capacitor/preferences"),
+        .package(name: "RevenuecatPurchasesCapacitor", path: "../../../node_modules/@revenuecat/purchases-capacitor")
     ],
     targets: [
         .target(
@@ -30,7 +31,8 @@ let package = Package(
                 .product(name: "CapacitorCommunityMedia", package: "CapacitorCommunityMedia"),
                 .product(name: "CapacitorApp", package: "CapacitorApp"),
                 .product(name: "CapacitorBrowser", package: "CapacitorBrowser"),
-                .product(name: "CapacitorPreferences", package: "CapacitorPreferences")
+                .product(name: "CapacitorPreferences", package: "CapacitorPreferences"),
+                .product(name: "RevenuecatPurchasesCapacitor", package: "RevenuecatPurchasesCapacitor")
             ]
         )
     ]

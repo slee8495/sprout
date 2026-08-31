@@ -56,15 +56,22 @@ export function BillingCard({
   //              production, so older installed shells run this code too and must show nothing
   //              at all rather than a purchase flow they can't complete.
   //
-  // Resolved in an effect because the server render has no idea which one it will become.
-  const [mode, setMode] = useState<"web" | "native" | "hidden">("web");
+  // Starts as "unknown" and renders nothing until an effect settles it. Defaulting to "web" meant
+  // the server render — and the first paint inside the app — showed Stripe's card, which is what
+  // App Review tapped: the 1.0 (4) rejection under 3.1.1 was this frame, not a missing guard.
+  // A card that appears a moment late on the web is a far smaller cost than one that appears at
+  // all on native.
+  const [mode, setMode] = useState<"unknown" | "web" | "native" | "hidden">("unknown");
   const isPaid = billing.subscriptionStatus === "active" || billing.subscriptionStatus === "past_due";
   const wasSubscribed = billing.subscriptionStatus === "canceled";
   // Admin-granted free access (no real Stripe subscription behind it) — distinct from a real subscriber.
   const isComplimentary = isPaid && !billing.stripeCustomerId;
 
   useEffect(() => {
-    if (!Capacitor.isNativePlatform()) return;
+    if (!Capacitor.isNativePlatform()) {
+      setMode("web");
+      return;
+    }
     setMode(isNativePurchasesAvailable() ? "native" : "hidden");
   }, []);
 
@@ -86,7 +93,9 @@ export function BillingCard({
   const annualSavingsPercent =
     monthlyAmount && annualAmount ? Math.round((1 - annualAmount / (monthlyAmount * 12)) * 100) : null;
 
-  if (mode === "hidden") return null;
+  // "unknown" is the server render and the first client frame; nothing is shown until the effect
+  // has told us which world this is, so a purchase flow can never flash inside the app.
+  if (mode === "unknown" || mode === "hidden") return null;
   if (mode === "native") return <NativeBillingCard billing={billing} familyId={familyId} />;
 
   return (
