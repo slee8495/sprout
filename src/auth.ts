@@ -3,7 +3,7 @@ import type { OAuth2Config } from "next-auth/providers";
 import Apple from "next-auth/providers/apple";
 import type { GoogleProfile } from "next-auth/providers/google";
 import Credentials from "next-auth/providers/credentials";
-import { getUserByEmail, getUserById } from "@/db/queries";
+import { getUserByEmail } from "@/db/queries";
 import { appleClientSecret, isAppleSignInConfigured } from "@/lib/appleClientSecret";
 import { verifyMobileHandoffToken } from "@/lib/mobileAuth";
 
@@ -50,11 +50,16 @@ const MobileHandoffProvider = Credentials({
   async authorize(credentials) {
     const token = credentials?.token;
     if (typeof token !== "string") return null;
-    const userId = await verifyMobileHandoffToken(token);
-    if (!userId) return null;
-    const dbUser = await getUserById(Number(userId));
-    if (!dbUser) return null;
-    return { id: String(dbUser.id), name: dbUser.name, email: dbUser.email, image: dbUser.imageUrl };
+    const identity = await verifyMobileHandoffToken(token);
+    if (!identity) return null;
+    // Returning members resolve to their row so the session carries the same id the web would
+    // give it. A brand-new account has no row yet and is signed in on the strength of the token
+    // alone — the jwt callback fills in id/familyId once /connect writes the row.
+    const dbUser = await getUserByEmail(identity.email);
+    if (dbUser) {
+      return { id: String(dbUser.id), name: dbUser.name, email: dbUser.email, image: dbUser.imageUrl };
+    }
+    return { id: identity.email, name: identity.name, email: identity.email };
   },
 });
 

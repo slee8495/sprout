@@ -18,10 +18,17 @@ import { signMobileHandoffToken } from "@/lib/mobileAuth";
 // dropped for being unreliable on its own — it is only ever a shortcut here, never the mechanism.
 export async function GET() {
   const session = await auth();
-  if (!session?.user?.id) {
+  // Deliberately keyed on the email, not `user.id`: a first-ever sign-in has no `users` row yet
+  // (one is written when a family is created or joined, which happens after this), so requiring an
+  // id sent every new account back to /login — and from there the proxy walked them into onboarding
+  // in the browser, with the app still signed out behind it.
+  if (!session?.user?.email) {
     return NextResponse.redirect(new URL("/login", "https://roun.sl-studio.dev"));
   }
-  const token = await signMobileHandoffToken(session.user.id);
+  const token = await signMobileHandoffToken({
+    email: session.user.email,
+    name: session.user.name ?? undefined,
+  });
   const deepLink = `dev.slstudio.sprout://mobile-auth?token=${encodeURIComponent(token)}`;
   const html = `<!doctype html>
 <html><head><meta name="viewport" content="width=device-width, initial-scale=1" />
