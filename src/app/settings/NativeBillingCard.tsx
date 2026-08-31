@@ -27,7 +27,20 @@ export function NativeBillingCard({ billing, familyId }: { billing: FamilyBillin
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const isPaid = billing.subscriptionStatus === "active" || billing.subscriptionStatus === "past_due";
+  // "Paid" here has to mean a subscription Apple or Google actually sold us, not merely an active
+  // status. The signup trial and admin-granted access both leave the status "active" with nothing
+  // behind it, and treating those as a store subscription sent a family that had only just signed
+  // up to Settings → Apple Account → Subscriptions to cancel something that isn't there — and hid
+  // the purchase this card exists to offer. App Review sign up fresh, so that is exactly what they
+  // would have seen.
+  const isPaid =
+    (billing.billingSource === "apple" || billing.billingSource === "google") &&
+    (billing.subscriptionStatus === "active" || billing.subscriptionStatus === "past_due");
+
+  // Pro that came from somewhere else — the signup trial, or a subscription bought on the web.
+  // Say so plainly, and still offer the Apple purchase underneath.
+  const proFromElsewhere =
+    !isPaid && (billing.subscriptionStatus === "active" || billing.subscriptionStatus === "past_due");
 
   useEffect(() => {
     let live = true;
@@ -104,8 +117,17 @@ export function NativeBillingCard({ billing, familyId }: { billing: FamilyBillin
       ) : (
         <>
           <p className="text-sm text-zinc-600 dark:text-zinc-400">
-            {t("Free plan")}
-            {t(" — 1 child or pet, 1GB storage.")}
+            {proFromElsewhere
+              ? billing.isTrial && billing.subscriptionRenewsAt
+                ? fill(t("Free trial — ends {date}"), {
+                    date: billing.subscriptionRenewsAt.toLocaleDateString(undefined, {
+                      year: "numeric",
+                      month: "short",
+                      day: "numeric",
+                    }),
+                  })
+                : t("Pro plan")
+              : `${t("Free plan")}${t(" — 1 child or pet, 1GB storage.")}`}
           </p>
 
           {packages === null ? (
