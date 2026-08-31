@@ -14,6 +14,7 @@ import { getMilestoneCategories, subjectEmoji } from "@/lib/milestones";
 import { fill } from "@/lib/i18n";
 import { todayInTimezone } from "@/lib/date";
 import { useSettings } from "./SettingsProvider";
+import { pickRecordingMimeType, recordedBlob } from "@/lib/audioRecording";
 
 type MilestoneCategory = (typeof milestoneCategoryEnum.enumValues)[number];
 
@@ -28,13 +29,6 @@ export type DraftEntryData = {
   photos: { id: number; url: string; sizeBytes: number | null }[];
   visibility: "everyone" | "inner";
 };
-
-const RECORDING_MIME_TYPES = ["audio/webm", "audio/mp4", "audio/ogg"];
-
-function pickRecordingMimeType(): string | undefined {
-  if (typeof MediaRecorder === "undefined") return undefined;
-  return RECORDING_MIME_TYPES.find((type) => MediaRecorder.isTypeSupported(type));
-}
 
 export function EntryForm({
   initialDate,
@@ -192,7 +186,7 @@ export function EntryForm({
       };
       recorder.onstop = () => {
         stream.getTracks().forEach((t) => t.stop());
-        setVoiceMemo(new Blob(chunks, { type: mimeType || "audio/webm" }));
+        setVoiceMemo(recordedBlob(recorder, chunks));
       };
 
       mediaRecorderRef.current = recorder;

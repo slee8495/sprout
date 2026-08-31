@@ -18,15 +18,9 @@ import { uploadJournalPhoto } from "@/lib/uploadPhoto";
 import { uploadVoiceMemo } from "@/lib/uploadVoiceMemo";
 import { getVideoDuration, MAX_VIDEO_DURATION_SECONDS, uploadJournalVideo } from "@/lib/uploadVideo";
 import { useSettings } from "./SettingsProvider";
+import { pickRecordingMimeType, recordedBlob } from "@/lib/audioRecording";
 
 type MilestoneCategory = (typeof milestoneCategoryEnum.enumValues)[number];
-
-const RECORDING_MIME_TYPES = ["audio/webm", "audio/mp4", "audio/ogg"];
-
-function pickRecordingMimeType(): string | undefined {
-  if (typeof MediaRecorder === "undefined") return undefined;
-  return RECORDING_MIME_TYPES.find((type) => MediaRecorder.isTypeSupported(type));
-}
 
 export function EntryCard({ entry, highlighted }: { entry: JournalEntryWithPhotos; highlighted?: boolean }) {
   const router = useRouter();
@@ -95,7 +89,7 @@ export function EntryCard({ entry, highlighted }: { entry: JournalEntryWithPhoto
       };
       recorder.onstop = () => {
         stream.getTracks().forEach((t) => t.stop());
-        setNewVoiceMemo(new Blob(chunks, { type: mimeType || "audio/webm" }));
+        setNewVoiceMemo(recordedBlob(recorder, chunks));
       };
 
       mediaRecorderRef.current = recorder;

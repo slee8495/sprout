@@ -5,6 +5,7 @@ import { useChat } from "@ai-sdk/react";
 import { DefaultChatTransport, type UIMessage } from "ai";
 import { prefetchSpeech, speak } from "@/lib/speak";
 import { useSettings } from "./SettingsProvider";
+import { pickRecordingMimeType, recordedBlob } from "@/lib/audioRecording";
 
 function messageText(message: UIMessage): string {
   return message.parts
@@ -12,13 +13,6 @@ function messageText(message: UIMessage): string {
     .map((p) => p.text)
     .join(" ")
     .trim();
-}
-
-const RECORDING_MIME_TYPES = ["audio/webm", "audio/mp4", "audio/ogg"];
-
-function pickRecordingMimeType(): string | undefined {
-  if (typeof MediaRecorder === "undefined") return undefined;
-  return RECORDING_MIME_TYPES.find((type) => MediaRecorder.isTypeSupported(type));
 }
 
 export function ChatWidget() {
@@ -62,7 +56,7 @@ export function ChatWidget() {
       };
       recorder.onstop = async () => {
         stream.getTracks().forEach((t) => t.stop());
-        const blob = new Blob(chunks, { type: mimeType || "audio/webm" });
+        const blob = recordedBlob(recorder, chunks);
         setTranscribing(true);
         try {
           const form = new FormData();
