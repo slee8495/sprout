@@ -55,7 +55,7 @@ export default function TermsPage() {
             Pro subscriptions renew automatically each month until you cancel. You can cancel anytime;
             your Pro access continues until the end of the billing period you&apos;ve already paid for, then your
             family moves to the Free plan. Moving to the Free plan never deletes anything — every entry, photo,
-            voice memo, and video you&apos;ve already saved stays exactly as it is and remains visible. On the Free
+            and video you&apos;ve already saved stays exactly as it is and remains visible. On the Free
             plan you just can&apos;t add a new child or pet beyond your first one, or upload new photos or videos
             once you&apos;re over the free storage limit, until you resubscribe.
           </p>

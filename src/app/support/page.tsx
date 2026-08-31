@@ -12,7 +12,7 @@ export default function SupportPage() {
       <header className="pt-4">
         <h1 className="font-heading text-2xl font-bold text-brand-700 dark:text-brand-300">Roun Support</h1>
         <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
-          Roun is a private journal for your family — photos, notes and voice memos kept for the people you
+          Roun is a private journal for your family — photos, notes and videos kept for the people you
           invite, and no one else.
         </p>
       </header>

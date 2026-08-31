@@ -5,7 +5,6 @@ import { useRouter } from "next/navigation";
 import { createEntry, updateDraft } from "./actions";
 import { uploadJournalPhoto } from "@/lib/uploadPhoto";
 import { readPhotoDate, readVideoDate } from "@/lib/captureDate";
-import { uploadVoiceMemo } from "@/lib/uploadVoiceMemo";
 import { getVideoDuration, MAX_VIDEO_DURATION_SECONDS, uploadJournalVideo } from "@/lib/uploadVideo";
 import { maybeRequestReview } from "@/lib/inAppReview";
 import type { Child } from "@/db/queries";
@@ -14,7 +13,6 @@ import { getMilestoneCategories, subjectEmoji } from "@/lib/milestones";
 import { fill } from "@/lib/i18n";
 import { todayInTimezone } from "@/lib/date";
 import { useSettings } from "./SettingsProvider";
-import { pickRecordingMimeType, recordedBlob } from "@/lib/audioRecording";
 
 type MilestoneCategory = (typeof milestoneCategoryEnum.enumValues)[number];
 
@@ -67,13 +65,10 @@ export function EntryForm({
   const [readingPhotoDates, setReadingPhotoDates] = useState(false);
   const photoPickId = useRef(0);
 
-  const [voiceMemo, setVoiceMemo] = useState<Blob | null>(null);
   const [videoFile, setVideoFile] = useState<File | null>(null);
   const [videoDate, setVideoDate] = useState<string | null>(null);
-  const [recording, setRecording] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
-  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
 
   // Re-seed all fields whenever the target changes: a different draft to resume, a
   // different default child, or a different date clicked on the calendar.
@@ -92,7 +87,6 @@ export function EntryForm({
     setExistingPhotos(draft?.photos ?? []);
     setFiles([]);
     setPhotoDates([]);
-    setVoiceMemo(null);
     setVideoFile(null);
     setVideoDate(null);
   }
@@ -103,13 +97,6 @@ export function EntryForm({
   function toggleChild(id: number) {
     setChildIds((prev) => (prev.includes(id) ? prev.filter((c) => c !== id) : [...prev, id]));
   }
-
-  const voiceMemoUrl = useMemo(() => (voiceMemo ? URL.createObjectURL(voiceMemo) : null), [voiceMemo]);
-  useEffect(() => {
-    return () => {
-      if (voiceMemoUrl) URL.revokeObjectURL(voiceMemoUrl);
-    };
-  }, [voiceMemoUrl]);
 
   const videoPreviewUrl = useMemo(() => (videoFile ? URL.createObjectURL(videoFile) : null), [videoFile]);
   useEffect(() => {
@@ -174,35 +161,6 @@ export function EntryForm({
     }
   }
 
-  async function startRecording() {
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      const mimeType = pickRecordingMimeType();
-      const recorder = new MediaRecorder(stream, mimeType ? { mimeType } : undefined);
-      const chunks: BlobPart[] = [];
-
-      recorder.ondataavailable = (e) => {
-        if (e.data.size > 0) chunks.push(e.data);
-      };
-      recorder.onstop = () => {
-        stream.getTracks().forEach((t) => t.stop());
-        setVoiceMemo(recordedBlob(recorder, chunks));
-      };
-
-      mediaRecorderRef.current = recorder;
-      recorder.start();
-      setRecording(true);
-    } catch {
-      setError(t("Couldn't access the microphone."));
-    }
-  }
-
-  function stopRecording() {
-    mediaRecorderRef.current?.stop();
-    mediaRecorderRef.current = null;
-    setRecording(false);
-  }
-
   function handleSave(isDraft: boolean) {
     if (isDraft === false && !body.trim()) {
       setError(t("Write something first."));
@@ -217,7 +175,6 @@ export function EntryForm({
           ...existingPhotos.map((p) => ({ url: p.url, sizeBytes: p.sizeBytes ?? undefined })),
           ...uploaded.map((r) => ({ url: r.url, sizeBytes: r.sizeBytes })),
         ];
-        const uploadedVoiceMemoUrl = voiceMemo ? (await uploadVoiceMemo(voiceMemo)).url : undefined;
         const uploadedVideo = videoFile ? await uploadJournalVideo(videoFile) : undefined;
 
         const shared = {
@@ -238,7 +195,6 @@ export function EntryForm({
             ...shared,
             audience: childIds.length ? "child" : "parents",
             childIds,
-            voiceMemoUrl: uploadedVoiceMemoUrl,
             videoUrl: uploadedVideo?.url,
             videoSizeBytes: uploadedVideo?.sizeBytes,
           });
@@ -253,7 +209,6 @@ export function EntryForm({
         setExistingPhotos([]);
         setFiles([]);
         setPhotoDates([]);
-        setVoiceMemo(null);
         setVideoFile(null);
         setVideoDate(null);
         formRef.current?.reset();
@@ -432,34 +387,6 @@ export function EntryForm({
           className="hidden"
         />
       </label>
-
-      {!draft && (
-        <div className="flex items-center gap-3">
-          <button
-            type="button"
-            onClick={() => (recording ? stopRecording() : startRecording())}
-            className={`rounded-full px-3 py-1.5 font-heading text-sm font-semibold transition-transform hover:scale-105 active:scale-95 ${
-              recording
-                ? "bg-rose-500 text-white shadow-sm shadow-rose-900/20"
-                : "border border-brand-100 text-brand-800 dark:border-brand-900/40 dark:text-brand-200"
-            }`}
-          >
-            {recording ? t("⏹ Stop recording") : t("🎤 Voice memo")}
-          </button>
-          {voiceMemoUrl && !recording && (
-            <>
-              <audio controls src={voiceMemoUrl} className="h-8" />
-              <button
-                type="button"
-                onClick={() => setVoiceMemo(null)}
-                className="text-xs text-zinc-500 dark:text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300"
-              >
-                {t("Remove")}
-              </button>
-            </>
-          )}
-        </div>
-      )}
 
       {!draft && (
         <div className="flex flex-col gap-2">

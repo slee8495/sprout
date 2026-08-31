@@ -52,7 +52,7 @@ export default function AccountDeletionPage() {
             What gets deleted
           </h2>
           <ul className="list-disc pl-5">
-            <li>Every journal entry, comment, photo, voice memo, and video in the family.</li>
+            <li>Every journal entry, comment, photo, and video in the family.</li>
             <li>All children and pet profiles.</li>
             <li>Every family member&apos;s login and account settings.</li>
             <li>Any push-notification subscriptions.</li>

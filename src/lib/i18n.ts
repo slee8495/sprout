@@ -53,8 +53,6 @@ const ko: Record<string, string> = {
   "e.g. First broccoli": "예: 첫 브로콜리",
   "Remove photo": "사진 삭제",
   "📷 Add photos": "📷 사진 추가",
-  "⏹ Stop recording": "⏹ 녹음 중지",
-  "🎤 Voice memo": "🎤 음성 메모",
   "🎥 Video (max 1 min)": "🎥 동영상 (최대 1분)",
   "Videos must be {max}s or shorter (this one is {actual}s).": "동영상은 {max}초 이하여야 해요 (이 파일은 {actual}초).",
   "Couldn't read that video file.": "이 동영상 파일을 읽지 못했어요.",
@@ -198,9 +196,9 @@ const ko: Record<string, string> = {
 
   // Landing page
   "A private, lifelong journal for your family.": "가족을 위한 프라이빗하고 평생 남는 저널이에요.",
-  "Photos & voice memos": "사진 & 음성 메모",
-  "Capture more than words — attach a photo or a quick voice memo to any entry.":
-    "글로만 담기 아쉬울 땐 — 사진이나 짧은 음성 메모를 어떤 일기에도 첨부하세요.",
+  "Photos & video": "사진 & 동영상",
+  "Capture more than words — attach photos or a short video to any entry.":
+    "글로 다 담기지 않는 순간은 사진이나 짧은 동영상으로 남겨보세요.",
   "Track firsts, big and small, and revisit them on “On this day.”":
     "크고 작은 처음을 기록하고, “오늘 이날”에서 다시 꺼내보세요.",
   "Private by default": "기본적으로 비공개",
@@ -370,8 +368,6 @@ const zh: Record<string, string> = {
   "e.g. First broccoli": "例如：第一次吃西兰花",
   "Remove photo": "删除照片",
   "📷 Add photos": "📷 添加照片",
-  "⏹ Stop recording": "⏹ 停止录音",
-  "🎤 Voice memo": "🎤 语音留言",
   "🎥 Video (max 1 min)": "🎥 视频（最长1分钟）",
   "Videos must be {max}s or shorter (this one is {actual}s).": "视频时长不能超过{max}秒（这段视频为{actual}秒）。",
   "Couldn't read that video file.": "无法读取该视频文件。",
@@ -515,9 +511,9 @@ const zh: Record<string, string> = {
 
   // Landing page
   "A private, lifelong journal for your family.": "为您的家庭打造的私密、伴随一生的日记。",
-  "Photos & voice memos": "照片和语音留言",
-  "Capture more than words — attach a photo or a quick voice memo to any entry.":
-    "不止是文字 — 为任何一篇日记添加照片或语音留言。",
+  "Photos & video": "照片和视频",
+  "Capture more than words — attach photos or a short video to any entry.":
+    "文字之外的瞬间，用照片或短视频记录下来。",
   "Track firsts, big and small, and revisit them on “On this day.”":
     "记录大大小小的\"第一次\"，在\"那年今日\"重温这些瞬间。",
   "Private by default": "默认私密",
@@ -686,8 +682,6 @@ const ja: Record<string, string> = {
   "e.g. First broccoli": "例：はじめてのブロッコリー",
   "Remove photo": "写真を削除",
   "📷 Add photos": "📷 写真を追加",
-  "⏹ Stop recording": "⏹ 録音を停止",
-  "🎤 Voice memo": "🎤 ボイスメモ",
   "🎥 Video (max 1 min)": "🎥 動画（最大1分）",
   "Videos must be {max}s or shorter (this one is {actual}s).": "動画は{max}秒以内にしてください（この動画は{actual}秒です）。",
   "Couldn't read that video file.": "この動画ファイルを読み込めませんでした。",
@@ -831,9 +825,9 @@ const ja: Record<string, string> = {
 
   // Landing page
   "A private, lifelong journal for your family.": "家族のための、一生続くプライベートな日記。",
-  "Photos & voice memos": "写真とボイスメモ",
-  "Capture more than words — attach a photo or a quick voice memo to any entry.":
-    "言葉だけじゃない — どの記録にも写真やボイスメモを添付できます。",
+  "Photos & video": "写真と動画",
+  "Capture more than words — attach photos or a short video to any entry.":
+    "言葉だけでは足りない瞬間は、写真や短い動画で残しましょう。",
   "Track firsts, big and small, and revisit them on “On this day.”":
     "大小さまざまな「はじめて」を記録して、「この日の思い出」でまた出会えます。",
   "Private by default": "デフォルトで非公開",
@@ -1003,8 +997,6 @@ const es: Record<string, string> = {
   "e.g. First broccoli": "p. ej. Primer brócoli",
   "Remove photo": "Eliminar foto",
   "📷 Add photos": "📷 Agregar fotos",
-  "⏹ Stop recording": "⏹ Detener grabación",
-  "🎤 Voice memo": "🎤 Nota de voz",
   "🎥 Video (max 1 min)": "🎥 Video (máx. 1 min)",
   "Videos must be {max}s or shorter (this one is {actual}s).": "Los videos deben durar {max}s o menos (este dura {actual}s).",
   "Couldn't read that video file.": "No se pudo leer ese archivo de video.",
@@ -1148,9 +1140,9 @@ const es: Record<string, string> = {
 
   // Landing page
   "A private, lifelong journal for your family.": "Un diario privado y para toda la vida, para tu familia.",
-  "Photos & voice memos": "Fotos y notas de voz",
-  "Capture more than words — attach a photo or a quick voice memo to any entry.":
-    "Más que palabras — adjunta una foto o una nota de voz a cualquier entrada.",
+  "Photos & video": "Fotos y vídeo",
+  "Capture more than words — attach photos or a short video to any entry.":
+    "Cuando las palabras no bastan, añade fotos o un vídeo corto a cualquier entrada.",
   "Track firsts, big and small, and revisit them on “On this day.”":
     "Registra los primeros momentos, grandes y pequeños, y revívelos en \"Este día\".",
   "Private by default": "Privado por defecto",

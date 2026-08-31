@@ -4,8 +4,8 @@ import { T } from "./T";
 const FEATURES: { emoji: string; title: string; body: string }[] = [
   {
     emoji: "📸",
-    title: "Photos & voice memos",
-    body: "Capture more than words — attach a photo or a quick voice memo to any entry.",
+    title: "Photos & video",
+    body: "Capture more than words — attach photos or a short video to any entry.",
   },
   {
     emoji: "🎉",

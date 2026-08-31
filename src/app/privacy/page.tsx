@@ -20,7 +20,7 @@ export default function PrivacyPage() {
           <h2 className="font-heading font-semibold text-brand-800 dark:text-brand-200">What we collect</h2>
           <ul className="list-disc pl-5">
             <li>Your name, email address, and profile photo from Google when you sign in.</li>
-            <li>Journal entries you write, including any photos, voice memos, and comments.</li>
+            <li>Journal entries you write, including any photos, videos, and comments.</li>
             <li>Basic account settings (timezone, theme, names and birth/adoption dates of the kids and pets in your family).</li>
             <li>A push-notification token, only if you enable notifications on a device.</li>
           </ul>
@@ -50,7 +50,7 @@ export default function PrivacyPage() {
           </h2>
           <ul className="list-disc pl-5">
             <li>Google — for signing in (Google OAuth).</li>
-            <li>Vercel — for hosting the app and storing uploaded photos/voice memos.</li>
+            <li>Vercel — for hosting the app and storing uploaded photos and videos.</li>
             <li>Neon — for our database.</li>
           </ul>
           <p>These providers only process data on our behalf and don&apos;t use it for their own purposes.</p>

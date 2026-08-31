@@ -33,7 +33,7 @@ Roun has its roots in Old Norse, where it means mysterious wisdom, or a secret �
 So that's what we wanted this app to become: a beautifully tended garden, a precious family secret-book recording your kids and pets as they grow.
 
 WHAT YOU CAN DO
-📷 Photos & voice memos — attach a photo or a quick voice memo to any entry
+📷 Photos & video — attach photos or a short video to any entry
 🎉 Milestones — track firsts, big and small, and revisit them on "On this day"
 📖 Albums — every kid and pet gets an automatic photo album, laid out in real collage pages with chapter dividers, scroll or page-turn through it, and export the whole thing as a PDF
 🔒 Private by default — only the family members you invite can ever see your journal
@@ -111,7 +111,7 @@ Expected outcome: should land at the lowest tier on every regional rating system
 ## Data safety section (Play) / Privacy nutrition label (App Store) — data types to declare
 
 - **Email address** — collected via Google Sign-In, used for account identification, not shared with third parties
-- **Photos, videos, audio (voice memos)** — user-uploaded content, stored to run the core journaling feature, not shared with third parties, deletable by the user
+- **Photos and videos** — user-uploaded content, stored to run the core journaling feature, not shared with third parties, deletable by the user
 - **User-generated text** — journal entries, not shared with third parties
 - **Purchase history** — Stripe subscription/add-on status, used for billing only
 - Encrypted in transit; family-scoped access control enforced server-side (see `requireSession()` pattern throughout the codebase)

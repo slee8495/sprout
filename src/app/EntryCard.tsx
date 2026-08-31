@@ -15,10 +15,8 @@ import { PhotoCollage } from "./PhotoCollage";
 import { PhotoLightbox } from "./PhotoLightbox";
 import type { milestoneCategoryEnum } from "@/db/schema";
 import { uploadJournalPhoto } from "@/lib/uploadPhoto";
-import { uploadVoiceMemo } from "@/lib/uploadVoiceMemo";
 import { getVideoDuration, MAX_VIDEO_DURATION_SECONDS, uploadJournalVideo } from "@/lib/uploadVideo";
 import { useSettings } from "./SettingsProvider";
-import { pickRecordingMimeType, recordedBlob } from "@/lib/audioRecording";
 
 type MilestoneCategory = (typeof milestoneCategoryEnum.enumValues)[number];
 
@@ -44,10 +42,6 @@ export function EntryCard({ entry, highlighted }: { entry: JournalEntryWithPhoto
   const [milestoneLabel, setMilestoneLabel] = useState(entry.milestoneLabel ?? "");
   const [existingPhotos, setExistingPhotos] = useState(entry.photos);
   const [newFiles, setNewFiles] = useState<File[]>([]);
-  const [existingVoiceMemoUrl, setExistingVoiceMemoUrl] = useState(entry.voiceMemoUrl);
-  const [newVoiceMemo, setNewVoiceMemo] = useState<Blob | null>(null);
-  const [recording, setRecording] = useState(false);
-  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const [existingVideoUrl, setExistingVideoUrl] = useState(entry.videoUrl);
   const [existingVideoSizeBytes, setExistingVideoSizeBytes] = useState(entry.videoSizeBytes);
   const [newVideoFile, setNewVideoFile] = useState<File | null>(null);
@@ -63,13 +57,6 @@ export function EntryCard({ entry, highlighted }: { entry: JournalEntryWithPhoto
     };
   }, [newFilePreviews]);
 
-  const newVoiceMemoUrl = useMemo(() => (newVoiceMemo ? URL.createObjectURL(newVoiceMemo) : null), [newVoiceMemo]);
-  useEffect(() => {
-    return () => {
-      if (newVoiceMemoUrl) URL.revokeObjectURL(newVoiceMemoUrl);
-    };
-  }, [newVoiceMemoUrl]);
-
   const newVideoPreviewUrl = useMemo(() => (newVideoFile ? URL.createObjectURL(newVideoFile) : null), [newVideoFile]);
   useEffect(() => {
     return () => {
@@ -77,34 +64,6 @@ export function EntryCard({ entry, highlighted }: { entry: JournalEntryWithPhoto
     };
   }, [newVideoPreviewUrl]);
 
-  async function startRecording() {
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      const mimeType = pickRecordingMimeType();
-      const recorder = new MediaRecorder(stream, mimeType ? { mimeType } : undefined);
-      const chunks: BlobPart[] = [];
-
-      recorder.ondataavailable = (e) => {
-        if (e.data.size > 0) chunks.push(e.data);
-      };
-      recorder.onstop = () => {
-        stream.getTracks().forEach((t) => t.stop());
-        setNewVoiceMemo(recordedBlob(recorder, chunks));
-      };
-
-      mediaRecorderRef.current = recorder;
-      recorder.start();
-      setRecording(true);
-    } catch {
-      setError(t("Couldn't access the microphone."));
-    }
-  }
-
-  function stopRecording() {
-    mediaRecorderRef.current?.stop();
-    mediaRecorderRef.current = null;
-    setRecording(false);
-  }
 
   async function handleVideoSelected(file: File | undefined) {
     if (!file) return;
@@ -140,7 +99,6 @@ export function EntryCard({ entry, highlighted }: { entry: JournalEntryWithPhoto
           ...uploaded.map((r) => ({ url: r.url, sizeBytes: r.sizeBytes })),
         ];
 
-        const voiceMemoUrl = newVoiceMemo ? (await uploadVoiceMemo(newVoiceMemo)).url : existingVoiceMemoUrl;
 
         let videoUrl = existingVideoUrl;
         let videoSizeBytes = existingVideoSizeBytes;
@@ -157,14 +115,12 @@ export function EntryCard({ entry, highlighted }: { entry: JournalEntryWithPhoto
           milestoneCategory: milestoneCategory ? (milestoneCategory as MilestoneCategory) : undefined,
           milestoneLabel: milestoneCategory ? milestoneLabel.trim() || undefined : undefined,
           photos,
-          voiceMemoUrl,
           videoUrl,
           videoSizeBytes,
           visibility: justUs ? "inner" : "everyone",
         });
         setIsEditing(false);
         setNewFiles([]);
-        setNewVoiceMemo(null);
         setNewVideoFile(null);
         router.refresh();
       } catch {
@@ -283,34 +239,6 @@ export function EntryCard({ entry, highlighted }: { entry: JournalEntryWithPhoto
           />
         </label>
 
-        <div className="flex items-center gap-3">
-          <button
-            type="button"
-            onClick={() => (recording ? stopRecording() : startRecording())}
-            className={`rounded-full px-3 py-1.5 font-heading text-sm font-semibold transition-transform hover:scale-105 active:scale-95 ${
-              recording
-                ? "bg-rose-500 text-white shadow-sm shadow-rose-900/20"
-                : "border border-brand-100 text-brand-800 dark:border-brand-900/40 dark:text-brand-200"
-            }`}
-          >
-            {recording ? t("⏹ Stop recording") : t("🎤 Voice memo")}
-          </button>
-          {(newVoiceMemoUrl || existingVoiceMemoUrl) && !recording && (
-            <>
-              <audio controls src={newVoiceMemoUrl ?? existingVoiceMemoUrl ?? undefined} className="h-8" />
-              <button
-                type="button"
-                onClick={() => {
-                  setNewVoiceMemo(null);
-                  setExistingVoiceMemoUrl(null);
-                }}
-                className="text-xs text-zinc-500 dark:text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300"
-              >
-                {t("Remove")}
-              </button>
-            </>
-          )}
-        </div>
 
         <div className="flex flex-col gap-2">
           {newVideoPreviewUrl || existingVideoUrl ? (
@@ -435,7 +363,6 @@ export function EntryCard({ entry, highlighted }: { entry: JournalEntryWithPhoto
       </p>
       {entry.title && <h2 className="font-heading font-bold text-brand-950 dark:text-brand-50">{entry.title}</h2>}
       <p className="whitespace-pre-wrap text-sm text-zinc-800 dark:text-zinc-200">{entry.body}</p>
-      {entry.voiceMemoUrl && <audio controls src={entry.voiceMemoUrl} className="h-10 w-full" />}
       {entry.videoUrl && (
         <div className="flex flex-col gap-3">
           <video controls src={entry.videoUrl} className="w-full rounded-2xl" />
