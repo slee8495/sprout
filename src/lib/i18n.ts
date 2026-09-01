@@ -312,7 +312,6 @@ const ko: Record<string, string> = {
   "{childName}'s {monthLabel} album": "{childName}의 {monthLabel} 앨범",
   "is attached as a PDF — every photo you kept last month, laid out and ready to save or print.":
     "지난달에 남긴 모든 사진이 담긴 PDF로 첨부돼 있어요 — 저장하거나 인쇄할 준비가 다 됐어요.",
-  "Open the album": "앨범 열기",
   "You'll get one of these on the 1st of every month for each child/pet with photos from the month before.":
     "지난달에 사진이 있는 아이/펫마다 매달 1일에 이 이메일을 받게 돼요.",
 };
@@ -626,7 +625,6 @@ const zh: Record<string, string> = {
   "{childName}'s {monthLabel} album": "{childName}的{monthLabel}相册",
   "is attached as a PDF — every photo you kept last month, laid out and ready to save or print.":
     "已作为 PDF 附件发送 — 上个月保存的每一张照片都已排版好，可以保存或打印。",
-  "Open the album": "打开相册",
   "You'll get one of these on the 1st of every month for each child/pet with photos from the month before.":
     "每个孩子/宠物只要上个月有照片，您每月1号都会收到一封这样的邮件。",
 };
@@ -941,7 +939,6 @@ const ja: Record<string, string> = {
   "{childName}'s {monthLabel} album": "{childName}の{monthLabel}のアルバム",
   "is attached as a PDF — every photo you kept last month, laid out and ready to save or print.":
     "先月保存したすべての写真がPDFとして添付されています — 保存や印刷にすぐ使えます。",
-  "Open the album": "アルバムを開く",
   "You'll get one of these on the 1st of every month for each child/pet with photos from the month before.":
     "前月に写真があるお子さま/ペットごとに、毎月1日にこのメールが届きます。",
 };
@@ -1257,7 +1254,6 @@ const es: Record<string, string> = {
   "{childName}'s {monthLabel} album": "El álbum de {monthLabel} de {childName}",
   "is attached as a PDF — every photo you kept last month, laid out and ready to save or print.":
     "se adjunta como PDF: todas las fotos que guardaste el mes pasado, listas para guardar o imprimir.",
-  "Open the album": "Abrir el álbum",
   "You'll get one of these on the 1st of every month for each child/pet with photos from the month before.":
     "Recibirás uno de estos el día 1 de cada mes por cada hijo/mascota con fotos del mes anterior.",
 };

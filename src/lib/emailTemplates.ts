@@ -55,10 +55,11 @@ export function welcomeEmail(input: { familyName: string; appUrl: string }): {
   };
 }
 
+// No link out: the album travels with the mail as a PDF, so a button into the app is a detour
+// away from the thing the reader already has.
 export function monthlyAlbumEmail(input: {
   childName: string;
   monthLabel: string;
-  appUrl: string;
   locale?: Locale;
 }): { subject: string; html: string } {
   const locale = input.locale ?? "en";
@@ -70,7 +71,6 @@ export function monthlyAlbumEmail(input: {
       <div style="${WRAPPER_STYLE}">
         ${LOGO_HEADER}
         <p><strong>${fill(t("{childName}'s {monthLabel} album"), values)}</strong> ${t("is attached as a PDF — every photo you kept last month, laid out and ready to save or print.")}</p>
-        <a href="${input.appUrl}/library" style="${BUTTON_STYLE}">${t("Open the album")}</a>
         <p style="margin-top: 24px; font-size: 13px; color: #a1a1aa;">
           ${t("You'll get one of these on the 1st of every month for each child/pet with photos from the month before.")}
         </p>

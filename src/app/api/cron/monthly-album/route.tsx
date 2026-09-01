@@ -15,8 +15,6 @@ export const runtime = "nodejs";
 // ever makes one run risk this ceiling.
 export const maxDuration = 300;
 
-const APP_URL = "https://roun.sl-studio.dev";
-
 function previousMonthRange(now = new Date()) {
   const firstOfThisMonth = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1));
   const firstOfLastMonth = new Date(Date.UTC(firstOfThisMonth.getUTCFullYear(), firstOfThisMonth.getUTCMonth() - 1, 1));
@@ -77,7 +75,7 @@ export async function GET(request: Request) {
           for (const [locale, group] of Object.entries(groupByLocale(innerMembers))) {
             await sendEmail({
               to: group.map((m) => m.email),
-              ...monthlyAlbumEmail({ childName: child.name, monthLabel, appUrl: APP_URL, locale: locale as Locale }),
+              ...monthlyAlbumEmail({ childName: child.name, monthLabel, locale: locale as Locale }),
               attachments: [{ filename, content: buffer }],
             });
             sent++;
@@ -93,7 +91,7 @@ export async function GET(request: Request) {
             for (const [locale, group] of Object.entries(groupByLocale(extendedMembers))) {
               await sendEmail({
                 to: group.map((m) => m.email),
-                ...monthlyAlbumEmail({ childName: child.name, monthLabel, appUrl: APP_URL, locale: locale as Locale }),
+                ...monthlyAlbumEmail({ childName: child.name, monthLabel, locale: locale as Locale }),
                 attachments: [{ filename, content: buffer }],
               });
               sent++;
