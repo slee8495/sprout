@@ -45,6 +45,13 @@ Billed once per family — invite everyone else in with a family code, free.
 • Pro ($3.99/month) — 5GB storage (+5GB add-on available on either plan), unlimited kids & pets, no ads
 
 Built by a parent, for parents — thanks for trying it.
+
+SUBSCRIPTION
+Roun Pro is an optional auto-renewable subscription, offered monthly or yearly. Payment is charged to your Apple Account at confirmation of purchase, and the subscription renews automatically unless you turn off auto-renew at least 24 hours before the end of the current period. You can manage or cancel your subscription in your Apple Account settings.
+
+Terms of Use (EULA): https://www.apple.com/legal/internet-services/itunes/dev/stdeula/
+Roun Terms of Service: https://roun.sl-studio.dev/terms
+Privacy Policy: https://roun.sl-studio.dev/privacy
 ```
 
 ## Full description (Korean)
@@ -131,6 +138,19 @@ Screenshots already captured under the Sprout name/branding need to be retaken w
 9. Family/invite code card in Settings
 
 Note: the three album screenshots above were deliberately framed to avoid showing real identifiable photos (cover art, collage layout, and illustration pages only) — see the privacy note in the "Sample content" section below before adding any screenshot that shows real family photos.
+
+## Guideline 3.1.2 — the subscription block is mandatory, not decorative
+
+App Review's automated check rejected 1.3 (5) on 2026-09-01 before a human ever opened the app:
+
+> The submission offers auto-renewable subscriptions but does not include a functional link to the
+> Terms of Use (EULA) in the app metadata that appears on the app's App Store product page.
+
+The English description now ends with the SUBSCRIPTION block above, and that block has to stay
+there for as long as the app sells auto-renewable subscriptions. A Privacy Policy URL field in App
+Information does **not** satisfy it — the check reads the App Description itself. Roun uses Apple's
+standard EULA, so the Apple `stdeula` link is the one that answers the check; our own
+`/terms` is listed alongside it as the service terms, not in place of it.
 
 ## Support URL / Privacy Policy URL
 
