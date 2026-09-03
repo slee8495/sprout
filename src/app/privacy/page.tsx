@@ -1,13 +1,15 @@
 import Link from "next/link";
+import { BackLink } from "../BackLink";
 
 export const metadata = { title: "Privacy Policy — Roun" };
 
 export default function PrivacyPage() {
   return (
     <div className="mx-auto flex w-full max-w-2xl flex-1 flex-col gap-6 p-4 pb-24">
-      <header className="pt-4">
+      <header className="flex flex-col gap-2 pt-4">
+        <BackLink />
         <h1 className="font-heading text-2xl font-bold text-brand-700 dark:text-brand-300">Privacy Policy</h1>
-        <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">Last updated: July 24, 2026</p>
+        <p className="text-xs text-zinc-500 dark:text-zinc-400">Last updated: July 24, 2026</p>
       </header>
 
       <div className="flex flex-col gap-5 rounded-3xl border border-brand-200/70 bg-white p-5 text-sm leading-relaxed text-zinc-700 dark:border-brand-800/50 dark:bg-zinc-900 dark:text-zinc-300">

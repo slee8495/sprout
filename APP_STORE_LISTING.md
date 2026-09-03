@@ -152,6 +152,28 @@ Information does **not** satisfy it — the check reads the App Description itse
 standard EULA, so the Apple `stdeula` link is the one that answers the check; our own
 `/terms` is listed alongside it as the service terms, not in place of it.
 
+## Guideline 3.1.2(c) — the purchase screen has to say what the money buys
+
+App Review rejected 1.0 (5) a second time on 2026-09-03, this time from a real device
+(iPad Air 11-inch, M3) rather than the automated check:
+
+> The app uses auto-renewable subscriptions, but it does not clearly describe what the user will
+> receive for the price.
+
+Their screenshot was Settings → Plan, which at that point read "Free trial — ends Oct 3, 2026"
+followed by two priced buttons and "Restore purchases" — a price with nothing attached to it. The
+subscription's own ASC description ("Unlimited profiles, 5GB storage, and no ads.") was already
+fine; the gap was inside the app.
+
+`src/app/settings/NativeBillingCard.tsx` now carries the full pre-purchase disclosure: what Pro
+includes against the free plan, the billing period under each price, how renewal and cancellation
+work on each store, and links to the Terms of Use and Privacy Policy. Those two links needed
+`src/app/BackLink.tsx` added to `/terms` and `/privacy` first — `NavBar` hides itself on both, so
+inside the app they were pages with no way back out.
+
+No new build was needed: the shells load the live site, so deploying to production changed what the
+reviewer sees in 1.3 (5).
+
 ## Support URL / Privacy Policy URL
 
 - Support: `https://roun.sl-studio.dev` (or `support@sl-studio.dev` if a dedicated support email field is required)

@@ -75,3 +75,8 @@ apple-signin/
 *.MP4
 photos_for_demo/
 app-store-screenshots/
+
+# Throwaway App Store Connect / maintenance scripts. .asc.mjs holds the ASC API key material
+# inline, so these must never be committed — see apple-signin/KEYS.md.
+/.asc.mjs
+/.del.mts

@@ -1,13 +1,15 @@
 import Link from "next/link";
+import { BackLink } from "../BackLink";
 
 export const metadata = { title: "Terms of Service — Roun" };
 
 export default function TermsPage() {
   return (
     <div className="mx-auto flex w-full max-w-2xl flex-1 flex-col gap-6 p-4 pb-24">
-      <header className="pt-4">
+      <header className="flex flex-col gap-2 pt-4">
+        <BackLink />
         <h1 className="font-heading text-2xl font-bold text-brand-700 dark:text-brand-300">Terms of Service</h1>
-        <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">Last updated: August 6, 2026</p>
+        <p className="text-xs text-zinc-500 dark:text-zinc-400">Last updated: August 6, 2026</p>
       </header>
 
       <div className="flex flex-col gap-5 rounded-3xl border border-brand-200/70 bg-white p-5 text-sm leading-relaxed text-zinc-700 dark:border-brand-800/50 dark:bg-zinc-900 dark:text-zinc-300">
@@ -47,12 +49,19 @@ export default function TermsPage() {
         <section className="flex flex-col gap-2">
           <h2 className="font-heading font-semibold text-brand-800 dark:text-brand-200">Subscriptions and billing</h2>
           <p>
-            Roun offers a free plan and a paid Pro subscription. Where a paid plan is available to you, the
-            price is shown before you pay. Payments are processed by Stripe — we never see or store your
-            card details.
+            Roun offers a free plan and a paid Pro subscription. Pro gives your family unlimited children and
+            pets, 5GB of photo and video storage, and no ads; the Free plan covers one child or pet with 1GB
+            of storage and shows occasional ads. Where a paid plan is available to you, the price and the
+            billing period are shown before you pay.
           </p>
           <p>
-            Pro subscriptions renew automatically each month until you cancel. You can cancel anytime;
+            On the website, payments are processed by Stripe &mdash; we never see or store your card details.
+            In the iOS and Android apps, subscriptions are sold by Apple and Google through their own in-app
+            purchase systems, billed to your Apple Account or Google Play account, and managed and cancelled
+            there rather than here.
+          </p>
+          <p>
+            Pro subscriptions renew automatically each period until you cancel. You can cancel anytime;
             your Pro access continues until the end of the billing period you&apos;ve already paid for, then your
             family moves to the Free plan. Moving to the Free plan never deletes anything — every entry, photo,
             and video you&apos;ve already saved stays exactly as it is and remains visible. On the Free
