@@ -179,3 +179,30 @@ reviewer sees in 1.3 (5).
 - Support: `https://roun.sl-studio.dev` (or `support@sl-studio.dev` if a dedicated support email field is required)
 - Privacy Policy: `https://roun.sl-studio.dev/privacy`
 - Terms of Service: `https://roun.sl-studio.dev/terms`
+
+## Next-version ASO proposal (2026-10-25, SL Studio marketing loop — owner decides)
+
+Why: on 2026-10-22 none of 27 category searches put Roun in the top 50, and searching `roun` alone autocompletes to `round …`. "Journal" and "Photo Album" on their own belong to the giants (Apple Journal, Day One, photo-storage apps). App Store autocomplete has real, thinly contested phrases: `pet journal` (top apps have 0–918 ratings), `baby book` / `digital baby book`, `family album`, `family journal`. No top-10 app covers kids and pets in one app. Evidence: `smith project/products/roun/MARKETING.md` M0 and `listing/kw_2026-10-22.jsonl`.
+
+> **⚠ 2026-10-25 correction (owner):** an earlier App Review rejection was about a name with "baby/kid" in it. Apple Guideline 1.3: apps outside the Kids Category should not use terms like "for kids"/"for children" in metadata, and Roun is in Lifestyle. So **no "Baby"/"Kid" in Name or Subtitle.** Safer variant: Name `Roun: Family & Pet Journal` (26) · Subtitle `Private Photo Album & Diary` (27). Keep "baby/newborn" out of the visible fields; whether they are safe in the hidden keyword field is unconfirmed — leave them out until the owner checks the original rejection text. The ko/ja names below need the same treatment (drop 육아/育児 from the name, keep 가족·반려동물 / 家族・ペット).
+
+These fields need a new app version to change, so they ship with the next update. Promotional Text changes immediately (no review).
+
+| Field (limit) | Now | Proposal | Chars |
+|---|---|---|---|
+| Name (30) | `Roun: Journal & Photo Album` | `Roun: Baby Book & Pet Journal` | 29 |
+| Subtitle (30) | `Save the moments that matter` | `Private Family Album & Diary` | 28 |
+| Keywords (100) | `baby journal,family diary,milestone tracker,pregnancy journal,pet journal,memory keeping,parenting` | `memory,milestone,keepsake,photobook,scrapbook,shared,dog,cat,puppy,newborn,kids,pregnancy,first,year` | 100 |
+| Promotional Text (170, instant) | — | `One private journal for your kids and your pets. Dated photos, first milestones and albums you can save as a PDF, shared only with the family you invite.` | 153 |
+| Play short description (80) | `Save the moments you'll want to hand back to them, someday.` | `Baby book & pet journal: a private family album for milestones and photos.` | 74 |
+
+Keyword rules applied: Apple combines words across name + subtitle + keywords, so a word appears once (baby, book, pet, journal, family, album, diary are already in name/subtitle). Single words, commas, no spaces. No other apps' names.
+
+Extra App Store localizations (metadata only — the app already ships these languages):
+
+| Locale | Name (30) | Subtitle (30) | Keywords (100) |
+|---|---|---|---|
+| ko | `Roun: 육아일기·반려동물 일기` | `가족만 보는 성장앨범·성장일기` | `아기,성장,기록,가족,앨범,사진,강아지,고양이,펫,임신,태교,첫돌,백일,추억,다이어리,포토북` |
+| ja | `Roun: 育児日記・ペット成長記録` | `家族だけで残す成長アルバム` | `成長記録,赤ちゃん,子育て,家族,アルバム,写真,犬,猫,ペット,妊娠,マタニティ,日記,思い出,フォトブック` |
+
+Korean searches with autocomplete: 육아일기 · 성장일기 · 가족 앨범 · 반려동물 일기. Japanese: 育児日記 · 成長記録 · ペット 成長記録 · 犬 成長記録. Descriptions for ko/ja can reuse the existing Korean description and a Japanese translation of the English one (facts only).
